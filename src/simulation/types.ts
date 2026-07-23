@@ -52,10 +52,13 @@ export interface SimulationConfig {
   rules: GameRules;
   numPlayers: number;
   startingBankroll: number;
-  betSpread: Record<number, number>; // True Count -> Bet Size multiplier or absolute bet
+  betSpread: Record<number, string | number>; // True Count -> Bet Size multiplier/absolute bet or multi-hand notation (e.g. 2x50)
   totalHandsToSimulate: number;
   updateInterval: number; // batch size for progress updates
   roundTrueCount: 'whole' | 'half' | 'floor'; // true count rounding rule
+  wongOutMin: number | null;
+  seatsPerTable: number;
+  strategy: 'basic' | 'i18';
 }
 
 export interface SimulationProgress {
@@ -68,4 +71,7 @@ export interface SimulationProgress {
   completed: boolean;
   bankrollHistorySamples: number[][]; // [handIndex][] for each player
   sampleIndices: number[]; // the hand indices corresponding to the history samples
+  sumPayouts: number;
+  sumSquaredPayouts: number;
+  totalRoundsPlayedCount: number;
 }

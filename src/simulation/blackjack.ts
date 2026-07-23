@@ -90,13 +90,106 @@ export function getBasicStrategyAction(
   hand: Hand,
   dealerUpcardValue: number,
   rules: GameRules,
-  canSplit: boolean
+  canSplit: boolean,
+  trueCount: number = 0,
+  useDeviations: boolean = false
 ): BlackjackAction {
   const { cards } = hand;
   const { value, isSoft } = calculateHandValue(cards);
 
   // Dealer upcard normalized (Ace is 11)
   const dVal = dealerUpcardValue;
+
+  // Illustrious 18 Play Deviations
+  if (useDeviations) {
+    const canDouble = cards.length === 2 && (!hand.isSplit || rules.doubleAfterSplit);
+
+    // 1. 16 vs 10: Stand if TC >= 0, otherwise Hit
+    if (!isSoft && value === 16 && dVal === 10) {
+      return trueCount >= 0 ? 'S' : 'H';
+    }
+
+    // 2. 15 vs 10: Stand if TC >= 4, otherwise Hit
+    if (!isSoft && value === 15 && dVal === 10) {
+      return trueCount >= 4 ? 'S' : 'H';
+    }
+
+    // 3. TT vs 6: Split if TC >= 4, otherwise Stand
+    if (cards.length === 2 && cards[0].rank === '10' && cards[1].rank === '10' && dVal === 6 && canSplit) {
+      return trueCount >= 4 ? 'P' : 'S';
+    }
+
+    // 4. TT vs 5: Split if TC >= 5, otherwise Stand
+    if (cards.length === 2 && cards[0].rank === '10' && cards[1].rank === '10' && dVal === 5 && canSplit) {
+      return trueCount >= 5 ? 'P' : 'S';
+    }
+
+    // 5. 10 vs 10: Double if TC >= 4, otherwise Hit
+    if (!isSoft && value === 10 && dVal === 10 && canDouble) {
+      return trueCount >= 4 ? 'D' : 'H';
+    }
+
+    // 6. 12 vs 4: Stand if TC >= 0, otherwise Hit
+    if (!isSoft && value === 12 && dVal === 4) {
+      return trueCount >= 0 ? 'S' : 'H';
+    }
+
+    // 7. 12 vs 5: Stand if TC >= -1, otherwise Hit
+    if (!isSoft && value === 12 && dVal === 5) {
+      return trueCount >= -1 ? 'S' : 'H';
+    }
+
+    // 8. 12 vs 6: Stand if TC >= -1, otherwise Hit
+    if (!isSoft && value === 12 && dVal === 6) {
+      return trueCount >= -1 ? 'S' : 'H';
+    }
+
+    // 9. 13 vs 2: Stand if TC >= -1, otherwise Hit (Deviation from basic strategy Stand)
+    if (!isSoft && value === 13 && dVal === 2) {
+      return trueCount >= -1 ? 'S' : 'H';
+    }
+
+    // 10. 13 vs 3: Stand if TC >= -2, otherwise Hit (Deviation from basic strategy Stand)
+    if (!isSoft && value === 13 && dVal === 3) {
+      return trueCount >= -2 ? 'S' : 'H';
+    }
+
+    // 11. 9 vs 2: Double if TC >= 1, otherwise Hit
+    if (!isSoft && value === 9 && dVal === 2 && canDouble) {
+      return trueCount >= 1 ? 'D' : 'H';
+    }
+
+    // 12. 11 vs Ace: Double if TC >= 1, otherwise Hit
+    if (!isSoft && value === 11 && dVal === 11 && canDouble) {
+      return trueCount >= 1 ? 'D' : 'H';
+    }
+
+    // 13. 9 vs 7: Double if TC >= 3, otherwise Hit
+    if (!isSoft && value === 9 && dVal === 7 && canDouble) {
+      return trueCount >= 3 ? 'D' : 'H';
+    }
+
+    // 14. 16 vs 9: Stand if TC >= 5, otherwise Hit
+    if (!isSoft && value === 16 && dVal === 9) {
+      return trueCount >= 5 ? 'S' : 'H';
+    }
+
+    // 15. 12 vs 3: Stand if TC >= 2, otherwise Hit
+    if (!isSoft && value === 12 && dVal === 3) {
+      return trueCount >= 2 ? 'S' : 'H';
+    }
+
+    // 16. 12 vs 2: Stand if TC >= 3, otherwise Hit
+    if (!isSoft && value === 12 && dVal === 2) {
+      return trueCount >= 3 ? 'S' : 'H';
+    }
+
+    // 17. 10 vs Ace: Double if TC >= 4 (or 3 for H17), otherwise Hit
+    if (!isSoft && value === 10 && dVal === 11 && canDouble) {
+      const idx = rules.hitSoft17 ? 3 : 4;
+      return trueCount >= idx ? 'D' : 'H';
+    }
+  }
 
   // 1. Check for Surrender first (only on the first two cards of the hand)
   if (rules.surrenderAllowed && cards.length === 2 && !hand.isSplit) {

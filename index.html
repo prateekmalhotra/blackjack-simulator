@@ -43,7 +43,7 @@
               </div>
               <div class="form-field">
                 <label>Deck Penetration <span class="label-hint">(%)</span></label>
-                <input type="number" id="rule-penetration" value="75" min="10" max="95" />
+                <input type="number" id="rule-penetration" value="87" min="10" max="95" />
               </div>
               <div class="form-field">
                 <label>Double After Split</label>
@@ -66,12 +66,29 @@
             <h2 class="section-title">Player Settings</h2>
             <div class="control-group">
               <div class="form-field">
-                <label>Number of Seats</label>
-                <input type="number" id="play-seats" value="3" min="1" max="5" />
+                <label>Total Players (1 - 1000)</label>
+                <input type="number" id="play-seats" value="100" min="1" max="1000" />
+              </div>
+              <div class="form-field">
+                <label>Players per Table</label>
+                <select id="play-table-seats">
+                  <option value="1">1 (Heads Up)</option>
+                  <option value="2">2 Players</option>
+                  <option value="3" selected>3 Players</option>
+                  <option value="4">4 Players</option>
+                  <option value="5">5 Players</option>
+                </select>
               </div>
               <div class="form-field">
                 <label>Starting Bankroll ($)</label>
-                <input type="number" id="play-bankroll" value="10000" min="100" max="1000000" step="100" />
+                <input type="number" id="play-bankroll" value="12000" min="100" max="1000000" step="100" />
+              </div>
+              <div class="form-field">
+                <label>Strategy Model</label>
+                <select id="play-strategy">
+                  <option value="basic" selected>Basic Strategy</option>
+                  <option value="i18">Illustrious 18 Deviations</option>
+                </select>
               </div>
               <div class="form-field">
                 <label>Table Limits (Min / Max)</label>
@@ -87,6 +104,17 @@
                   <option value="whole">Round to nearest 1.0</option>
                   <option value="floor">Floor / Truncate</option>
                 </select>
+              </div>
+              <div class="form-field" style="flex-direction: row; align-items: center; gap: 0.5rem; padding-top: 0.25rem;">
+                <input type="checkbox" id="play-wongout" style="width: auto; cursor: pointer;" checked />
+                <label for="play-wongout" style="margin-bottom: 0; cursor: pointer; user-select: none;">"Wong Out" (Skip if TC ≤</label>
+                <input type="number" id="play-wongout-min" value="-3" min="-10" max="10" style="width: 3.5rem; padding: 0.25rem; font-size: 0.8rem; margin: 0; border: 1px solid var(--border-color); border-radius: 4px; text-align: center; background-color: var(--bg-panel); color: var(--text-color);" />
+                <label for="play-wongout" style="margin-bottom: 0; cursor: pointer; user-select: none;">)</label>
+              </div>
+              <div class="form-field" style="margin-top: -0.5rem;">
+                <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin: 0;">
+                  Wonging Out: If the True Count falls to the selected threshold or lower, players leave the table and sit out until the next game (shoe starts) to avoid playing low-probability hands.
+                </p>
               </div>
             </div>
           </div>
@@ -164,8 +192,26 @@
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 </div>
                 <div class="stat-info">
-                  <span class="stat-label">Table Profit / Hr</span>
+                  <span class="stat-label">Avg Player Profit / Hr</span>
                   <span class="stat-value" id="stat-hourly-profit">$0</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">Hours to N₀</span>
+                  <span class="stat-value" id="stat-n0">N/A</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-alert"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">Risk of Ruin (RoR)</span>
+                  <span class="stat-value" id="stat-ror">N/A</span>
                 </div>
               </div>
             </div>
@@ -197,9 +243,39 @@
                   </tr>
                 </thead>
                 <tbody id="seats-table-body">
-                  <!-- Dynamically populated in main.ts -->
                 </tbody>
               </table>
+            </div>
+            <!-- Collapsible Guide & Math Explanations -->
+            <div style="margin-top: 1.5rem;">
+              <details style="background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.25rem; cursor: pointer;">
+                <summary style="font-weight: 600; font-size: 0.95rem; user-select: none; display: flex; align-items: center; gap: 0.5rem; color: var(--text-color); font-family: var(--font-display);">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-help-circle" style="color: var(--text-muted);"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+                  Understanding the Simulation & Math Metrics
+                </summary>
+                <div style="margin-top: 1rem; font-size: 0.825rem; color: var(--text-muted); line-height: 1.6; display: flex; flex-direction: column; gap: 1.25rem; cursor: default;" onclick="event.stopPropagation();">
+                  <div>
+                    <h4 style="color: var(--text-color); margin: 0 0 0.25rem 0; font-size: 0.875rem; font-family: var(--font-display); font-weight: 600;">🃏 The Simulation Model</h4>
+                    <p style="margin: 0;">This simulator deals cards from a physical shoe of cards (Fisher-Yates shuffled) without replacement. As hands are dealt, cards are popped one-by-one from the shoe and count values are tracked in real-time. When the shoe reaches the penetration threshold, it is reshuffled. This is a realistic replica of real brick-and-mortar casino conditions.</p>
+                  </div>
+                  <div>
+                    <h4 style="color: var(--text-color); margin: 0 0 0.25rem 0; font-size: 0.875rem; font-family: var(--font-display); font-weight: 600;">📈 Hours to N₀ (N-Zero)</h4>
+                    <p style="margin: 0;">N₀ is the exact number of hands you must play for your expected value (EV) to equal one standard deviation of variance. Physically, reaching N₀ means you have an 84% chance of being in the green. The hours display shows how many casino hours (taking into account table speed/player counts) it takes to reach this threshold.</p>
+                  </div>
+                  <div>
+                    <h4 style="color: var(--text-color); margin: 0 0 0.25rem 0; font-size: 0.875rem; font-family: var(--font-display); font-weight: 600;">🛡️ Risk of Ruin (RoR)</h4>
+                    <p style="margin: 0;">The mathematical probability that you will lose your entire starting bankroll before your positive mathematical edge overcomes short-term variance. It uses the analytical formula $RoR = e^{-2 \cdot B \cdot \frac{EV}{\text{Variance}}}$ computed on round-level stats. A risk below 5.0% is considered safe for professional play.</p>
+                  </div>
+                  <div>
+                    <h4 style="color: var(--text-color); margin: 0 0 0.25rem 0; font-size: 0.875rem; font-family: var(--font-display); font-weight: 600;">🚪 Wonging Out (Sifting)</h4>
+                    <p style="margin: 0;">A professional strategy where the counter sits out when the count gets low (e.g., True Count ≤ -3). While sitting out, the dealer burns cards through mock rounds, and you place no bets, bypassing negative-EV rounds to increase your overall hourly win rate and lower volatility.</p>
+                  </div>
+                  <div>
+                    <h4 style="color: var(--text-color); margin: 0 0 0.25rem 0; font-size: 0.875rem; font-family: var(--font-display); font-weight: 600;">✍️ Spread Syntax</h4>
+                    <p style="margin: 0;">You can customize your bet spread for each True Count in the table. Enter single bets (e.g. <code>10</code> or <code>50</code>) or split bets (e.g. <code>2x50</code> to play two hands of $50, which helps lower round-level variance at high advantages).</p>
+                  </div>
+                </div>
+              </details>
             </div>
           </div>
         </main>
