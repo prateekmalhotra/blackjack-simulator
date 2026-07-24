@@ -58,7 +58,7 @@ export interface SimulationConfig {
   betSpread: Record<number, string | number>; // True Count -> Bet Size multiplier/absolute bet or multi-hand notation (e.g. 2x50)
   totalHandsToSimulate: number;
   updateInterval: number; // batch size for progress updates
-  roundTrueCount: 'whole' | 'half' | 'floor'; // true count rounding rule
+  roundTrueCount: 'whole' | 'half' | 'floor' | 'ceil'; // true count rounding rule
   wongOutMin: number | null;
   seatsPerTable: number;
   strategy: 'basic' | 'i18';

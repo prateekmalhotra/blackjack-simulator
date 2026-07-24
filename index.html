@@ -107,9 +107,10 @@
               <div class="form-field">
                 <label>True Count Rounding</label>
                 <select id="rule-rounding">
+                  <option value="ceil" selected>Safe / Round Up (1.2+ decks = 2)</option>
+                  <option value="floor">Floor / Truncate</option>
                   <option value="half">Round to nearest 0.5</option>
                   <option value="whole">Round to nearest 1.0</option>
-                  <option value="floor" selected>Floor / Truncate</option>
                 </select>
               </div>
               <div class="form-field" style="flex-direction: row; align-items: center; gap: 0.5rem; padding-top: 0.25rem;">
