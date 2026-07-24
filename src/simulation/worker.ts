@@ -498,13 +498,12 @@ function runSimulation(config: SimulationConfig) {
             x = 0;
           } else if (dealerHand.isBusted || hand.value > dealerHand.value) {
             // Player wins
-            const multiplier = hand.isFreeDouble ? 2 : 1;
-            const winAmount = hand.bet * multiplier;
-            const payout = hand.isFreeHand ? winAmount : (hand.bet + winAmount);
+            const winProfit = hand.isFreeDouble ? (hand.bet * 2) : hand.bet;
+            const payout = hand.isFreeHand ? winProfit : (hand.bet + winProfit);
             seat.bankroll += payout;
             seat.totalEarned += payout;
             seat.totalWins++;
-            x = winAmount;
+            x = winProfit;
           } else if (hand.value < dealerHand.value) {
             // Player loses
             seat.totalLosses++;
