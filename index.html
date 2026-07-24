@@ -50,7 +50,7 @@
               </div>
               <div class="form-field">
                 <label>Deck Penetration <span class="label-hint">(%)</span></label>
-                <input type="number" id="rule-penetration" value="87" min="10" max="95" />
+                <input type="number" id="rule-penetration" value="83" min="10" max="95" />
               </div>
               <div class="form-field">
                 <label>Double After Split</label>
@@ -88,13 +88,13 @@
               </div>
               <div class="form-field">
                 <label>Starting Bankroll ($)</label>
-                <input type="number" id="play-bankroll" value="12000" min="100" max="1000000" step="100" />
+                <input type="number" id="play-bankroll" value="25000" min="100" max="1000000" step="100" />
               </div>
               <div class="form-field">
                 <label>Strategy Model</label>
                 <select id="play-strategy">
-                  <option value="basic" selected>Basic Strategy</option>
-                  <option value="i18">Illustrious 18 Deviations</option>
+                  <option value="basic">Basic Strategy</option>
+                  <option value="i18" selected>Illustrious 18 Deviations</option>
                 </select>
               </div>
               <div class="form-field">
@@ -107,9 +107,9 @@
               <div class="form-field">
                 <label>True Count Rounding</label>
                 <select id="rule-rounding">
-                  <option value="half" selected>Round to nearest 0.5</option>
+                  <option value="half">Round to nearest 0.5</option>
                   <option value="whole">Round to nearest 1.0</option>
-                  <option value="floor">Floor / Truncate</option>
+                  <option value="floor" selected>Floor / Truncate</option>
                 </select>
               </div>
               <div class="form-field" style="flex-direction: row; align-items: center; gap: 0.5rem; padding-top: 0.25rem;">
