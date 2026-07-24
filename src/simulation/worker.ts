@@ -137,10 +137,10 @@ function runSimulation(config: SimulationConfig) {
         remainingDecks = Math.max(1, Math.round(remainingDecksReal));
       } else if (config.roundTrueCount === 'half') {
         remainingDecks = Math.max(0.5, Math.round(remainingDecksReal * 2) / 2);
-      } else if (config.roundTrueCount === 'ceil') {
-        remainingDecks = remainingDecksReal >= 1.2 ? Math.ceil(remainingDecksReal) : 1;
-      } else if (config.roundTrueCount === 'floor') {
-        remainingDecks = remainingDecksReal >= 1.2 ? Math.ceil(remainingDecksReal) : 1;
+      } else if (config.roundTrueCount === 'ceil' || config.roundTrueCount === 'floor') {
+        const floorVal = Math.floor(remainingDecksReal);
+        const frac = remainingDecksReal - floorVal;
+        remainingDecks = Math.max(1, frac >= 0.2 ? floorVal + 1 : floorVal);
       }
 
       const trueCount = remainingDecks > 0 ? Math.floor(table.runningCount / remainingDecks) : 0;
