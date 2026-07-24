@@ -310,11 +310,12 @@ function runSimulation(config: SimulationConfig) {
           }
 
           while (!hand.isStood && !hand.isBusted && !hand.surrendered) {
+            const isFreeBetGame = rules.gameType === 'free_bet';
             const canSplit =
               hand.cards.length === 2 &&
               hand.cards[0].rank === hand.cards[1].rank &&
               seat.hands.length < rules.maxSplits + 1 &&
-              seat.bankroll >= hand.bet;
+              (isFreeBetGame || seat.bankroll >= hand.bet);
 
             const isI18 = seat.isAP && config.strategy === 'i18';
             const action = getBasicStrategyAction(hand, dealerUpcard.value, rules, canSplit, trueCount, isI18);
@@ -327,8 +328,13 @@ function runSimulation(config: SimulationConfig) {
               break;
             } else if (action === 'P') {
               hand.isSplit = true;
-              seat.bankroll -= hand.bet;
-              seat.totalEarned -= hand.bet;
+              const isFreeSplit = isFreeBetGame && !['10', 'J', 'Q', 'K'].includes(hand.cards[0].rank);
+
+              if (!isFreeSplit) {
+                seat.bankroll -= hand.bet;
+                seat.totalEarned -= hand.bet;
+              }
+
               const splitCard = hand.cards.pop()!;
 
               const res1 = calculateHandValue(hand.cards);
@@ -343,6 +349,7 @@ function runSimulation(config: SimulationConfig) {
               const newHand: Hand = {
                 cards: [splitCard],
                 bet: hand.bet,
+                isFreeHand: isFreeSplit,
                 isStood: false,
                 isDoubled: false,
                 isSplit: true,
@@ -365,12 +372,12 @@ function runSimulation(config: SimulationConfig) {
                 newHand.isStood = true;
               }
             } else if (action === 'D') {
-              const doubleBet = hand.bet;
-              if (seat.bankroll >= doubleBet) {
-                seat.bankroll -= doubleBet;
-                seat.totalEarned -= doubleBet;
+              const { value: handVal, isSoft: handIsSoft } = calculateHandValue(hand.cards);
+              const isFreeDouble = isFreeBetGame && !handIsSoft && hand.cards.length === 2 && (handVal === 9 || handVal === 10 || handVal === 11);
+
+              if (isFreeDouble) {
+                hand.isFreeDouble = true;
                 hand.isDoubled = true;
-                hand.bet += doubleBet;
                 hand.cards.push(drawCard(table));
                 const doubleRes = calculateHandValue(hand.cards);
                 hand.value = doubleRes.value;
@@ -378,11 +385,25 @@ function runSimulation(config: SimulationConfig) {
                 if (hand.value > 21) hand.isBusted = true;
                 hand.isStood = true;
               } else {
-                hand.cards.push(drawCard(table));
-                const hitRes = calculateHandValue(hand.cards);
-                hand.value = hitRes.value;
-                hand.isSoft = hitRes.isSoft;
-                if (hand.value > 21) hand.isBusted = true;
+                const doubleBet = hand.bet;
+                if (seat.bankroll >= doubleBet) {
+                  seat.bankroll -= doubleBet;
+                  seat.totalEarned -= doubleBet;
+                  hand.isDoubled = true;
+                  hand.bet += doubleBet;
+                  hand.cards.push(drawCard(table));
+                  const doubleRes = calculateHandValue(hand.cards);
+                  hand.value = doubleRes.value;
+                  hand.isSoft = doubleRes.isSoft;
+                  if (hand.value > 21) hand.isBusted = true;
+                  hand.isStood = true;
+                } else {
+                  hand.cards.push(drawCard(table));
+                  const hitRes = calculateHandValue(hand.cards);
+                  hand.value = hitRes.value;
+                  hand.isSoft = hitRes.isSoft;
+                  if (hand.value > 21) hand.isBusted = true;
+                }
               }
             } else if (action === 'H') {
               hand.cards.push(drawCard(table));
@@ -419,6 +440,8 @@ function runSimulation(config: SimulationConfig) {
         if (dealerHand.value > 21) dealerHand.isBusted = true;
       }
 
+      const isFreeBetGame = rules.gameType === 'free_bet';
+
       // Settle payouts
       for (const seat of playingSeats) {
         let seatRoundProfit = 0;
@@ -438,45 +461,60 @@ function runSimulation(config: SimulationConfig) {
         for (const hand of seat.hands) {
           seat.totalHandsPlayed++;
           let x = 0;
+
           if (hand.surrendered) {
             x = -hand.bet * 0.5;
           } else if (hand.isBusted) {
-            x = -hand.bet;
+            if (!hand.isFreeHand) {
+              x = -hand.bet;
+            }
             seat.totalLosses++;
           } else if (dealerHand.isBlackjack) {
             if (hand.isBlackjack) {
-              seat.bankroll += hand.bet;
-              seat.totalEarned += hand.bet;
+              if (!hand.isFreeHand) {
+                seat.bankroll += hand.bet;
+                seat.totalEarned += hand.bet;
+              }
               seat.totalPushes++;
               x = 0;
             } else {
               seat.totalLosses++;
-              x = -hand.bet;
+              x = hand.isFreeHand ? 0 : -hand.bet;
             }
           } else if (hand.isBlackjack) {
-            const payout = hand.bet + (hand.bet * rules.payoutBlackjack);
+            const winAmount = hand.bet * rules.payoutBlackjack;
+            const payout = hand.isFreeHand ? (hand.bet + winAmount) : (hand.bet + winAmount);
             seat.bankroll += payout;
             seat.totalEarned += payout;
             seat.totalWins++;
-            x = hand.bet * rules.payoutBlackjack;
-          } else if (dealerHand.isBusted) {
-            const payout = hand.bet * 2;
+            x = winAmount;
+          } else if (isFreeBetGame && dealerHand.value === 22) {
+            // Push 22 Rule: Dealer 22 pushes against all non-busted player hands (except BJ)
+            if (!hand.isFreeHand) {
+              seat.bankroll += hand.bet;
+              seat.totalEarned += hand.bet;
+            }
+            seat.totalPushes++;
+            x = 0;
+          } else if (dealerHand.isBusted || hand.value > dealerHand.value) {
+            // Player wins
+            const multiplier = hand.isFreeDouble ? 2 : 1;
+            const winAmount = hand.bet * multiplier;
+            const payout = hand.isFreeHand ? winAmount : (hand.bet + winAmount);
             seat.bankroll += payout;
             seat.totalEarned += payout;
             seat.totalWins++;
-            x = hand.bet;
-          } else if (hand.value > dealerHand.value) {
-            const payout = hand.bet * 2;
-            seat.bankroll += payout;
-            seat.totalEarned += payout;
-            seat.totalWins++;
-            x = hand.bet;
+            x = winAmount;
           } else if (hand.value < dealerHand.value) {
+            // Player loses
             seat.totalLosses++;
-            x = -hand.bet;
+            x = hand.isFreeHand ? 0 : -hand.bet;
           } else {
-            seat.bankroll += hand.bet;
-            seat.totalEarned += hand.bet;
+            // Push
+            if (!hand.isFreeHand) {
+              seat.bankroll += hand.bet;
+              seat.totalEarned += hand.bet;
+            }
             seat.totalPushes++;
             x = 0;
           }

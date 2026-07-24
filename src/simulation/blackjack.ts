@@ -85,6 +85,55 @@ export function shuffleShoe(shoe: Card[]): Card[] {
 // Action types
 export type BlackjackAction = 'H' | 'S' | 'D' | 'P' | 'Sur'; // Hit, Stand, Double, Split, Surrender
 
+export function getFreeBetStrategyAction(
+  hand: Hand,
+  dealerUpcardValue: number,
+  _rules: GameRules,
+  canSplit: boolean
+): BlackjackAction {
+  const { cards } = hand;
+  const { value, isSoft } = calculateHandValue(cards);
+  const dVal = dealerUpcardValue;
+
+  // 1. Free Split Check:
+  // All pairs EXCEPT 10-value cards (10, J, Q, K) are FREE SPLIT vs any upcard
+  if (cards.length === 2 && cards[0].rank === cards[1].rank && canSplit) {
+    const rank = cards[0].rank;
+    if (['10', 'J', 'Q', 'K'].includes(rank)) {
+      return 'S'; // Never split 10s
+    }
+    // Free split ALL other pairs (2-9, A)
+    return 'P';
+  }
+
+  // 2. Free Double Check:
+  // Hard 2-card totals of 9, 10, 11 get a FREE DOUBLE vs any upcard
+  if (!isSoft && cards.length === 2 && (value === 9 || value === 10 || value === 11)) {
+    return 'D';
+  }
+
+  // 3. Soft Hands
+  if (isSoft) {
+    const nonAceValue = value - 11;
+    if (nonAceValue >= 8) return 'S'; // Soft 19+ Stand
+    if (nonAceValue === 7) {
+      return dVal <= 8 ? 'S' : 'H'; // Soft 18 Stand vs 2-8, Hit vs 9,10,A
+    }
+    return 'H'; // Soft 13-17 Hit
+  }
+
+  // 4. Hard Hands
+  if (value >= 17) return 'S';
+  if (value <= 8) return 'H';
+
+  // Hard 12-16: Stand vs 4-6, Hit vs 2,3,7-11
+  if (value >= 12 && value <= 16) {
+    return dVal >= 4 && dVal <= 6 ? 'S' : 'H';
+  }
+
+  return 'H';
+}
+
 // Basic Strategy Engine
 export function getBasicStrategyAction(
   hand: Hand,
@@ -94,6 +143,10 @@ export function getBasicStrategyAction(
   trueCount: number = 0,
   useDeviations: boolean = false
 ): BlackjackAction {
+  if (rules.gameType === 'free_bet') {
+    return getFreeBetStrategyAction(hand, dealerUpcardValue, rules, canSplit);
+  }
+
   const { cards } = hand;
   const { value, isSoft } = calculateHandValue(cards);
 

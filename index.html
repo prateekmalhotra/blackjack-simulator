@@ -24,6 +24,13 @@
             <h2 class="section-title">Table Rules</h2>
             <div class="control-group">
               <div class="form-field">
+                <label>Game Variant</label>
+                <select id="rule-game-type">
+                  <option value="standard" selected>Standard Blackjack</option>
+                  <option value="free_bet">Pot of Gold / Free Bet</option>
+                </select>
+              </div>
+              <div class="form-field">
                 <label>Decks in Shoe <span class="label-hint">(1 - 8)</span></label>
                 <input type="number" id="rule-decks" value="6" min="1" max="8" />
               </div>

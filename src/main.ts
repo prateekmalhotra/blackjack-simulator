@@ -33,6 +33,7 @@ let betSpread: Record<number, string | number> = {
 };
 
 // UI Elements
+const ruleGameTypeSelect = document.getElementById('rule-game-type') as HTMLSelectElement;
 const ruleDecksInput = document.getElementById('rule-decks') as HTMLInputElement;
 const ruleSoft17Select = document.getElementById('rule-soft17') as HTMLSelectElement;
 const ruleBlackjackPayoutSelect = document.getElementById('rule-blackjack-payout') as HTMLSelectElement;
@@ -268,6 +269,7 @@ function startFastSimulation() {
   initChart();
   
   const rules: GameRules = {
+    gameType: ruleGameTypeSelect.value as 'standard' | 'free_bet',
     numDecks: parseInt(ruleDecksInput.value, 10),
     hitSoft17: ruleSoft17Select.value === 'hit',
     payoutBlackjack: parseFloat(ruleBlackjackPayoutSelect.value),
@@ -326,6 +328,7 @@ function stopFastSimulation() {
 }
 
 function setInputsDisabled(disabled: boolean) {
+  ruleGameTypeSelect.disabled = disabled;
   ruleDecksInput.disabled = disabled;
   ruleSoft17Select.disabled = disabled;
   ruleBlackjackPayoutSelect.disabled = disabled;

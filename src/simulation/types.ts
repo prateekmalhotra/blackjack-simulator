@@ -12,6 +12,8 @@ export interface Hand {
   bet: number;
   isStood: boolean;
   isDoubled: boolean;
+  isFreeDouble?: boolean;
+  isFreeHand?: boolean;
   isSplit: boolean;
   isBusted: boolean;
   isBlackjack: boolean;
@@ -46,6 +48,7 @@ export interface GameRules {
   penetration: number; // fraction of shoe played before shuffle (e.g., 0.75)
   minBet: number;
   maxBet: number;
+  gameType?: 'standard' | 'free_bet';
 }
 
 export interface SimulationConfig {
