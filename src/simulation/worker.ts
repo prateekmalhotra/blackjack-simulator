@@ -213,8 +213,13 @@ function runSimulation(config: SimulationConfig) {
             const isSideStaked = table.pogRunningCount <= triggerRC;
             isSideStakedMap[seat.id] = isSideStaked;
 
-            // Parse main bet notation (e.g. "2x20", "2×10", "10")
-            const mainSpread = parseSpreadValue(rules.potOfGold?.mainBetNotation ?? rules.minBet, rules.minBet, 1, rules.maxBet);
+            // Parse main bet notation (supports base bet and raised bet on trigger)
+            const isRaiseOnTrigger = !!rules.potOfGold?.raiseMainOnTrigger && isSideStaked;
+            const mainNotation = isRaiseOnTrigger
+              ? (rules.potOfGold?.triggerMainBetNotation ?? rules.potOfGold?.sideBetNotation ?? 25)
+              : (rules.potOfGold?.mainBetNotation ?? rules.minBet);
+
+            const mainSpread = parseSpreadValue(mainNotation, rules.minBet, 1, rules.maxBet);
             let numHands = mainSpread.numHands;
             let mainBetPerHand = mainSpread.betPerHand;
 

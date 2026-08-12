@@ -43,6 +43,8 @@ export interface PotOfGoldConfig {
   enabled: boolean;
   paytable: 'pt2' | 'pt1'; // PT2 (3/12/30/50/100) or PT1 (Jackpot 3/10/30/60/100/300/1000)
   mainBetNotation?: string | number;
+  triggerMainBetNotation?: string | number; // e.g. "25" or "2x25"
+  raiseMainOnTrigger?: boolean; // true = raise main bet during trigger window (Tied Staking: side <= main)
   sideBetNotation?: string | number;
   sideBetAmount: number; // e.g. 25
   triggerRC: number; // default 12 for 6 decks

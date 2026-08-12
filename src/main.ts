@@ -64,9 +64,16 @@ const pogWongEnabledCheckbox = document.getElementById('pog-wong-enabled') as HT
 const pogWongControls = document.getElementById('pog-wong-controls') as HTMLDivElement;
 const pogWongInInput = document.getElementById('pog-wong-in') as HTMLInputElement;
 const pogWongOutInput = document.getElementById('pog-wong-out') as HTMLInputElement;
+const pogRaiseMainEnabledCheckbox = document.getElementById('pog-raise-main-enabled') as HTMLInputElement;
+const pogRaiseMainControls = document.getElementById('pog-raise-main-controls') as HTMLDivElement;
+const pogTriggerMainBetInput = document.getElementById('pog-trigger-main-bet') as HTMLInputElement;
 
 pogWongEnabledCheckbox.addEventListener('change', () => {
   pogWongControls.style.display = pogWongEnabledCheckbox.checked ? 'flex' : 'none';
+});
+
+pogRaiseMainEnabledCheckbox.addEventListener('change', () => {
+  pogRaiseMainControls.style.display = pogRaiseMainEnabledCheckbox.checked ? 'flex' : 'none';
 });
 
 // Toggle game type UI
@@ -90,6 +97,9 @@ ruleGameTypeSelect.addEventListener('change', () => {
     pogWongControls.style.display = 'none';
     pogWongInInput.value = '12';
     pogWongOutInput.value = '20';
+    pogRaiseMainEnabledCheckbox.checked = false;
+    pogRaiseMainControls.style.display = 'none';
+    pogTriggerMainBetInput.value = '25';
     playStrategySelect.value = 'basic';
     playWongoutInput.checked = false;
     ruleSoft17Select.value = 'hit';
@@ -350,6 +360,8 @@ function startFastSimulation() {
       enabled: true,
       paytable: pogPaytableSelect.value as 'pt2' | 'pt1',
       mainBetNotation: mainBetRaw,
+      triggerMainBetNotation: pogTriggerMainBetInput.value.trim() || '25',
+      raiseMainOnTrigger: pogRaiseMainEnabledCheckbox.checked,
       sideBetNotation: sideBetRaw,
       sideBetAmount: parseSpreadNumber(sideBetRaw, 25),
       triggerRC: parseInt(pogTriggerRcInput.value, 10) || 12,
@@ -433,6 +445,8 @@ function setInputsDisabled(disabled: boolean) {
   pogWongEnabledCheckbox.disabled = disabled;
   pogWongInInput.disabled = disabled;
   pogWongOutInput.disabled = disabled;
+  pogRaiseMainEnabledCheckbox.disabled = disabled;
+  pogTriggerMainBetInput.disabled = disabled;
   simHandsSelect.disabled = disabled;
 
   const inputs = betSpreadContainer.querySelectorAll('input');
