@@ -60,6 +60,14 @@ const pogMainBetInput = document.getElementById('pog-main-bet') as HTMLInputElem
 const pogSideBetInput = document.getElementById('pog-side-bet') as HTMLInputElement;
 const pogTriggerRcInput = document.getElementById('pog-trigger-rc') as HTMLInputElement;
 const pogFarmFivesCheckbox = document.getElementById('pog-farm-fives') as HTMLInputElement;
+const pogWongEnabledCheckbox = document.getElementById('pog-wong-enabled') as HTMLInputElement;
+const pogWongControls = document.getElementById('pog-wong-controls') as HTMLDivElement;
+const pogWongInInput = document.getElementById('pog-wong-in') as HTMLInputElement;
+const pogWongOutInput = document.getElementById('pog-wong-out') as HTMLInputElement;
+
+pogWongEnabledCheckbox.addEventListener('change', () => {
+  pogWongControls.style.display = pogWongEnabledCheckbox.checked ? 'flex' : 'none';
+});
 
 // Toggle game type UI
 ruleGameTypeSelect.addEventListener('change', () => {
@@ -78,6 +86,10 @@ ruleGameTypeSelect.addEventListener('change', () => {
     pogSideBetInput.value = '25';
     pogTriggerRcInput.value = '12';
     pogFarmFivesCheckbox.checked = true;
+    pogWongEnabledCheckbox.checked = false;
+    pogWongControls.style.display = 'none';
+    pogWongInInput.value = '12';
+    pogWongOutInput.value = '20';
     playStrategySelect.value = 'basic';
     playWongoutInput.checked = false;
     ruleSoft17Select.value = 'hit';
@@ -332,7 +344,12 @@ function startFastSimulation() {
       sideBetNotation: sideBetRaw,
       sideBetAmount: parseInt(sideBetRaw, 10) || 25,
       triggerRC: parseInt(pogTriggerRcInput.value, 10) || 12,
-      farmFives: pogFarmFivesCheckbox.checked
+      farmFives: pogFarmFivesCheckbox.checked,
+      wonging: {
+        enabled: pogWongEnabledCheckbox.checked,
+        inRC: parseInt(pogWongInInput.value, 10) || 12,
+        outRC: parseInt(pogWongOutInput.value, 10) || 20
+      }
     } : undefined
   };
 
@@ -404,6 +421,9 @@ function setInputsDisabled(disabled: boolean) {
   pogSideBetInput.disabled = disabled;
   pogTriggerRcInput.disabled = disabled;
   pogFarmFivesCheckbox.disabled = disabled;
+  pogWongEnabledCheckbox.disabled = disabled;
+  pogWongInInput.disabled = disabled;
+  pogWongOutInput.disabled = disabled;
   simHandsSelect.disabled = disabled;
 
   const inputs = betSpreadContainer.querySelectorAll('input');

@@ -156,6 +156,33 @@
                 <input type="checkbox" id="pog-farm-fives" style="width: 1rem; height: 1rem; cursor: pointer; accent-color: var(--color-primary);" checked />
                 <label for="pog-farm-fives" style="margin-bottom: 0; cursor: pointer; user-select: none; font-size: 0.8125rem; font-weight: 500; color: var(--text-secondary);">"Farm" 5s (Split 5,5 while side bet active)</label>
               </div>
+              <div class="form-field" style="padding: 0.75rem; background: var(--bg-panel); border-radius: 0.625rem; border: 1px solid var(--border-color);">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" id="pog-wong-enabled" style="width: 1rem; height: 1rem; cursor: pointer; accent-color: var(--color-primary);" />
+                    <label for="pog-wong-enabled" style="margin-bottom: 0; cursor: pointer; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary);">Back-Counting / Wonging</label>
+                  </div>
+                </div>
+                <div id="pog-wong-controls" style="display: none; flex-direction: column; gap: 0.625rem; padding-top: 0.625rem; margin-top: 0.5rem; border-top: 1px dashed var(--border-color);">
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-size: 0.8125rem; color: var(--text-secondary);">Wong-In (Join Table):</span>
+                    <div style="display: flex; align-items: center; gap: 0.35rem;">
+                      <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">RC ≤</span>
+                      <input type="number" id="pog-wong-in" value="12" min="-50" max="50" style="width: 3.5rem; padding: 0.25rem 0.35rem; border: 1px solid var(--border-color); border-radius: 0.375rem; text-align: center; font-family: var(--font-mono); font-weight: 600;" />
+                    </div>
+                  </div>
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-size: 0.8125rem; color: var(--text-secondary);">Wong-Out (Leave Table):</span>
+                    <div style="display: flex; align-items: center; gap: 0.35rem;">
+                      <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">RC &gt;</span>
+                      <input type="number" id="pog-wong-out" value="20" min="-50" max="50" style="width: 3.5rem; padding: 0.25rem 0.35rem; border: 1px solid var(--border-color); border-radius: 0.375rem; text-align: center; font-family: var(--font-mono); font-weight: 600;" />
+                    </div>
+                  </div>
+                  <div style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.35; margin-top: 0.25rem;">
+                    Watch shoe without betting until RC ≤ in-threshold. Stay &amp; play until RC &gt; out-threshold or shoe shuffles.
+                  </div>
+                </div>
+              </div>
               <div class="form-field" style="margin-top: 0.25rem; padding: 0.875rem; background: var(--bg-panel); border-radius: 0.625rem; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
                 <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.5rem;">POG2 Count Tags:</div>
                 <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.6; font-family: var(--font-mono);">

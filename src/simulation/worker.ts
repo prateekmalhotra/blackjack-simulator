@@ -146,12 +146,15 @@ function runSimulation(config: SimulationConfig) {
       table.shoe = shuffleShoe(createShoe(rules.numDecks));
       table.runningCount = 0;
       table.pogRunningCount = getInitialPogRunningCount(rules.numDecks);
+      for (const s of table.seats) pogSeatedMap[s.id] = false;
     }
     const card = table.shoe.pop()!;
     table.runningCount += getCardCountValue(card.rank);
     table.pogRunningCount += getPogCountValue(card);
     return card;
   }
+
+  const pogSeatedMap: Record<number, boolean> = {};
 
   // Game Loop (rounds played per player)
   while (handsPlayed < totalHandsToSimulate) {
@@ -183,6 +186,28 @@ function runSimulation(config: SimulationConfig) {
       for (const seat of table.seats) {
         if (seat.isAP) {
           if (isPotOfGoldActive) {
+            const wongingEnabled = !!rules.potOfGold?.wonging?.enabled;
+            const inRC = rules.potOfGold?.wonging?.inRC ?? 12;
+            const outRC = rules.potOfGold?.wonging?.outRC ?? 20;
+
+            if (wongingEnabled) {
+              const currentlySeated = pogSeatedMap[seat.id] ?? false;
+              if (!currentlySeated) {
+                if (table.pogRunningCount <= inRC) {
+                  pogSeatedMap[seat.id] = true;
+                } else {
+                  seat.hands = [];
+                  continue; // Back-counting / spectating
+                }
+              } else {
+                if (table.pogRunningCount > outRC) {
+                  pogSeatedMap[seat.id] = false;
+                  seat.hands = [];
+                  continue; // Wonged out / left table
+                }
+              }
+            }
+
             // Pot of Gold Side Bet Staking via POG2 Count
             const triggerRC = rules.potOfGold?.triggerRC ?? 12;
             const isSideStaked = table.pogRunningCount <= triggerRC;
@@ -329,6 +354,7 @@ function runSimulation(config: SimulationConfig) {
           table.shoe = shuffleShoe(createShoe(rules.numDecks));
           table.runningCount = 0;
           table.pogRunningCount = getInitialPogRunningCount(rules.numDecks);
+          for (const s of table.seats) pogSeatedMap[s.id] = false;
         }
         continue;
       }
@@ -667,6 +693,7 @@ function runSimulation(config: SimulationConfig) {
         table.shoe = shuffleShoe(createShoe(rules.numDecks));
         table.runningCount = 0;
         table.pogRunningCount = getInitialPogRunningCount(rules.numDecks);
+        for (const s of table.seats) pogSeatedMap[s.id] = false;
       }
     }
 

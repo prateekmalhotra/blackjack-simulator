@@ -47,6 +47,11 @@ export interface PotOfGoldConfig {
   sideBetAmount: number; // e.g. 25
   triggerRC: number; // default 12 for 6 decks
   farmFives: boolean; // true = split 5s when side bet is active
+  wonging?: {
+    enabled: boolean;
+    inRC: number; // e.g. 12
+    outRC: number; // e.g. 20
+  };
 }
 
 export interface GameRules {
