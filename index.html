@@ -27,7 +27,6 @@
                 <label>Game Variant</label>
                 <select id="rule-game-type">
                   <option value="standard" selected>Standard Blackjack (Hi-Lo)</option>
-                  <option value="lucky_lucky">Lucky Lucky Side Bet</option>
                   <option value="free_bet">Pot of Gold / Free Bet</option>
                 </select>
               </div>
@@ -124,43 +123,6 @@
                 <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin: 0;">
                   Wonging Out: If the True Count falls to the selected threshold or lower, players leave the table and sit out until the next game (shoe starts) to avoid playing low-probability hands.
                 </p>
-              </div>
-            </div>
-          </div>
-
-          <div id="lucky-lucky-config-section" style="display: none;">
-            <h2 class="section-title">Lucky Lucky Side Bet</h2>
-            <div class="control-group">
-              <div class="form-field">
-                <label>Side Bet Paytable</label>
-                <select id="ll-paytable">
-                  <option value="pt1" selected>Pay Table 1 (15:1 Suited 21 / 2.66% HE - Standard)</option>
-                  <option value="pt2">Pay Table 2 (10:1 Suited 21 / 5.22% HE)</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label>Main Bet ($)</label>
-                <input type="number" id="ll-main-bet" value="15" min="1" max="1000" />
-              </div>
-              <div class="form-field">
-                <label>Side Bet ($)</label>
-                <input type="number" id="ll-side-bet" value="100" min="1" max="1000" />
-              </div>
-              <div class="form-field">
-                <label>Lucky Lucky Staking Trigger</label>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                  <span style="font-size: 0.85rem; color: var(--text-color); font-weight: 500;">Stake Side Bet when TC ≥</span>
-                  <input type="number" id="ll-trigger-tc" value="3" min="-10" max="20" style="width: 4.5rem; padding: 0.3rem; border: 1px solid var(--border-color); border-radius: 4px; text-align: center; background-color: var(--bg-panel); color: var(--text-color);" />
-                </div>
-              </div>
-              <div class="form-field" style="margin-top: 0.25rem; padding: 0.65rem; background: var(--bg-canvas); border-radius: 6px; border: 1px solid var(--border-color);">
-                <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-color); margin-bottom: 0.25rem;">Lucky Lucky Count Tags (Balanced):</div>
-                <div style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.4;">
-                  • <strong>7, 8:</strong> -2 &nbsp;|&nbsp; <strong>6, A:</strong> -1<br>
-                  • <strong>4, 5, 9:</strong> 0<br>
-                  • <strong>2, 3, 10, J, Q, K:</strong> +1<br>
-                  • <em>True Count = Running Count ÷ Remaining Decks. Trigger TC ≥ +3</em>
-                </div>
               </div>
             </div>
           </div>

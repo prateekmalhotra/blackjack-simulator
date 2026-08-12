@@ -61,19 +61,11 @@ const pogSideBetInput = document.getElementById('pog-side-bet') as HTMLInputElem
 const pogTriggerRcInput = document.getElementById('pog-trigger-rc') as HTMLInputElement;
 const pogFarmFivesCheckbox = document.getElementById('pog-farm-fives') as HTMLInputElement;
 
-// Lucky Lucky UI Elements
-const luckyLuckyConfigSection = document.getElementById('lucky-lucky-config-section') as HTMLDivElement;
-const llPaytableSelect = document.getElementById('ll-paytable') as HTMLSelectElement;
-const llMainBetInput = document.getElementById('ll-main-bet') as HTMLInputElement;
-const llSideBetInput = document.getElementById('ll-side-bet') as HTMLInputElement;
-const llTriggerTcInput = document.getElementById('ll-trigger-tc') as HTMLInputElement;
-
 // Toggle game type UI
 ruleGameTypeSelect.addEventListener('change', () => {
-  const gameType = ruleGameTypeSelect.value;
-  if (gameType === 'free_bet') {
+  const isPotOfGold = ruleGameTypeSelect.value === 'free_bet';
+  if (isPotOfGold) {
     pogConfigSection.style.display = 'block';
-    luckyLuckyConfigSection.style.display = 'none';
     hiloSpreadSection.style.display = 'none';
     
     // Set exact Count Room baseline defaults for Pot of Gold
@@ -88,25 +80,8 @@ ruleGameTypeSelect.addEventListener('change', () => {
     ruleSoft17Select.value = 'hit';
     ruleDasSelect.value = 'true';
     ruleSurrenderSelect.value = 'false';
-  } else if (gameType === 'lucky_lucky') {
-    pogConfigSection.style.display = 'none';
-    luckyLuckyConfigSection.style.display = 'block';
-    hiloSpreadSection.style.display = 'none';
-    
-    // Set realistic AP defaults for Lucky Lucky
-    playBankrollInput.value = '10000';
-    ruleDecksInput.value = '6';
-    rulePenetrationInput.value = '75';
-    llPaytableSelect.value = 'pt1';
-    llMainBetInput.value = '15';
-    llSideBetInput.value = '100';
-    llTriggerTcInput.value = '3';
-    ruleSoft17Select.value = 'hit';
-    ruleDasSelect.value = 'true';
-    ruleSurrenderSelect.value = 'false';
   } else {
     pogConfigSection.style.display = 'none';
-    luckyLuckyConfigSection.style.display = 'none';
     hiloSpreadSection.style.display = 'block';
     playBankrollInput.value = '25000';
     rulePenetrationInput.value = '83';
@@ -329,16 +304,11 @@ simStopBtn.addEventListener('click', stopFastSimulation);
 function startFastSimulation() {
   initChart();
   
-  const gameType = ruleGameTypeSelect.value as 'standard' | 'free_bet' | 'lucky_lucky';
-  const isPotOfGold = gameType === 'free_bet';
-  const isLuckyLucky = gameType === 'lucky_lucky';
-
-  let mainBetVal = parseInt(ruleMinBetInput.value, 10);
-  if (isPotOfGold) mainBetVal = parseInt(pogMainBetInput.value, 10);
-  if (isLuckyLucky) mainBetVal = parseInt(llMainBetInput.value, 10);
+  const isPotOfGold = ruleGameTypeSelect.value === 'free_bet';
+  const mainBetVal = isPotOfGold ? parseInt(pogMainBetInput.value, 10) : parseInt(ruleMinBetInput.value, 10);
 
   const rules: GameRules = {
-    gameType,
+    gameType: isPotOfGold ? 'free_bet' : 'standard',
     numDecks: parseInt(ruleDecksInput.value, 10),
     hitSoft17: isPotOfGold ? true : (ruleSoft17Select.value === 'hit'),
     payoutBlackjack: parseFloat(ruleBlackjackPayoutSelect.value),
@@ -354,13 +324,6 @@ function startFastSimulation() {
       sideBetAmount: parseInt(pogSideBetInput.value, 10),
       triggerRC: parseInt(pogTriggerRcInput.value, 10),
       farmFives: pogFarmFivesCheckbox.checked
-    } : undefined,
-    luckyLucky: isLuckyLucky ? {
-      enabled: true,
-      paytable: llPaytableSelect.value as 'pt1' | 'pt2',
-      mainBetAmount: parseInt(llMainBetInput.value, 10),
-      sideBetAmount: parseInt(llSideBetInput.value, 10),
-      triggerTC: parseInt(llTriggerTcInput.value, 10)
     } : undefined
   };
 
@@ -373,7 +336,7 @@ function startFastSimulation() {
     totalHandsToSimulate: parseInt(simHandsSelect.value, 10),
     updateInterval: Math.max(10, Math.floor(parseInt(simHandsSelect.value, 10) / 100)),
     roundTrueCount: ruleRoundingSelect.value as 'whole' | 'half' | 'floor' | 'ceil',
-    wongOutMin: (!isPotOfGold && !isLuckyLucky && playWongoutInput.checked) ? parseInt(playWongoutMinInput.value, 10) : null,
+    wongOutMin: (!isPotOfGold && playWongoutInput.checked) ? parseInt(playWongoutMinInput.value, 10) : null,
     strategy: playStrategySelect.value as 'basic' | 'i18'
   };
 
@@ -432,10 +395,6 @@ function setInputsDisabled(disabled: boolean) {
   pogSideBetInput.disabled = disabled;
   pogTriggerRcInput.disabled = disabled;
   pogFarmFivesCheckbox.disabled = disabled;
-  llPaytableSelect.disabled = disabled;
-  llMainBetInput.disabled = disabled;
-  llSideBetInput.disabled = disabled;
-  llTriggerTcInput.disabled = disabled;
   simHandsSelect.disabled = disabled;
 
   const inputs = betSpreadContainer.querySelectorAll('input');

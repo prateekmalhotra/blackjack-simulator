@@ -95,49 +95,6 @@ export function getInitialPogRunningCount(numDecks: number): number {
   return 4 * numDecks; // 24 for 6 decks
 }
 
-// Lucky Lucky Card Counting Tag Values (Eliot Jacobson Balanced System)
-export function getLuckyLuckyCountValue(rank: CardRank): number {
-  if (['7', '8'].includes(rank)) return -2; // 7s and 8s leaving hurts the shoe
-  if (['6', 'A'].includes(rank)) return -1;
-  if (['4', '5', '9'].includes(rank)) return 0;
-  return 1; // 2, 3, 10, J, Q, K leaving makes remaining shoe richer in 7s and 8s
-}
-
-// Evaluate Lucky Lucky 3-card combination (c1, c2, upcard)
-export function evaluateLuckyLucky(c1: Card, c2: Card, upcard: Card, paytable: 'pt1' | 'pt2' = 'pt1'): number {
-  const cards = [c1, c2, upcard];
-  const sameSuit = cards[0].suit === cards[1].suit && cards[1].suit === cards[2].suit;
-  const ranks = cards.map(c => c.rank).sort();
-
-  // Check 7-7-7
-  if (ranks[0] === '7' && ranks[1] === '7' && ranks[2] === '7') {
-    return sameSuit ? 200 : 50;
-  }
-
-  // Check 6-7-8
-  if (ranks.includes('6') && ranks.includes('7') && ranks.includes('8')) {
-    return sameSuit ? 100 : 30;
-  }
-
-  // Evaluate Totals (19, 20, 21) with soft Aces
-  let hardTotal = cards.reduce((sum, c) => sum + (c.rank === 'A' ? 1 : (['J', 'Q', 'K', '10'].includes(c.rank) ? 10 : parseInt(c.rank, 10))), 0);
-  let hasAce = cards.some(c => c.rank === 'A');
-  let softTotal = hasAce ? hardTotal + 10 : hardTotal;
-
-  // Check totals in priority order
-  if (softTotal === 21 || hardTotal === 21) {
-    return sameSuit ? (paytable === 'pt1' ? 15 : 10) : 3;
-  }
-  if (softTotal === 20 || hardTotal === 20) {
-    return 2;
-  }
-  if (softTotal === 19 || hardTotal === 19) {
-    return 2;
-  }
-
-  return -1; // Loss
-}
-
 // Action types
 export type BlackjackAction = 'H' | 'S' | 'D' | 'P' | 'Sur'; // Hit, Stand, Double, Split, Surrender
 
