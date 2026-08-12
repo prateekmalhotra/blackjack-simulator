@@ -9,8 +9,30 @@ import {
   shuffleShoe,
   calculateHandValue,
   getCardCountValue,
+  getPogCountValue,
+  getInitialPogRunningCount,
   getBasicStrategyAction
 } from './blackjack';
+
+const POG_PAYTABLE_PT2: Record<number, number> = {
+  1: 3,
+  2: 12,
+  3: 30,
+  4: 50,
+  5: 100,
+  6: 100,
+  7: 100
+};
+
+const POG_PAYTABLE_PT1: Record<number, number> = {
+  1: 3,
+  2: 10,
+  3: 30,
+  4: 60,
+  5: 100,
+  6: 300,
+  7: 1000
+};
 
 // Listen for config and start command
 self.onmessage = (event: MessageEvent) => {
@@ -35,6 +57,7 @@ interface PlayerSeat {
 interface SimTable {
   shoe: Card[];
   runningCount: number;
+  pogRunningCount: number;
   seats: PlayerSeat[];
 }
 
@@ -84,6 +107,7 @@ function runSimulation(config: SimulationConfig) {
     tables.push({
       shoe: shuffleShoe(createShoe(rules.numDecks)),
       runningCount: 0,
+      pogRunningCount: getInitialPogRunningCount(rules.numDecks),
       seats: tableSeats
     });
   }
@@ -121,15 +145,18 @@ function runSimulation(config: SimulationConfig) {
     if (table.shoe.length === 0) {
       table.shoe = shuffleShoe(createShoe(rules.numDecks));
       table.runningCount = 0;
+      table.pogRunningCount = getInitialPogRunningCount(rules.numDecks);
     }
     const card = table.shoe.pop()!;
     table.runningCount += getCardCountValue(card.rank);
+    table.pogRunningCount += getPogCountValue(card);
     return card;
   }
 
   // Game Loop (rounds played per player)
   while (handsPlayed < totalHandsToSimulate) {
     for (const table of tables) {
+      const isPotOfGoldActive = rules.gameType === 'free_bet' || !!rules.potOfGold?.enabled;
       const remainingDecksReal = table.shoe.length / 52;
       let remainingDecks = remainingDecksReal;
 
@@ -145,57 +172,37 @@ function runSimulation(config: SimulationConfig) {
 
       const trueCount = remainingDecks > 0 ? Math.floor(table.runningCount / remainingDecks) : 0;
 
+      // Track round side bet state and lammers per seat
+      const isSideStakedMap: Record<number, boolean> = {};
+      const seatSideBetMap: Record<number, number> = {};
+      const seatLammersMap: Record<number, number> = {};
+
       // Setup bets and handle ruin/replacement for seats at this table
       let activePlayingCount = 0;
       for (const seat of table.seats) {
         if (seat.isAP) {
-          if (config.wongOutMin !== null && config.wongOutMin !== undefined && trueCount <= config.wongOutMin) {
-            seat.hands = [];
-            continue;
-          }
-          activePlayingCount++;
+          if (isPotOfGoldActive) {
+            // Pot of Gold Side Bet Staking via POG2 Count
+            const triggerRC = rules.potOfGold?.triggerRC ?? 12;
+            const isSideStaked = table.pogRunningCount <= triggerRC;
+            isSideStakedMap[seat.id] = isSideStaked;
+            const sideBetAmount = isSideStaked ? (rules.potOfGold?.sideBetAmount ?? 100) : 0;
+            seatSideBetMap[seat.id] = sideBetAmount;
 
-          let spreadVal: string | number = rules.minBet;
-          if (trueCount in betSpread) {
-            spreadVal = betSpread[trueCount];
-          } else {
-            const counts = Object.keys(betSpread).map(Number).sort((a, b) => a - b);
-            if (counts.length > 0) {
-              if (trueCount < counts[0]) spreadVal = betSpread[counts[0]];
-              else if (trueCount > counts[counts.length - 1]) spreadVal = betSpread[counts[counts.length - 1]];
-              else {
-                const closest = counts.filter(c => c <= trueCount).pop();
-                if (closest !== undefined) spreadVal = betSpread[closest];
-              }
+            const mainBet = rules.minBet;
+            const totalInitialBet = mainBet + sideBetAmount;
+
+            if (seat.bankroll < rules.minBet) {
+              seat.replacementCount++;
+              totalRuinCount++;
+              seat.bankroll = startingBankroll;
+              seat.totalEarned = 0;
             }
-          }
 
-          const parsedSpread = parseSpreadValue(spreadVal);
-          let numHands = parsedSpread.numHands;
-          let betPerHand = parsedSpread.betPerHand;
-          let totalInitialBet = betPerHand * numHands;
-
-          if (seat.bankroll < rules.minBet) {
-            seat.replacementCount++;
-            totalRuinCount++;
-            seat.bankroll = startingBankroll;
-            seat.totalEarned = 0;
-          } else if (seat.bankroll < totalInitialBet) {
-            const maxBetPerHand = Math.floor(seat.bankroll / numHands);
-            if (maxBetPerHand >= rules.minBet) {
-              betPerHand = maxBetPerHand;
-            } else {
-              numHands = 1;
-              betPerHand = Math.min(seat.bankroll, rules.maxBet);
-            }
-            totalInitialBet = betPerHand * numHands;
-          }
-
-          seat.hands = [];
-          for (let h = 0; h < numHands; h++) {
-            seat.hands.push({
+            activePlayingCount++;
+            seat.hands = [{
               cards: [],
-              bet: betPerHand,
+              bet: mainBet,
               isStood: false,
               isDoubled: false,
               isSplit: false,
@@ -204,10 +211,71 @@ function runSimulation(config: SimulationConfig) {
               value: 0,
               isSoft: false,
               surrendered: false
-            });
+            }];
+            seat.bankroll -= totalInitialBet;
+            seat.totalEarned -= totalInitialBet;
+          } else {
+            // Standard Blackjack Hi-Lo Bet Spread
+            if (config.wongOutMin !== null && config.wongOutMin !== undefined && trueCount <= config.wongOutMin) {
+              seat.hands = [];
+              continue;
+            }
+            activePlayingCount++;
+
+            let spreadVal: string | number = rules.minBet;
+            if (trueCount in betSpread) {
+              spreadVal = betSpread[trueCount];
+            } else {
+              const counts = Object.keys(betSpread).map(Number).sort((a, b) => a - b);
+              if (counts.length > 0) {
+                if (trueCount < counts[0]) spreadVal = betSpread[counts[0]];
+                else if (trueCount > counts[counts.length - 1]) spreadVal = betSpread[counts[counts.length - 1]];
+                else {
+                  const closest = counts.filter(c => c <= trueCount).pop();
+                  if (closest !== undefined) spreadVal = betSpread[closest];
+                }
+              }
+            }
+
+            const parsedSpread = parseSpreadValue(spreadVal);
+            let numHands = parsedSpread.numHands;
+            let betPerHand = parsedSpread.betPerHand;
+            let totalInitialBet = betPerHand * numHands;
+
+            if (seat.bankroll < rules.minBet) {
+              seat.replacementCount++;
+              totalRuinCount++;
+              seat.bankroll = startingBankroll;
+              seat.totalEarned = 0;
+            } else if (seat.bankroll < totalInitialBet) {
+              const maxBetPerHand = Math.floor(seat.bankroll / numHands);
+              if (maxBetPerHand >= rules.minBet) {
+                betPerHand = maxBetPerHand;
+              } else {
+                numHands = 1;
+                betPerHand = Math.min(seat.bankroll, rules.maxBet);
+              }
+              totalInitialBet = betPerHand * numHands;
+            }
+
+            seat.hands = [];
+            for (let h = 0; h < numHands; h++) {
+              seat.hands.push({
+                cards: [],
+                bet: betPerHand,
+                isStood: false,
+                isDoubled: false,
+                isSplit: false,
+                isBusted: false,
+                isBlackjack: false,
+                value: 0,
+                isSoft: false,
+                surrendered: false
+              });
+            }
+            seat.bankroll -= totalInitialBet;
+            seat.totalEarned -= totalInitialBet;
           }
-          seat.bankroll -= totalInitialBet;
-          seat.totalEarned -= totalInitialBet;
         } else {
           // Ploppy seat: Always bets 1 hand of minBet
           activePlayingCount++;
@@ -235,6 +303,7 @@ function runSimulation(config: SimulationConfig) {
         if (table.shoe.length < rules.numDecks * 52 * (1 - rules.penetration)) {
           table.shoe = shuffleShoe(createShoe(rules.numDecks));
           table.runningCount = 0;
+          table.pogRunningCount = getInitialPogRunningCount(rules.numDecks);
         }
         continue;
       }
@@ -320,7 +389,8 @@ function runSimulation(config: SimulationConfig) {
               (isFreeBetGame || seat.bankroll >= hand.bet);
 
             const isI18 = seat.isAP && config.strategy === 'i18';
-            const action = getBasicStrategyAction(hand, dealerUpcard.value, rules, canSplit, trueCount, isI18);
+            const isSideStaked = isSideStakedMap[seat.id] || false;
+            const action = getBasicStrategyAction(hand, dealerUpcard.value, rules, canSplit, trueCount, isI18, isSideStaked);
 
             if (action === 'Sur') {
               hand.surrendered = true;
@@ -331,6 +401,10 @@ function runSimulation(config: SimulationConfig) {
             } else if (action === 'P') {
               hand.isSplit = true;
               const isFreeSplit = isFreeBetGame && !['10', 'J', 'Q', 'K'].includes(hand.cards[0].rank);
+
+              if (isFreeSplit) {
+                seatLammersMap[seat.id] = (seatLammersMap[seat.id] || 0) + 1;
+              }
 
               if (!isFreeSplit) {
                 seat.bankroll -= hand.bet;
@@ -378,6 +452,7 @@ function runSimulation(config: SimulationConfig) {
               const isFreeDouble = isFreeBetGame && !handIsSoft && hand.cards.length === 2 && (handVal === 9 || handVal === 10 || handVal === 11);
 
               if (isFreeDouble) {
+                seatLammersMap[seat.id] = (seatLammersMap[seat.id] || 0) + 1;
                 hand.isFreeDouble = true;
                 hand.isDoubled = true;
                 hand.cards.push(drawCard(table));
@@ -522,6 +597,31 @@ function runSimulation(config: SimulationConfig) {
           seatRoundProfit += x;
         }
 
+        // Settle Pot of Gold Side Bet
+        if (isPotOfGoldActive && seat.isAP && isSideStakedMap[seat.id]) {
+          const sideBet = seatSideBetMap[seat.id] || 0;
+          if (sideBet > 0) {
+            if (dealerHand.isBlackjack) {
+              // Under Nevada rules, side bet loses to dealer natural
+              seatRoundProfit -= sideBet;
+            } else {
+              const lammers = seatLammersMap[seat.id] || 0;
+              if (lammers === 0) {
+                seatRoundProfit -= sideBet;
+              } else {
+                const lammersClamped = Math.min(7, lammers);
+                const paytable = rules.potOfGold?.paytable === 'pt1' ? POG_PAYTABLE_PT1 : POG_PAYTABLE_PT2;
+                const mult = paytable[lammersClamped] || 100;
+                const sideWin = sideBet * mult;
+                const payout = sideBet + sideWin;
+                seat.bankroll += payout;
+                seat.totalEarned += payout;
+                seatRoundProfit += sideWin;
+              }
+            }
+          }
+        }
+
         if (seat.isAP) {
           sumPayouts += seatRoundProfit;
           sumSquaredPayouts += seatRoundProfit * seatRoundProfit;
@@ -533,6 +633,7 @@ function runSimulation(config: SimulationConfig) {
       if (table.shoe.length < rules.numDecks * 52 * (1 - rules.penetration)) {
         table.shoe = shuffleShoe(createShoe(rules.numDecks));
         table.runningCount = 0;
+        table.pogRunningCount = getInitialPogRunningCount(rules.numDecks);
       }
     }
 

@@ -82,14 +82,28 @@ export function shuffleShoe(shoe: Card[]): Card[] {
   return shuffled;
 }
 
+// POG2 Card Counting Value Mapping for Pot of Gold
+export function getPogCountValue(card: Card): number {
+  if (card.rank === 'A') return -1;
+  if (card.rank === '2') return (card.suit === 'H' || card.suit === 'D') ? 1 : 0;
+  if (['3', '4', '6', '7'].includes(card.rank)) return 1;
+  if (['5', '8', '9'].includes(card.rank)) return 0;
+  return -1; // 10, J, Q, K
+}
+
+export function getInitialPogRunningCount(numDecks: number): number {
+  return 4 * numDecks; // 24 for 6 decks
+}
+
 // Action types
 export type BlackjackAction = 'H' | 'S' | 'D' | 'P' | 'Sur'; // Hit, Stand, Double, Split, Surrender
 
 export function getFreeBetStrategyAction(
   hand: Hand,
   dealerUpcardValue: number,
-  _rules: GameRules,
-  canSplit: boolean
+  rules: GameRules,
+  canSplit: boolean,
+  isSideStaked: boolean = false
 ): BlackjackAction {
   const { cards } = hand;
   const { value, isSoft } = calculateHandValue(cards);
@@ -101,6 +115,10 @@ export function getFreeBetStrategyAction(
     const rank = cards[0].rank;
     if (['10', 'J', 'Q', 'K'].includes(rank)) {
       return 'S'; // Never split 10s
+    }
+    // Farm 5s when Pot of Gold side bet is active
+    if (rank === '5' && isSideStaked && rules.potOfGold?.farmFives !== false) {
+      return 'P';
     }
     // Free split ALL other pairs (2-9, A)
     return 'P';
@@ -141,10 +159,11 @@ export function getBasicStrategyAction(
   rules: GameRules,
   canSplit: boolean,
   trueCount: number = 0,
-  useDeviations: boolean = false
+  useDeviations: boolean = false,
+  isSideStaked: boolean = false
 ): BlackjackAction {
   if (rules.gameType === 'free_bet') {
-    return getFreeBetStrategyAction(hand, dealerUpcardValue, rules, canSplit);
+    return getFreeBetStrategyAction(hand, dealerUpcardValue, rules, canSplit, isSideStaked);
   }
 
   const { cards } = hand;

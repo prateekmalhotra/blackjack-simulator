@@ -38,6 +38,14 @@ export interface PlayerSeat {
   history: number[]; // sampled bankroll history
 }
 
+export interface PotOfGoldConfig {
+  enabled: boolean;
+  paytable: 'pt2' | 'pt1'; // PT2 (3/12/30/50/100) or PT1 (Jackpot 3/10/30/60/100/300/1000)
+  sideBetAmount: number; // e.g. $100
+  triggerRC: number; // default 12 for 6 decks
+  farmFives: boolean; // true = split 5s when side bet is active
+}
+
 export interface GameRules {
   numDecks: number;
   hitSoft17: boolean; // true = H17 (dealer hits soft 17), false = S17 (dealer stands)
@@ -49,6 +57,7 @@ export interface GameRules {
   minBet: number;
   maxBet: number;
   gameType?: 'standard' | 'free_bet';
+  potOfGold?: PotOfGoldConfig;
 }
 
 export interface SimulationConfig {

@@ -51,6 +51,28 @@ const playStrategySelect = document.getElementById('play-strategy') as HTMLSelec
 const playWongoutInput = document.getElementById('play-wongout') as HTMLInputElement;
 const playWongoutMinInput = document.getElementById('play-wongout-min') as HTMLInputElement;
 const betSpreadContainer = document.getElementById('bet-spread-container') as HTMLDivElement;
+const hiloSpreadSection = document.getElementById('hilo-spread-section') as HTMLDivElement;
+
+// Pot of Gold UI Elements
+const pogConfigSection = document.getElementById('pog-config-section') as HTMLDivElement;
+const pogPaytableSelect = document.getElementById('pog-paytable') as HTMLSelectElement;
+const pogMainBetInput = document.getElementById('pog-main-bet') as HTMLInputElement;
+const pogSideBetInput = document.getElementById('pog-side-bet') as HTMLInputElement;
+const pogTriggerRcInput = document.getElementById('pog-trigger-rc') as HTMLInputElement;
+const pogFarmFivesCheckbox = document.getElementById('pog-farm-fives') as HTMLInputElement;
+
+// Toggle game type UI
+ruleGameTypeSelect.addEventListener('change', () => {
+  const isPotOfGold = ruleGameTypeSelect.value === 'free_bet';
+  if (isPotOfGold) {
+    pogConfigSection.style.display = 'block';
+    hiloSpreadSection.style.display = 'none';
+    playBankrollInput.value = '25000';
+  } else {
+    pogConfigSection.style.display = 'none';
+    hiloSpreadSection.style.display = 'block';
+  }
+});
 
 const simHandsSelect = document.getElementById('sim-hands') as HTMLSelectElement;
 const simStartBtn = document.getElementById('sim-start-btn') as HTMLButtonElement;
@@ -268,17 +290,27 @@ simStopBtn.addEventListener('click', stopFastSimulation);
 function startFastSimulation() {
   initChart();
   
+  const isPotOfGold = ruleGameTypeSelect.value === 'free_bet';
+  const mainBetVal = isPotOfGold ? parseInt(pogMainBetInput.value, 10) : parseInt(ruleMinBetInput.value, 10);
+
   const rules: GameRules = {
-    gameType: ruleGameTypeSelect.value as 'standard' | 'free_bet',
+    gameType: isPotOfGold ? 'free_bet' : 'standard',
     numDecks: parseInt(ruleDecksInput.value, 10),
-    hitSoft17: ruleSoft17Select.value === 'hit',
+    hitSoft17: isPotOfGold ? true : (ruleSoft17Select.value === 'hit'),
     payoutBlackjack: parseFloat(ruleBlackjackPayoutSelect.value),
     doubleAfterSplit: ruleDasSelect.value === 'true',
     maxSplits: 3,
-    surrenderAllowed: ruleSurrenderSelect.value === 'true',
+    surrenderAllowed: isPotOfGold ? false : (ruleSurrenderSelect.value === 'true'),
     penetration: parseInt(rulePenetrationInput.value, 10) / 100,
-    minBet: parseInt(ruleMinBetInput.value, 10),
-    maxBet: parseInt(ruleMaxBetInput.value, 10)
+    minBet: mainBetVal,
+    maxBet: parseInt(ruleMaxBetInput.value, 10),
+    potOfGold: isPotOfGold ? {
+      enabled: true,
+      paytable: pogPaytableSelect.value as 'pt2' | 'pt1',
+      sideBetAmount: parseInt(pogSideBetInput.value, 10),
+      triggerRC: parseInt(pogTriggerRcInput.value, 10),
+      farmFives: pogFarmFivesCheckbox.checked
+    } : undefined
   };
 
   const config: SimulationConfig = {
@@ -289,8 +321,8 @@ function startFastSimulation() {
     betSpread,
     totalHandsToSimulate: parseInt(simHandsSelect.value, 10),
     updateInterval: Math.max(10, Math.floor(parseInt(simHandsSelect.value, 10) / 100)),
-    roundTrueCount: ruleRoundingSelect.value as 'whole' | 'half' | 'floor',
-    wongOutMin: playWongoutInput.checked ? parseInt(playWongoutMinInput.value, 10) : null,
+    roundTrueCount: ruleRoundingSelect.value as 'whole' | 'half' | 'floor' | 'ceil',
+    wongOutMin: (!isPotOfGold && playWongoutInput.checked) ? parseInt(playWongoutMinInput.value, 10) : null,
     strategy: playStrategySelect.value as 'basic' | 'i18'
   };
 
@@ -344,6 +376,11 @@ function setInputsDisabled(disabled: boolean) {
   playStrategySelect.disabled = disabled;
   playWongoutInput.disabled = disabled;
   playWongoutMinInput.disabled = disabled;
+  pogPaytableSelect.disabled = disabled;
+  pogMainBetInput.disabled = disabled;
+  pogSideBetInput.disabled = disabled;
+  pogTriggerRcInput.disabled = disabled;
+  pogFarmFivesCheckbox.disabled = disabled;
   simHandsSelect.disabled = disabled;
 
   const inputs = betSpreadContainer.querySelectorAll('input');

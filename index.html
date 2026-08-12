@@ -127,7 +127,48 @@
             </div>
           </div>
 
-          <div>
+          <div id="pog-config-section" style="display: none;">
+            <h2 class="section-title">Pot of Gold (POG2 System)</h2>
+            <div class="control-group">
+              <div class="form-field">
+                <label>Side Bet Paytable</label>
+                <select id="pog-paytable">
+                  <option value="pt2" selected>Pay Table 2 (12:1 on 2 Lammers - Recommended)</option>
+                  <option value="pt1">Pay Table 1 (Jackpot 1000:1)</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Main Bet ($)</label>
+                <input type="number" id="pog-main-bet" value="15" min="1" max="1000" />
+              </div>
+              <div class="form-field">
+                <label>Side Bet ($)</label>
+                <input type="number" id="pog-side-bet" value="100" min="1" max="1000" />
+              </div>
+              <div class="form-field">
+                <label>POG2 Staking Trigger Threshold</label>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <span style="font-size: 0.85rem; color: var(--text-color); font-weight: 500;">Stake Side Bet when RC ≤</span>
+                  <input type="number" id="pog-trigger-rc" value="12" min="-50" max="50" style="width: 4.5rem; padding: 0.3rem; border: 1px solid var(--border-color); border-radius: 4px; text-align: center; background-color: var(--bg-panel); color: var(--text-color);" />
+                </div>
+              </div>
+              <div class="form-field" style="flex-direction: row; align-items: center; gap: 0.5rem; padding-top: 0.25rem;">
+                <input type="checkbox" id="pog-farm-fives" style="width: auto; cursor: pointer;" checked />
+                <label for="pog-farm-fives" style="margin-bottom: 0; cursor: pointer; user-select: none; font-size: 0.82rem;">"Farm" 5s (Split 5,5 while side bet active)</label>
+              </div>
+              <div class="form-field" style="margin-top: 0.25rem; padding: 0.65rem; background: var(--bg-canvas); border-radius: 6px; border: 1px solid var(--border-color);">
+                <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-color); margin-bottom: 0.25rem;">POG2 Count Tags:</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.4;">
+                  • <strong>A, 10, J, Q, K:</strong> -1<br>
+                  • <strong>3, 4, 6, 7:</strong> +1 &nbsp;|&nbsp; <strong>Red 2 (♥/♦):</strong> +1<br>
+                  • <strong>5, 8, 9, Black 2:</strong> 0<br>
+                  • <em>Initial Shoe RC = 24 (6 decks). Trigger RC ≤ 12</em>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="hilo-spread-section">
             <h2 class="section-title">Bet Spread (Hi-Lo Count)</h2>
             <div class="bet-spread-grid" id="bet-spread-container">
               <!-- Dynamically populated in main.ts -->
