@@ -46,6 +46,14 @@ export interface PotOfGoldConfig {
   farmFives: boolean; // true = split 5s when side bet is active
 }
 
+export interface LuckyLuckyConfig {
+  enabled: boolean;
+  paytable: 'pt1' | 'pt2'; // PT1 (200/100/50/30/15/3/2/2) or PT2 (200/100/50/30/10/3/2/2)
+  mainBetAmount: number; // e.g. $15
+  sideBetAmount: number; // e.g. $100
+  triggerTC: number; // default +2
+}
+
 export interface GameRules {
   numDecks: number;
   hitSoft17: boolean; // true = H17 (dealer hits soft 17), false = S17 (dealer stands)
@@ -56,8 +64,9 @@ export interface GameRules {
   penetration: number; // fraction of shoe played before shuffle (e.g., 0.75)
   minBet: number;
   maxBet: number;
-  gameType?: 'standard' | 'free_bet';
+  gameType?: 'standard' | 'free_bet' | 'lucky_lucky';
   potOfGold?: PotOfGoldConfig;
+  luckyLucky?: LuckyLuckyConfig;
 }
 
 export interface SimulationConfig {

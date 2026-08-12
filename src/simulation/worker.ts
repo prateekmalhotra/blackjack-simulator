@@ -11,6 +11,8 @@ import {
   getCardCountValue,
   getPogCountValue,
   getInitialPogRunningCount,
+  getLuckyLuckyCountValue,
+  evaluateLuckyLucky,
   getBasicStrategyAction
 } from './blackjack';
 
@@ -58,6 +60,7 @@ interface SimTable {
   shoe: Card[];
   runningCount: number;
   pogRunningCount: number;
+  luckyLuckyRunningCount: number;
   seats: PlayerSeat[];
 }
 
@@ -108,6 +111,7 @@ function runSimulation(config: SimulationConfig) {
       shoe: shuffleShoe(createShoe(rules.numDecks)),
       runningCount: 0,
       pogRunningCount: getInitialPogRunningCount(rules.numDecks),
+      luckyLuckyRunningCount: 0,
       seats: tableSeats
     });
   }
@@ -146,10 +150,12 @@ function runSimulation(config: SimulationConfig) {
       table.shoe = shuffleShoe(createShoe(rules.numDecks));
       table.runningCount = 0;
       table.pogRunningCount = getInitialPogRunningCount(rules.numDecks);
+      table.luckyLuckyRunningCount = 0;
     }
     const card = table.shoe.pop()!;
     table.runningCount += getCardCountValue(card.rank);
     table.pogRunningCount += getPogCountValue(card);
+    table.luckyLuckyRunningCount += getLuckyLuckyCountValue(card.rank);
     return card;
   }
 
@@ -157,6 +163,7 @@ function runSimulation(config: SimulationConfig) {
   while (handsPlayed < totalHandsToSimulate) {
     for (const table of tables) {
       const isPotOfGoldActive = rules.gameType === 'free_bet' || !!rules.potOfGold?.enabled;
+      const isLuckyLuckyActive = rules.gameType === 'lucky_lucky' || !!rules.luckyLucky?.enabled;
       const remainingDecksReal = table.shoe.length / 52;
       let remainingDecks = remainingDecksReal;
 
@@ -171,6 +178,7 @@ function runSimulation(config: SimulationConfig) {
       }
 
       const trueCount = remainingDecks > 0 ? Math.floor(table.runningCount / remainingDecks) : 0;
+      const luckyLuckyTC = remainingDecks > 0 ? Math.floor(table.luckyLuckyRunningCount / remainingDecks) : 0;
 
       // Track round side bet state and lammers per seat
       const isSideStakedMap: Record<number, boolean> = {};
@@ -190,6 +198,39 @@ function runSimulation(config: SimulationConfig) {
             seatSideBetMap[seat.id] = sideBetAmount;
 
             const mainBet = rules.minBet;
+            const totalInitialBet = mainBet + sideBetAmount;
+
+            if (seat.bankroll < rules.minBet) {
+              seat.replacementCount++;
+              totalRuinCount++;
+              seat.bankroll = startingBankroll;
+              seat.totalEarned = 0;
+            }
+
+            activePlayingCount++;
+            seat.hands = [{
+              cards: [],
+              bet: mainBet,
+              isStood: false,
+              isDoubled: false,
+              isSplit: false,
+              isBusted: false,
+              isBlackjack: false,
+              value: 0,
+              isSoft: false,
+              surrendered: false
+            }];
+            seat.bankroll -= totalInitialBet;
+            seat.totalEarned -= totalInitialBet;
+          } else if (isLuckyLuckyActive) {
+            // Lucky Lucky Side Bet Staking via TC trigger
+            const triggerTC = rules.luckyLucky?.triggerTC ?? 2;
+            const isSideStaked = luckyLuckyTC >= triggerTC;
+            isSideStakedMap[seat.id] = isSideStaked;
+            const sideBetAmount = isSideStaked ? (rules.luckyLucky?.sideBetAmount ?? 100) : 0;
+            seatSideBetMap[seat.id] = sideBetAmount;
+
+            const mainBet = rules.luckyLucky?.mainBetAmount ?? rules.minBet;
             const totalInitialBet = mainBet + sideBetAmount;
 
             if (seat.bankroll < rules.minBet) {
@@ -304,6 +345,7 @@ function runSimulation(config: SimulationConfig) {
           table.shoe = shuffleShoe(createShoe(rules.numDecks));
           table.runningCount = 0;
           table.pogRunningCount = getInitialPogRunningCount(rules.numDecks);
+          table.luckyLuckyRunningCount = 0;
         }
         continue;
       }
@@ -622,6 +664,23 @@ function runSimulation(config: SimulationConfig) {
           }
         }
 
+        // Settle Lucky Lucky Side Bet
+        if (isLuckyLuckyActive && seat.isAP && isSideStakedMap[seat.id]) {
+          const sideBet = seatSideBetMap[seat.id] || 0;
+          if (sideBet > 0 && seat.hands.length > 0 && seat.hands[0].cards.length >= 2 && dealerHand.cards.length >= 1) {
+            const mult = evaluateLuckyLucky(seat.hands[0].cards[0], seat.hands[0].cards[1], dealerHand.cards[0], rules.luckyLucky?.paytable ?? 'pt1');
+            if (mult > 0) {
+              const sideWin = sideBet * mult;
+              const payout = sideBet + sideWin;
+              seat.bankroll += payout;
+              seat.totalEarned += payout;
+              seatRoundProfit += sideWin;
+            } else {
+              seatRoundProfit -= sideBet;
+            }
+          }
+        }
+
         if (seat.isAP) {
           sumPayouts += seatRoundProfit;
           sumSquaredPayouts += seatRoundProfit * seatRoundProfit;
@@ -634,6 +693,7 @@ function runSimulation(config: SimulationConfig) {
         table.shoe = shuffleShoe(createShoe(rules.numDecks));
         table.runningCount = 0;
         table.pogRunningCount = getInitialPogRunningCount(rules.numDecks);
+        table.luckyLuckyRunningCount = 0;
       }
     }
 
