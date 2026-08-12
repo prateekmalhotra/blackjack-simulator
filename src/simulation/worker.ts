@@ -123,20 +123,20 @@ function runSimulation(config: SimulationConfig) {
   const maxSamples = numPlayers > 10 ? 200 : 1000; // lower sample count for high player counts to keep charts fluid
   const sampleStep = Math.max(1, Math.floor(totalHandsToSimulate / maxSamples));
 
-  // Helper to parse spread values like '2x50' or 100
-  function parseSpreadValue(val: string | number): { numHands: number; betPerHand: number } {
+  // Helper to parse spread values like '2x50', '2×25', '2*10', or 100
+  function parseSpreadValue(val: string | number, defaultVal: number = rules.minBet, minBound: number = 1, maxBound: number = 1000): { numHands: number; betPerHand: number } {
     if (typeof val === 'number') {
-      return { numHands: 1, betPerHand: Math.max(rules.minBet, Math.min(rules.maxBet, val)) };
+      return { numHands: 1, betPerHand: Math.max(minBound, Math.min(maxBound, val)) };
     }
-    const str = val.trim().toLowerCase().replace('$', '');
-    const match = str.match(/^(\d+)x(\d+)$/);
+    const clean = String(val).trim().toLowerCase().replace('$', '').replace(/\s+/g, '');
+    const match = clean.match(/^(\d+)[xX\u00d7*](\d+)$/);
     if (match) {
-      const numHands = parseInt(match[1], 10);
-      const betPerHand = Math.max(rules.minBet, Math.min(rules.maxBet, parseInt(match[2], 10)));
-      return { numHands: Math.min(2, Math.max(1, numHands)), betPerHand };
+      const numHands = Math.min(2, Math.max(1, parseInt(match[1], 10)));
+      const betPerHand = Math.max(minBound, Math.min(maxBound, parseInt(match[2], 10)));
+      return { numHands, betPerHand };
     }
-    const parsedNum = parseInt(str, 10);
-    const bet = isNaN(parsedNum) ? rules.minBet : Math.max(rules.minBet, Math.min(rules.maxBet, parsedNum));
+    const parsedNum = parseInt(clean, 10);
+    const bet = isNaN(parsedNum) ? defaultVal : Math.max(minBound, Math.min(maxBound, parsedNum));
     return { numHands: 1, betPerHand: bet };
   }
 
@@ -213,13 +213,13 @@ function runSimulation(config: SimulationConfig) {
             const isSideStaked = table.pogRunningCount <= triggerRC;
             isSideStakedMap[seat.id] = isSideStaked;
 
-            // Parse main bet notation (e.g. "2x20", "10")
-            const mainSpread = parseSpreadValue(rules.potOfGold?.mainBetNotation ?? rules.minBet);
+            // Parse main bet notation (e.g. "2x20", "2×10", "10")
+            const mainSpread = parseSpreadValue(rules.potOfGold?.mainBetNotation ?? rules.minBet, rules.minBet, 1, rules.maxBet);
             let numHands = mainSpread.numHands;
             let mainBetPerHand = mainSpread.betPerHand;
 
-            // Parse side bet notation (e.g. "2x25", "25")
-            const sideSpread = parseSpreadValue(rules.potOfGold?.sideBetNotation ?? rules.potOfGold?.sideBetAmount ?? 25);
+            // Parse side bet notation (e.g. "2x25", "2×25", "25")
+            const sideSpread = parseSpreadValue(rules.potOfGold?.sideBetNotation ?? rules.potOfGold?.sideBetAmount ?? 25, 25, 1, 1000);
             let sideBetPerHand = isSideStaked ? sideSpread.betPerHand : 0;
 
             let totalInitialBet = numHands * (mainBetPerHand + sideBetPerHand);

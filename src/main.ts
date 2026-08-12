@@ -319,6 +319,15 @@ function updateChart(progress: SimulationProgress, config: SimulationConfig) {
 simStartBtn.addEventListener('click', startFastSimulation);
 simStopBtn.addEventListener('click', stopFastSimulation);
 
+function parseSpreadNumber(val: string | number, defaultVal: number): number {
+  if (typeof val === 'number') return val;
+  const clean = String(val).trim().toLowerCase().replace('$', '').replace(/\s+/g, '');
+  const match = clean.match(/^(\d+)[xX\u00d7*](\d+)$/);
+  if (match) return parseInt(match[2], 10);
+  const n = parseInt(clean, 10);
+  return isNaN(n) ? defaultVal : n;
+}
+
 function startFastSimulation() {
   initChart();
   
@@ -335,14 +344,14 @@ function startFastSimulation() {
     maxSplits: 3,
     surrenderAllowed: isPotOfGold ? false : (ruleSurrenderSelect.value === 'true'),
     penetration: parseInt(rulePenetrationInput.value, 10) / 100,
-    minBet: parseInt(ruleMinBetInput.value, 10) || 10,
+    minBet: parseSpreadNumber(mainBetRaw, 10),
     maxBet: parseInt(ruleMaxBetInput.value, 10) || 1000,
     potOfGold: isPotOfGold ? {
       enabled: true,
       paytable: pogPaytableSelect.value as 'pt2' | 'pt1',
       mainBetNotation: mainBetRaw,
       sideBetNotation: sideBetRaw,
-      sideBetAmount: parseInt(sideBetRaw, 10) || 25,
+      sideBetAmount: parseSpreadNumber(sideBetRaw, 25),
       triggerRC: parseInt(pogTriggerRcInput.value, 10) || 12,
       farmFives: pogFarmFivesCheckbox.checked,
       wonging: {
