@@ -224,7 +224,7 @@ function runSimulation(config: SimulationConfig) {
             seat.totalEarned -= totalInitialBet;
           } else if (isLuckyLuckyActive) {
             // Lucky Lucky Side Bet Staking via TC trigger
-            const triggerTC = rules.luckyLucky?.triggerTC ?? 2;
+            const triggerTC = rules.luckyLucky?.triggerTC ?? 3;
             const isSideStaked = luckyLuckyTC >= triggerTC;
             isSideStakedMap[seat.id] = isSideStaked;
             const sideBetAmount = isSideStaked ? (rules.luckyLucky?.sideBetAmount ?? 100) : 0;
