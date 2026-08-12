@@ -68,15 +68,18 @@ ruleGameTypeSelect.addEventListener('change', () => {
     pogConfigSection.style.display = 'block';
     hiloSpreadSection.style.display = 'none';
     
-    // Set exact Count Room baseline defaults for Pot of Gold
-    playBankrollInput.value = '25000';
+    // Pot of Gold defaults
+    playBankrollInput.value = '10000';
     ruleDecksInput.value = '6';
-    rulePenetrationInput.value = '75';
+    rulePenetrationInput.value = '83';
+    ruleMinBetInput.value = '10';
     pogPaytableSelect.value = 'pt2';
-    pogMainBetInput.value = '15';
-    pogSideBetInput.value = '100';
+    pogMainBetInput.value = '10';
+    pogSideBetInput.value = '25';
     pogTriggerRcInput.value = '12';
     pogFarmFivesCheckbox.checked = true;
+    playStrategySelect.value = 'basic';
+    playWongoutInput.checked = false;
     ruleSoft17Select.value = 'hit';
     ruleDasSelect.value = 'true';
     ruleSurrenderSelect.value = 'false';
@@ -85,6 +88,9 @@ ruleGameTypeSelect.addEventListener('change', () => {
     hiloSpreadSection.style.display = 'block';
     playBankrollInput.value = '25000';
     rulePenetrationInput.value = '83';
+    ruleMinBetInput.value = '10';
+    playStrategySelect.value = 'i18';
+    playWongoutInput.checked = true;
   }
 });
 
