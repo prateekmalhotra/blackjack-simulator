@@ -95,12 +95,12 @@ export function getInitialPogRunningCount(numDecks: number): number {
   return 4 * numDecks; // 24 for 6 decks
 }
 
-// Lucky Lucky Card Counting Tag Values
+// Lucky Lucky Card Counting Tag Values (Eliot Jacobson Balanced System)
 export function getLuckyLuckyCountValue(rank: CardRank): number {
-  if (['7', '8'].includes(rank)) return 2;
-  if (rank === '6') return 1;
-  if (rank === '9') return 0;
-  return -1; // 2, 3, 4, 5, 10, J, Q, K, A
+  if (['7', '8'].includes(rank)) return -2; // 7s and 8s leaving hurts the shoe
+  if (['6', 'A'].includes(rank)) return -1;
+  if (['4', '5', '9'].includes(rank)) return 0;
+  return 1; // 2, 3, 10, J, Q, K leaving makes remaining shoe richer in 7s and 8s
 }
 
 // Evaluate Lucky Lucky 3-card combination (c1, c2, upcard)
