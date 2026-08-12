@@ -153,7 +153,9 @@ label {
   font-weight: 400;
 }
 
-input[type="number"], select {
+input[type="number"], 
+input[type="text"], 
+select {
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
   border-radius: 0.5rem;
@@ -165,7 +167,9 @@ input[type="number"], select {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-input[type="number"]:focus, select:focus {
+input[type="number"]:focus, 
+input[type="text"]:focus, 
+select:focus {
   outline: none;
   border-color: var(--text-primary);
   box-shadow: 0 0 0 2px rgba(25, 24, 22, 0.08);
