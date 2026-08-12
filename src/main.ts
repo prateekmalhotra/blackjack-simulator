@@ -67,10 +67,23 @@ ruleGameTypeSelect.addEventListener('change', () => {
   if (isPotOfGold) {
     pogConfigSection.style.display = 'block';
     hiloSpreadSection.style.display = 'none';
+    
+    // Set exact Count Room baseline defaults
     playBankrollInput.value = '25000';
+    ruleDecksInput.value = '6';
+    rulePenetrationInput.value = '75';
+    pogPaytableSelect.value = 'pt2';
+    pogMainBetInput.value = '15';
+    pogSideBetInput.value = '100';
+    pogTriggerRcInput.value = '12';
+    pogFarmFivesCheckbox.checked = true;
+    ruleSoft17Select.value = 'hit';
+    ruleDasSelect.value = 'true';
+    ruleSurrenderSelect.value = 'false';
   } else {
     pogConfigSection.style.display = 'none';
     hiloSpreadSection.style.display = 'block';
+    rulePenetrationInput.value = '83';
   }
 });
 
