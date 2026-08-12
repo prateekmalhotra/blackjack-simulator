@@ -20,6 +20,7 @@ export interface Hand {
   value: number;
   isSoft: boolean;
   surrendered: boolean;
+  handGroupId?: number; // 0 or 1 (identifies which initial hand spot this originated from)
 }
 
 export interface PlayerSeat {
@@ -41,7 +42,9 @@ export interface PlayerSeat {
 export interface PotOfGoldConfig {
   enabled: boolean;
   paytable: 'pt2' | 'pt1'; // PT2 (3/12/30/50/100) or PT1 (Jackpot 3/10/30/60/100/300/1000)
-  sideBetAmount: number; // e.g. $100
+  mainBetNotation?: string | number;
+  sideBetNotation?: string | number;
+  sideBetAmount: number; // e.g. 25
   triggerRC: number; // default 12 for 6 decks
   farmFives: boolean; // true = split 5s when side bet is active
 }

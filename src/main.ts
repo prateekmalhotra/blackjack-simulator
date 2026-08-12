@@ -311,7 +311,8 @@ function startFastSimulation() {
   initChart();
   
   const isPotOfGold = ruleGameTypeSelect.value === 'free_bet';
-  const mainBetVal = isPotOfGold ? parseInt(pogMainBetInput.value, 10) : parseInt(ruleMinBetInput.value, 10);
+  const mainBetRaw = isPotOfGold ? pogMainBetInput.value.trim() : ruleMinBetInput.value.trim();
+  const sideBetRaw = pogSideBetInput.value.trim();
 
   const rules: GameRules = {
     gameType: isPotOfGold ? 'free_bet' : 'standard',
@@ -322,13 +323,15 @@ function startFastSimulation() {
     maxSplits: 3,
     surrenderAllowed: isPotOfGold ? false : (ruleSurrenderSelect.value === 'true'),
     penetration: parseInt(rulePenetrationInput.value, 10) / 100,
-    minBet: mainBetVal,
-    maxBet: parseInt(ruleMaxBetInput.value, 10),
+    minBet: parseInt(ruleMinBetInput.value, 10) || 10,
+    maxBet: parseInt(ruleMaxBetInput.value, 10) || 1000,
     potOfGold: isPotOfGold ? {
       enabled: true,
       paytable: pogPaytableSelect.value as 'pt2' | 'pt1',
-      sideBetAmount: parseInt(pogSideBetInput.value, 10),
-      triggerRC: parseInt(pogTriggerRcInput.value, 10),
+      mainBetNotation: mainBetRaw,
+      sideBetNotation: sideBetRaw,
+      sideBetAmount: parseInt(sideBetRaw, 10) || 25,
+      triggerRC: parseInt(pogTriggerRcInput.value, 10) || 12,
       farmFives: pogFarmFivesCheckbox.checked
     } : undefined
   };

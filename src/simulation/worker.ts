@@ -175,7 +175,8 @@ function runSimulation(config: SimulationConfig) {
       // Track round side bet state and lammers per seat
       const isSideStakedMap: Record<number, boolean> = {};
       const seatSideBetMap: Record<number, number> = {};
-      const seatLammersMap: Record<number, number> = {};
+      const seatNumHandsMap: Record<number, number> = {};
+      const seatLammersMap: Record<number, Record<number, number>> = {};
 
       // Setup bets and handle ruin/replacement for seats at this table
       let activePlayingCount = 0;
@@ -186,32 +187,56 @@ function runSimulation(config: SimulationConfig) {
             const triggerRC = rules.potOfGold?.triggerRC ?? 12;
             const isSideStaked = table.pogRunningCount <= triggerRC;
             isSideStakedMap[seat.id] = isSideStaked;
-            const sideBetAmount = isSideStaked ? (rules.potOfGold?.sideBetAmount ?? 100) : 0;
-            seatSideBetMap[seat.id] = sideBetAmount;
 
-            const mainBet = rules.minBet;
-            const totalInitialBet = mainBet + sideBetAmount;
+            // Parse main bet notation (e.g. "2x20", "10")
+            const mainSpread = parseSpreadValue(rules.potOfGold?.mainBetNotation ?? rules.minBet);
+            let numHands = mainSpread.numHands;
+            let mainBetPerHand = mainSpread.betPerHand;
+
+            // Parse side bet notation (e.g. "2x25", "25")
+            const sideSpread = parseSpreadValue(rules.potOfGold?.sideBetNotation ?? rules.potOfGold?.sideBetAmount ?? 25);
+            let sideBetPerHand = isSideStaked ? sideSpread.betPerHand : 0;
+
+            let totalInitialBet = numHands * (mainBetPerHand + sideBetPerHand);
 
             if (seat.bankroll < rules.minBet) {
               seat.replacementCount++;
               totalRuinCount++;
               seat.bankroll = startingBankroll;
               seat.totalEarned = 0;
+            } else if (seat.bankroll < totalInitialBet) {
+              const maxTotalPerHand = Math.floor(seat.bankroll / numHands);
+              if (maxTotalPerHand >= rules.minBet) {
+                mainBetPerHand = maxTotalPerHand;
+                sideBetPerHand = 0;
+              } else {
+                numHands = 1;
+                mainBetPerHand = Math.min(seat.bankroll, rules.maxBet);
+                sideBetPerHand = 0;
+              }
+              totalInitialBet = numHands * (mainBetPerHand + sideBetPerHand);
             }
 
+            seatNumHandsMap[seat.id] = numHands;
+            seatSideBetMap[seat.id] = sideBetPerHand;
+
             activePlayingCount++;
-            seat.hands = [{
-              cards: [],
-              bet: mainBet,
-              isStood: false,
-              isDoubled: false,
-              isSplit: false,
-              isBusted: false,
-              isBlackjack: false,
-              value: 0,
-              isSoft: false,
-              surrendered: false
-            }];
+            seat.hands = [];
+            for (let h = 0; h < numHands; h++) {
+              seat.hands.push({
+                cards: [],
+                bet: mainBetPerHand,
+                isStood: false,
+                isDoubled: false,
+                isSplit: false,
+                isBusted: false,
+                isBlackjack: false,
+                value: 0,
+                isSoft: false,
+                surrendered: false,
+                handGroupId: h
+              });
+            }
             seat.bankroll -= totalInitialBet;
             seat.totalEarned -= totalInitialBet;
           } else {
@@ -401,9 +426,11 @@ function runSimulation(config: SimulationConfig) {
             } else if (action === 'P') {
               hand.isSplit = true;
               const isFreeSplit = isFreeBetGame && !['10', 'J', 'Q', 'K'].includes(hand.cards[0].rank);
+              const gId = hand.handGroupId ?? 0;
 
               if (isFreeSplit) {
-                seatLammersMap[seat.id] = (seatLammersMap[seat.id] || 0) + 1;
+                if (!seatLammersMap[seat.id]) seatLammersMap[seat.id] = {};
+                seatLammersMap[seat.id][gId] = (seatLammersMap[seat.id][gId] || 0) + 1;
               }
 
               if (!isFreeSplit) {
@@ -433,7 +460,8 @@ function runSimulation(config: SimulationConfig) {
                 isBlackjack: false,
                 value: 0,
                 isSoft: false,
-                surrendered: false
+                surrendered: false,
+                handGroupId: gId
               };
 
               newHand.cards.push(drawCard(table));
@@ -450,9 +478,11 @@ function runSimulation(config: SimulationConfig) {
             } else if (action === 'D') {
               const { value: handVal, isSoft: handIsSoft } = calculateHandValue(hand.cards);
               const isFreeDouble = isFreeBetGame && !handIsSoft && hand.cards.length === 2 && (handVal === 9 || handVal === 10 || handVal === 11);
+              const gId = hand.handGroupId ?? 0;
 
               if (isFreeDouble) {
-                seatLammersMap[seat.id] = (seatLammersMap[seat.id] || 0) + 1;
+                if (!seatLammersMap[seat.id]) seatLammersMap[seat.id] = {};
+                seatLammersMap[seat.id][gId] = (seatLammersMap[seat.id][gId] || 0) + 1;
                 hand.isFreeDouble = true;
                 hand.isDoubled = true;
                 hand.cards.push(drawCard(table));
@@ -597,26 +627,29 @@ function runSimulation(config: SimulationConfig) {
           seatRoundProfit += x;
         }
 
-        // Settle Pot of Gold Side Bet
+        // Settle Pot of Gold Side Bet (per initial hand spot)
         if (isPotOfGoldActive && seat.isAP && isSideStakedMap[seat.id]) {
-          const sideBet = seatSideBetMap[seat.id] || 0;
-          if (sideBet > 0) {
-            if (dealerHand.isBlackjack) {
-              // Under Nevada rules, side bet loses to dealer natural
-              seatRoundProfit -= sideBet;
-            } else {
-              const lammers = seatLammersMap[seat.id] || 0;
-              if (lammers === 0) {
-                seatRoundProfit -= sideBet;
+          const sideBetPerHand = seatSideBetMap[seat.id] || 0;
+          const numSpots = seatNumHandsMap[seat.id] || 1;
+          if (sideBetPerHand > 0) {
+            for (let g = 0; g < numSpots; g++) {
+              if (dealerHand.isBlackjack) {
+                // Under Nevada rules, side bet loses to dealer natural
+                seatRoundProfit -= sideBetPerHand;
               } else {
-                const lammersClamped = Math.min(7, lammers);
-                const paytable = rules.potOfGold?.paytable === 'pt1' ? POG_PAYTABLE_PT1 : POG_PAYTABLE_PT2;
-                const mult = paytable[lammersClamped] || 100;
-                const sideWin = sideBet * mult;
-                const payout = sideBet + sideWin;
-                seat.bankroll += payout;
-                seat.totalEarned += payout;
-                seatRoundProfit += sideWin;
+                const lammers = seatLammersMap[seat.id]?.[g] || 0;
+                if (lammers === 0) {
+                  seatRoundProfit -= sideBetPerHand;
+                } else {
+                  const lammersClamped = Math.min(7, lammers);
+                  const paytable = rules.potOfGold?.paytable === 'pt1' ? POG_PAYTABLE_PT1 : POG_PAYTABLE_PT2;
+                  const mult = paytable[lammersClamped] || 100;
+                  const sideWin = sideBetPerHand * mult;
+                  const payout = sideBetPerHand + sideWin;
+                  seat.bankroll += payout;
+                  seat.totalEarned += payout;
+                  seatRoundProfit += sideWin;
+                }
               }
             }
           }
