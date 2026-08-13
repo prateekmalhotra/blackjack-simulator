@@ -116,12 +116,16 @@ export function getFreeBetStrategyAction(
     if (['10', 'J', 'Q', 'K'].includes(rank)) {
       return 'S'; // Never split 10s
     }
-    // Farm 5s when Pot of Gold side bet is active
-    if (rank === '5' && isSideStaked && rules.potOfGold?.farmFives !== false) {
+    // Farm 5s only when Pot of Gold side bet is active
+    if (rank === '5') {
+      if (isSideStaked && rules.potOfGold?.farmFives !== false) {
+        return 'P'; // Farm 5s on trigger
+      }
+      // If not side staked, do not split: fall through to Free Double on 10 below
+    } else {
+      // Free split ALL other pairs (2-4, 6-9, A)
       return 'P';
     }
-    // Free split ALL other pairs (2-9, A)
-    return 'P';
   }
 
   // 2. Free Double Check:
