@@ -100,11 +100,15 @@ function updatePogPresetStyles() {
 }
 
 pogPreset1HandBtn?.addEventListener('click', () => {
+  pogRaiseMainEnabledCheckbox.checked = true;
+  pogRaiseMainControls.style.display = 'flex';
   pogTriggerMainBetInput.value = '25';
   updatePogPresetStyles();
 });
 
 pogPreset2HandsBtn?.addEventListener('click', () => {
+  pogRaiseMainEnabledCheckbox.checked = true;
+  pogRaiseMainControls.style.display = 'flex';
   pogTriggerMainBetInput.value = '2x25';
   updatePogPresetStyles();
 });

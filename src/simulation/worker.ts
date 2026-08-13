@@ -431,6 +431,8 @@ function runSimulation(config: SimulationConfig) {
       dealerHand.isSoft = dRes.isSoft;
       if (dRes.value === 21) dealerHand.isBlackjack = true;
 
+      const isFreeBetGame = rules.gameType === 'free_bet';
+
       // Play seats
       for (const seat of playingSeats) {
         for (let hIndex = 0; hIndex < seat.hands.length; hIndex++) {
@@ -441,11 +443,11 @@ function runSimulation(config: SimulationConfig) {
           }
 
           while (!hand.isStood && !hand.isBusted && !hand.surrendered) {
-            const isFreeBetGame = rules.gameType === 'free_bet';
+            const gId = hand.handGroupId ?? 0;
             const canSplit =
               hand.cards.length === 2 &&
               hand.cards[0].rank === hand.cards[1].rank &&
-              seat.hands.length < rules.maxSplits + 1 &&
+              seat.hands.filter(h => (h.handGroupId ?? 0) === gId).length < rules.maxSplits + 1 &&
               (isFreeBetGame || seat.bankroll >= hand.bet);
 
             const isI18 = seat.isAP && config.strategy === 'i18';
@@ -581,8 +583,6 @@ function runSimulation(config: SimulationConfig) {
         }
         if (dealerHand.value > 21) dealerHand.isBusted = true;
       }
-
-      const isFreeBetGame = rules.gameType === 'free_bet';
 
       // Settle payouts
       for (const seat of playingSeats) {
