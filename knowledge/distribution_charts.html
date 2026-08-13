@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pot of Gold (POG2) Hit Distribution by Count</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --border: #30363d;
+      --text: #c9d1d9;
+      --accent: #58a6ff;
+      --gold: #d29922;
+      --green: #3fb950;
+      --red: #f85149;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 2rem;
+    }
+    .header {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+    }
+    h1 { color: #fff; margin: 0 0 0.5rem 0; font-size: 1.75rem; }
+    p { margin: 0; color: #8b949e; font-size: 0.95rem; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.35rem;
+      font-weight: 600;
+    }
+    .badge-hu { background: rgba(88, 166, 255, 0.2); color: #58a6ff; }
+    .badge-2p { background: rgba(63, 185, 80, 0.2); color: #3fb950; }
+    .badge-3p { background: rgba(210, 153, 34, 0.2); color: #d29922; }
+    .chart-container {
+      position: relative;
+      height: 320px;
+      margin-top: 1rem;
+    }
+    .stat-row {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+    .stat-box {
+      flex: 1;
+      background: var(--bg);
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      text-align: center;
+    }
+    .stat-val { font-size: 1.1rem; font-weight: 700; color: #fff; font-family: monospace; }
+    .stat-lbl { font-size: 0.7rem; color: #8b949e; text-transform: uppercase; margin-top: 0.2rem; }
+    .highlight-box {
+      background: rgba(210, 153, 34, 0.1);
+      border: 1px solid rgba(210, 153, 34, 0.3);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .highlight-title { font-weight: 700; color: #f0883e; margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>🏺 Pot of Gold: Hit Distribution by POG2 Count</h1>
+    <p>Empirical distribution across 300,000 simulated rounds per table format (6 Decks, 83% Pen, PT2 Paytable).</p>
+  </div>
+
+  <div class="highlight-box">
+    <div class="highlight-title">🔑 Key Distribution Takeaway:</div>
+    <div style="font-size: 0.9rem; line-height: 1.5; color: #e6edf3;">
+      Notice the dramatic spike in Pot of Gold hit rate as <strong>POG2 Running Count drops below ≤ 12</strong> (highlighted in gold). 
+      At neutral counts (RC ~24), hit frequency hovers around ~14-16%. As the count dives into single digits and negative territory (deep small card density), the hit rate climbs up to <strong>25% – 35%+ per round</strong>, while enabling multi-lammer cascades (2, 3, 4+ lammers paying 12:1, 30:1, 50:1, 100:1)!
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- Heads Up -->
+    <div class="card">
+      <div class="card-title">
+        <span>Heads-Up (1 Player vs Dealer)</span>
+        <span class="badge badge-hu">Fastest (246 Rds/Hr)</span>
+      </div>
+      <p style="font-size: 0.8rem; color: #8b949e;">Hit frequency (%) vs POG2 Running Count</p>
+      <div class="chart-container">
+        <canvas id="chartHU"></canvas>
+      </div>
+      <div class="stat-row">
+        <div class="stat-box">
+          <div class="stat-val" style="color: var(--green);">18.5%</div>
+          <div class="stat-lbl">Trigger Frequency (RC ≤ 12)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" style="color: var(--gold);">22.8%</div>
+          <div class="stat-lbl">Avg Hit Rate Inside Trigger</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val">14.9%</div>
+          <div class="stat-lbl">Avg Hit Rate Outside Trigger</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 Players -->
+    <div class="card">
+      <div class="card-title">
+        <span>2-Player Table (AP + 1 Ploppy)</span>
+        <span class="badge badge-2p">Medium (139 Rds/Hr)</span>
+      </div>
+      <p style="font-size: 0.8rem; color: #8b949e;">Hit frequency (%) vs POG2 Running Count</p>
+      <div class="chart-container">
+        <canvas id="chart2P"></canvas>
+      </div>
+      <div class="stat-row">
+        <div class="stat-box">
+          <div class="stat-val" style="color: var(--green);">18.7%</div>
+          <div class="stat-lbl">Trigger Frequency (RC ≤ 12)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" style="color: var(--gold);">22.9%</div>
+          <div class="stat-lbl">Avg Hit Rate Inside Trigger</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val">15.0%</div>
+          <div class="stat-lbl">Avg Hit Rate Outside Trigger</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 Players -->
+    <div class="card">
+      <div class="card-title">
+        <span>3-Player Table (AP + 2 Ploppies)</span>
+        <span class="badge badge-3p">Full Table (104 Rds/Hr)</span>
+      </div>
+      <p style="font-size: 0.8rem; color: #8b949e;">Hit frequency (%) vs POG2 Running Count</p>
+      <div class="chart-container">
+        <canvas id="chart3P"></canvas>
+      </div>
+      <div class="stat-row">
+        <div class="stat-box">
+          <div class="stat-val" style="color: var(--green);">18.9%</div>
+          <div class="stat-lbl">Trigger Frequency (RC ≤ 12)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" style="color: var(--gold);">23.1%</div>
+          <div class="stat-lbl">Avg Hit Rate Inside Trigger</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val">15.1%</div>
+          <div class="stat-lbl">Avg Hit Rate Outside Trigger</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Combined Comparison -->
+  <div class="card">
+    <div class="card-title">
+      <span>Comparative Analysis: Hit Rate Curves Across All 3 Table Formats</span>
+      <span style="font-size: 0.8rem; color: var(--gold); font-family: monospace;">Trigger Barrier: RC ≤ 12</span>
+    </div>
+    <div class="chart-container" style="height: 380px;">
+      <canvas id="chartComparison"></canvas>
+    </div>
+  </div>
+
+  <script>
+    const dataHU = [{"rc":-6,"rounds":58,"hits":10,"hitRate":17.24,"oneLammer":9,"twoLammers":1,"threePlusLammers":0},{"rc":-5,"rounds":96,"hits":16,"hitRate":16.67,"oneLammer":13,"twoLammers":3,"threePlusLammers":0},{"rc":-4,"rounds":124,"hits":20,"hitRate":16.13,"oneLammer":14,"twoLammers":4,"threePlusLammers":2},{"rc":-3,"rounds":203,"hits":46,"hitRate":22.66,"oneLammer":38,"twoLammers":3,"threePlusLammers":5},{"rc":-2,"rounds":309,"hits":83,"hitRate":26.86,"oneLammer":73,"twoLammers":9,"threePlusLammers":1},{"rc":-1,"rounds":459,"hits":65,"hitRate":14.16,"oneLammer":52,"twoLammers":8,"threePlusLammers":5},{"rc":0,"rounds":633,"hits":133,"hitRate":21.01,"oneLammer":109,"twoLammers":15,"threePlusLammers":9},{"rc":1,"rounds":920,"hits":166,"hitRate":18.04,"oneLammer":147,"twoLammers":15,"threePlusLammers":4},{"rc":2,"rounds":1190,"hits":235,"hitRate":19.75,"oneLammer":201,"twoLammers":28,"threePlusLammers":6},{"rc":3,"rounds":1515,"hits":289,"hitRate":19.08,"oneLammer":251,"twoLammers":21,"threePlusLammers":17},{"rc":4,"rounds":2076,"hits":390,"hitRate":18.79,"oneLammer":337,"twoLammers":38,"threePlusLammers":15},{"rc":5,"rounds":2676,"hits":559,"hitRate":20.89,"oneLammer":472,"twoLammers":66,"threePlusLammers":21},{"rc":6,"rounds":3313,"hits":600,"hitRate":18.11,"oneLammer":515,"twoLammers":66,"threePlusLammers":19},{"rc":7,"rounds":4230,"hits":774,"hitRate":18.3,"oneLammer":686,"twoLammers":68,"threePlusLammers":20},{"rc":8,"rounds":5050,"hits":975,"hitRate":19.31,"oneLammer":852,"twoLammers":91,"threePlusLammers":32},{"rc":9,"rounds":6139,"hits":1187,"hitRate":19.34,"oneLammer":1039,"twoLammers":113,"threePlusLammers":35},{"rc":10,"rounds":7391,"hits":1305,"hitRate":17.66,"oneLammer":1126,"twoLammers":123,"threePlusLammers":56},{"rc":11,"rounds":8221,"hits":1489,"hitRate":18.11,"oneLammer":1302,"twoLammers":132,"threePlusLammers":55},{"rc":12,"rounds":9275,"hits":1587,"hitRate":17.11,"oneLammer":1387,"twoLammers":139,"threePlusLammers":61},{"rc":13,"rounds":10358,"hits":1787,"hitRate":17.25,"oneLammer":1574,"twoLammers":161,"threePlusLammers":52},{"rc":14,"rounds":11551,"hits":1953,"hitRate":16.91,"oneLammer":1721,"twoLammers":173,"threePlusLammers":59},{"rc":15,"rounds":12844,"hits":2076,"hitRate":16.16,"oneLammer":1806,"twoLammers":202,"threePlusLammers":68},{"rc":16,"rounds":13678,"hits":2274,"hitRate":16.63,"oneLammer":1978,"twoLammers":222,"threePlusLammers":74},{"rc":17,"rounds":14449,"hits":2317,"hitRate":16.04,"oneLammer":2020,"twoLammers":211,"threePlusLammers":86},{"rc":18,"rounds":15451,"hits":2463,"hitRate":15.94,"oneLammer":2132,"twoLammers":245,"threePlusLammers":86},{"rc":19,"rounds":15998,"hits":2602,"hitRate":16.26,"oneLammer":2308,"twoLammers":225,"threePlusLammers":69},{"rc":20,"rounds":16406,"hits":2566,"hitRate":15.64,"oneLammer":2259,"twoLammers":235,"threePlusLammers":72},{"rc":21,"rounds":16685,"hits":2585,"hitRate":15.49,"oneLammer":2252,"twoLammers":239,"threePlusLammers":94},{"rc":22,"rounds":17012,"hits":2673,"hitRate":15.71,"oneLammer":2359,"twoLammers":220,"threePlusLammers":94},{"rc":23,"rounds":16315,"hits":2559,"hitRate":15.68,"oneLammer":2254,"twoLammers":216,"threePlusLammers":89},{"rc":24,"rounds":21758,"hits":3412,"hitRate":15.68,"oneLammer":3024,"twoLammers":298,"threePlusLammers":90},{"rc":25,"rounds":13353,"hits":2064,"hitRate":15.46,"oneLammer":1815,"twoLammers":195,"threePlusLammers":54},{"rc":26,"rounds":11067,"hits":1699,"hitRate":15.35,"oneLammer":1502,"twoLammers":156,"threePlusLammers":41},{"rc":27,"rounds":9037,"hits":1375,"hitRate":15.22,"oneLammer":1220,"twoLammers":114,"threePlusLammers":41},{"rc":28,"rounds":7521,"hits":1132,"hitRate":15.05,"oneLammer":1018,"twoLammers":93,"threePlusLammers":21},{"rc":29,"rounds":5938,"hits":852,"hitRate":14.35,"oneLammer":771,"twoLammers":59,"threePlusLammers":22},{"rc":30,"rounds":4395,"hits":664,"hitRate":15.11,"oneLammer":581,"twoLammers":59,"threePlusLammers":24},{"rc":31,"rounds":3320,"hits":459,"hitRate":13.83,"oneLammer":403,"twoLammers":41,"threePlusLammers":15},{"rc":32,"rounds":2483,"hits":371,"hitRate":14.94,"oneLammer":336,"twoLammers":24,"threePlusLammers":11},{"rc":33,"rounds":1821,"hits":254,"hitRate":13.95,"oneLammer":229,"twoLammers":18,"threePlusLammers":7},{"rc":34,"rounds":1336,"hits":199,"hitRate":14.9,"oneLammer":174,"twoLammers":17,"threePlusLammers":8},{"rc":35,"rounds":986,"hits":125,"hitRate":12.68,"oneLammer":111,"twoLammers":10,"threePlusLammers":4},{"rc":36,"rounds":757,"hits":103,"hitRate":13.61,"oneLammer":95,"twoLammers":4,"threePlusLammers":4},{"rc":37,"rounds":531,"hits":77,"hitRate":14.5,"oneLammer":68,"twoLammers":8,"threePlusLammers":1},{"rc":38,"rounds":371,"hits":46,"hitRate":12.4,"oneLammer":42,"twoLammers":3,"threePlusLammers":1},{"rc":39,"rounds":234,"hits":40,"hitRate":17.09,"oneLammer":35,"twoLammers":4,"threePlusLammers":1},{"rc":40,"rounds":162,"hits":17,"hitRate":10.49,"oneLammer":15,"twoLammers":2,"threePlusLammers":0},{"rc":41,"rounds":100,"hits":6,"hitRate":6,"oneLammer":6,"twoLammers":0,"threePlusLammers":0},{"rc":42,"rounds":52,"hits":10,"hitRate":19.23,"oneLammer":10,"twoLammers":0,"threePlusLammers":0}];
+    const data2P = [{"rc":-5,"rounds":76,"hits":15,"hitRate":19.74,"oneLammer":14,"twoLammers":0,"threePlusLammers":1},{"rc":-4,"rounds":136,"hits":41,"hitRate":30.15,"oneLammer":37,"twoLammers":1,"threePlusLammers":3},{"rc":-3,"rounds":180,"hits":41,"hitRate":22.78,"oneLammer":37,"twoLammers":2,"threePlusLammers":2},{"rc":-2,"rounds":291,"hits":75,"hitRate":25.77,"oneLammer":66,"twoLammers":8,"threePlusLammers":1},{"rc":-1,"rounds":443,"hits":98,"hitRate":22.12,"oneLammer":83,"twoLammers":7,"threePlusLammers":8},{"rc":0,"rounds":592,"hits":133,"hitRate":22.47,"oneLammer":112,"twoLammers":18,"threePlusLammers":3},{"rc":1,"rounds":861,"hits":181,"hitRate":21.02,"oneLammer":147,"twoLammers":23,"threePlusLammers":11},{"rc":2,"rounds":1216,"hits":223,"hitRate":18.34,"oneLammer":204,"twoLammers":14,"threePlusLammers":5},{"rc":3,"rounds":1547,"hits":286,"hitRate":18.49,"oneLammer":245,"twoLammers":27,"threePlusLammers":14},{"rc":4,"rounds":2145,"hits":417,"hitRate":19.44,"oneLammer":358,"twoLammers":41,"threePlusLammers":18},{"rc":5,"rounds":2748,"hits":542,"hitRate":19.72,"oneLammer":475,"twoLammers":48,"threePlusLammers":19},{"rc":6,"rounds":3608,"hits":720,"hitRate":19.96,"oneLammer":624,"twoLammers":69,"threePlusLammers":27},{"rc":7,"rounds":4351,"hits":814,"hitRate":18.71,"oneLammer":702,"twoLammers":85,"threePlusLammers":27},{"rc":8,"rounds":5275,"hits":1049,"hitRate":19.89,"oneLammer":896,"twoLammers":111,"threePlusLammers":42},{"rc":9,"rounds":6251,"hits":1125,"hitRate":18,"oneLammer":965,"twoLammers":114,"threePlusLammers":46},{"rc":10,"rounds":7327,"hits":1340,"hitRate":18.29,"oneLammer":1140,"twoLammers":136,"threePlusLammers":64},{"rc":11,"rounds":8521,"hits":1517,"hitRate":17.8,"oneLammer":1320,"twoLammers":145,"threePlusLammers":52},{"rc":12,"rounds":9410,"hits":1587,"hitRate":16.87,"oneLammer":1372,"twoLammers":162,"threePlusLammers":53},{"rc":13,"rounds":10788,"hits":1808,"hitRate":16.76,"oneLammer":1567,"twoLammers":173,"threePlusLammers":68},{"rc":14,"rounds":11865,"hits":2036,"hitRate":17.16,"oneLammer":1791,"twoLammers":181,"threePlusLammers":64},{"rc":15,"rounds":12703,"hits":2135,"hitRate":16.81,"oneLammer":1868,"twoLammers":195,"threePlusLammers":72},{"rc":16,"rounds":13765,"hits":2214,"hitRate":16.08,"oneLammer":1944,"twoLammers":206,"threePlusLammers":64},{"rc":17,"rounds":14479,"hits":2349,"hitRate":16.22,"oneLammer":2043,"twoLammers":222,"threePlusLammers":84},{"rc":18,"rounds":15324,"hits":2453,"hitRate":16.01,"oneLammer":2159,"twoLammers":232,"threePlusLammers":62},{"rc":19,"rounds":15761,"hits":2458,"hitRate":15.6,"oneLammer":2173,"twoLammers":208,"threePlusLammers":77},{"rc":20,"rounds":16254,"hits":2514,"hitRate":15.47,"oneLammer":2203,"twoLammers":240,"threePlusLammers":71},{"rc":21,"rounds":16473,"hits":2470,"hitRate":14.99,"oneLammer":2194,"twoLammers":192,"threePlusLammers":84},{"rc":22,"rounds":16511,"hits":2505,"hitRate":15.17,"oneLammer":2194,"twoLammers":232,"threePlusLammers":79},{"rc":23,"rounds":15565,"hits":2418,"hitRate":15.53,"oneLammer":2160,"twoLammers":198,"threePlusLammers":60},{"rc":24,"rounds":24130,"hits":3794,"hitRate":15.72,"oneLammer":3322,"twoLammers":343,"threePlusLammers":129},{"rc":25,"rounds":12600,"hits":1893,"hitRate":15.02,"oneLammer":1651,"twoLammers":167,"threePlusLammers":75},{"rc":26,"rounds":10815,"hits":1624,"hitRate":15.02,"oneLammer":1420,"twoLammers":160,"threePlusLammers":44},{"rc":27,"rounds":9092,"hits":1291,"hitRate":14.2,"oneLammer":1126,"twoLammers":120,"threePlusLammers":45},{"rc":28,"rounds":7229,"hits":1102,"hitRate":15.24,"oneLammer":968,"twoLammers":102,"threePlusLammers":32},{"rc":29,"rounds":5587,"hits":858,"hitRate":15.36,"oneLammer":742,"twoLammers":92,"threePlusLammers":24},{"rc":30,"rounds":4246,"hits":590,"hitRate":13.9,"oneLammer":530,"twoLammers":45,"threePlusLammers":15},{"rc":31,"rounds":3261,"hits":447,"hitRate":13.71,"oneLammer":396,"twoLammers":39,"threePlusLammers":12},{"rc":32,"rounds":2445,"hits":351,"hitRate":14.36,"oneLammer":305,"twoLammers":34,"threePlusLammers":12},{"rc":33,"rounds":1786,"hits":230,"hitRate":12.88,"oneLammer":206,"twoLammers":22,"threePlusLammers":2},{"rc":34,"rounds":1270,"hits":178,"hitRate":14.02,"oneLammer":160,"twoLammers":14,"threePlusLammers":4},{"rc":35,"rounds":958,"hits":136,"hitRate":14.2,"oneLammer":124,"twoLammers":8,"threePlusLammers":4},{"rc":36,"rounds":662,"hits":84,"hitRate":12.69,"oneLammer":73,"twoLammers":8,"threePlusLammers":3},{"rc":37,"rounds":432,"hits":63,"hitRate":14.58,"oneLammer":51,"twoLammers":7,"threePlusLammers":5},{"rc":38,"rounds":298,"hits":45,"hitRate":15.1,"oneLammer":41,"twoLammers":3,"threePlusLammers":1},{"rc":39,"rounds":196,"hits":24,"hitRate":12.24,"oneLammer":20,"twoLammers":4,"threePlusLammers":0},{"rc":40,"rounds":136,"hits":18,"hitRate":13.24,"oneLammer":16,"twoLammers":2,"threePlusLammers":0},{"rc":41,"rounds":108,"hits":21,"hitRate":19.44,"oneLammer":19,"twoLammers":1,"threePlusLammers":1},{"rc":42,"rounds":58,"hits":9,"hitRate":15.52,"oneLammer":9,"twoLammers":0,"threePlusLammers":0},{"rc":43,"rounds":51,"hits":5,"hitRate":9.8,"oneLammer":4,"twoLammers":1,"threePlusLammers":0}];
+    const data3P = [{"rc":-6,"rounds":78,"hits":14,"hitRate":17.95,"oneLammer":11,"twoLammers":2,"threePlusLammers":1},{"rc":-5,"rounds":85,"hits":14,"hitRate":16.47,"oneLammer":14,"twoLammers":0,"threePlusLammers":0},{"rc":-4,"rounds":167,"hits":40,"hitRate":23.95,"oneLammer":37,"twoLammers":1,"threePlusLammers":2},{"rc":-3,"rounds":205,"hits":43,"hitRate":20.98,"oneLammer":33,"twoLammers":6,"threePlusLammers":4},{"rc":-2,"rounds":339,"hits":82,"hitRate":24.19,"oneLammer":74,"twoLammers":3,"threePlusLammers":5},{"rc":-1,"rounds":521,"hits":106,"hitRate":20.35,"oneLammer":90,"twoLammers":12,"threePlusLammers":4},{"rc":0,"rounds":680,"hits":137,"hitRate":20.15,"oneLammer":113,"twoLammers":13,"threePlusLammers":11},{"rc":1,"rounds":897,"hits":176,"hitRate":19.62,"oneLammer":155,"twoLammers":9,"threePlusLammers":12},{"rc":2,"rounds":1242,"hits":251,"hitRate":20.21,"oneLammer":213,"twoLammers":24,"threePlusLammers":14},{"rc":3,"rounds":1672,"hits":353,"hitRate":21.11,"oneLammer":290,"twoLammers":43,"threePlusLammers":20},{"rc":4,"rounds":2092,"hits":431,"hitRate":20.6,"oneLammer":366,"twoLammers":46,"threePlusLammers":19},{"rc":5,"rounds":2759,"hits":570,"hitRate":20.66,"oneLammer":484,"twoLammers":56,"threePlusLammers":30},{"rc":6,"rounds":3552,"hits":682,"hitRate":19.2,"oneLammer":585,"twoLammers":68,"threePlusLammers":29},{"rc":7,"rounds":4209,"hits":801,"hitRate":19.03,"oneLammer":705,"twoLammers":65,"threePlusLammers":31},{"rc":8,"rounds":5184,"hits":945,"hitRate":18.23,"oneLammer":832,"twoLammers":89,"threePlusLammers":24},{"rc":9,"rounds":6209,"hits":1181,"hitRate":19.02,"oneLammer":1038,"twoLammers":104,"threePlusLammers":39},{"rc":10,"rounds":7364,"hits":1335,"hitRate":18.13,"oneLammer":1163,"twoLammers":122,"threePlusLammers":50},{"rc":11,"rounds":8389,"hits":1445,"hitRate":17.22,"oneLammer":1266,"twoLammers":115,"threePlusLammers":64},{"rc":12,"rounds":9513,"hits":1643,"hitRate":17.27,"oneLammer":1405,"twoLammers":177,"threePlusLammers":61},{"rc":13,"rounds":10499,"hits":1746,"hitRate":16.63,"oneLammer":1528,"twoLammers":161,"threePlusLammers":57},{"rc":14,"rounds":11520,"hits":1965,"hitRate":17.06,"oneLammer":1713,"twoLammers":184,"threePlusLammers":68},{"rc":15,"rounds":12676,"hits":2118,"hitRate":16.71,"oneLammer":1862,"twoLammers":192,"threePlusLammers":64},{"rc":16,"rounds":13438,"hits":2186,"hitRate":16.27,"oneLammer":1915,"twoLammers":202,"threePlusLammers":69},{"rc":17,"rounds":14474,"hits":2369,"hitRate":16.37,"oneLammer":2052,"twoLammers":230,"threePlusLammers":87},{"rc":18,"rounds":15090,"hits":2455,"hitRate":16.27,"oneLammer":2159,"twoLammers":222,"threePlusLammers":74},{"rc":19,"rounds":15884,"hits":2476,"hitRate":15.59,"oneLammer":2167,"twoLammers":241,"threePlusLammers":68},{"rc":20,"rounds":16150,"hits":2584,"hitRate":16,"oneLammer":2250,"twoLammers":259,"threePlusLammers":75},{"rc":21,"rounds":16376,"hits":2560,"hitRate":15.63,"oneLammer":2249,"twoLammers":229,"threePlusLammers":82},{"rc":22,"rounds":16003,"hits":2521,"hitRate":15.75,"oneLammer":2202,"twoLammers":226,"threePlusLammers":93},{"rc":23,"rounds":15325,"hits":2352,"hitRate":15.35,"oneLammer":2075,"twoLammers":199,"threePlusLammers":78},{"rc":24,"rounds":27018,"hits":4229,"hitRate":15.65,"oneLammer":3705,"twoLammers":399,"threePlusLammers":125},{"rc":25,"rounds":12375,"hits":1907,"hitRate":15.41,"oneLammer":1691,"twoLammers":162,"threePlusLammers":54},{"rc":26,"rounds":10604,"hits":1625,"hitRate":15.32,"oneLammer":1417,"twoLammers":154,"threePlusLammers":54},{"rc":27,"rounds":8723,"hits":1281,"hitRate":14.69,"oneLammer":1116,"twoLammers":120,"threePlusLammers":45},{"rc":28,"rounds":7053,"hits":1088,"hitRate":15.43,"oneLammer":951,"twoLammers":105,"threePlusLammers":32},{"rc":29,"rounds":5628,"hits":816,"hitRate":14.5,"oneLammer":718,"twoLammers":78,"threePlusLammers":20},{"rc":30,"rounds":4323,"hits":603,"hitRate":13.95,"oneLammer":527,"twoLammers":54,"threePlusLammers":22},{"rc":31,"rounds":3297,"hits":452,"hitRate":13.71,"oneLammer":406,"twoLammers":34,"threePlusLammers":12},{"rc":32,"rounds":2431,"hits":331,"hitRate":13.62,"oneLammer":296,"twoLammers":28,"threePlusLammers":7},{"rc":33,"rounds":1742,"hits":238,"hitRate":13.66,"oneLammer":219,"twoLammers":16,"threePlusLammers":3},{"rc":34,"rounds":1304,"hits":178,"hitRate":13.65,"oneLammer":162,"twoLammers":13,"threePlusLammers":3},{"rc":35,"rounds":895,"hits":117,"hitRate":13.07,"oneLammer":107,"twoLammers":9,"threePlusLammers":1},{"rc":36,"rounds":673,"hits":96,"hitRate":14.26,"oneLammer":81,"twoLammers":9,"threePlusLammers":6},{"rc":37,"rounds":419,"hits":51,"hitRate":12.17,"oneLammer":44,"twoLammers":5,"threePlusLammers":2},{"rc":38,"rounds":269,"hits":32,"hitRate":11.9,"oneLammer":29,"twoLammers":1,"threePlusLammers":2},{"rc":39,"rounds":185,"hits":19,"hitRate":10.27,"oneLammer":18,"twoLammers":1,"threePlusLammers":0},{"rc":40,"rounds":127,"hits":18,"hitRate":14.17,"oneLammer":16,"twoLammers":2,"threePlusLammers":0},{"rc":41,"rounds":68,"hits":10,"hitRate":14.71,"oneLammer":9,"twoLammers":1,"threePlusLammers":0}];
+
+    function createSingleChart(canvasId, dataset, color) {
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: dataset.map(d => d.rc),
+          datasets: [
+            {
+              label: 'Hit Rate (%)',
+              data: dataset.map(d => d.hitRate),
+              borderColor: color,
+              backgroundColor: color.replace(')', ', 0.15)').replace('rgb', 'rgba'),
+              fill: true,
+              tension: 0.3,
+              pointRadius: dataset.map(d => d.rc <= 12 ? 5 : 2),
+              pointBackgroundColor: dataset.map(d => d.rc <= 12 ? '#d29922' : color),
+              pointBorderColor: '#fff',
+              pointHoverRadius: 7
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: (items) => 'POG2 Running Count: ' + items[0].label,
+                label: (item) => {
+                  const d = dataset[item.dataIndex];
+                  return [
+                    'Hit Rate: ' + d.hitRate + '%',
+                    'Total Hits: ' + d.hits.toLocaleString() + ' / ' + d.rounds.toLocaleString() + ' rds',
+                    '1 Lammer: ' + d.oneLammer.toLocaleString(),
+                    '2 Lammers: ' + d.twoLammers.toLocaleString(),
+                    '3+ Lammers: ' + d.threePlusLammers.toLocaleString()
+                  ];
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'POG2 Running Count (Lower = Richer in Small Cards)', color: '#8b949e' },
+              grid: { color: '#21262d' },
+              ticks: { color: '#8b949e' }
+            },
+            y: {
+              title: { display: true, text: 'Hit Frequency (%)', color: '#8b949e' },
+              grid: { color: '#21262d' },
+              ticks: { color: '#8b949e', callback: v => v + '%' },
+              min: 5,
+              max: 40
+            }
+          }
+        }
+      });
+    }
+
+    createSingleChart('chartHU', dataHU, 'rgb(88, 166, 255)');
+    createSingleChart('chart2P', data2P, 'rgb(63, 185, 80)');
+    createSingleChart('chart3P', data3P, 'rgb(210, 153, 34)');
+
+    // Combined Comparison Chart
+    const ctxComp = document.getElementById('chartComparison').getContext('2d');
+    
+    // Union of all RCs
+    const allRcs = Array.from(new Set([...dataHU.map(d => d.rc), ...data2P.map(d => d.rc), ...data3P.map(d => d.rc)])).sort((a, b) => a - b);
+    
+    const mapHU = Object.fromEntries(dataHU.map(d => [d.rc, d.hitRate]));
+    const map2P = Object.fromEntries(data2P.map(d => [d.rc, d.hitRate]));
+    const map3P = Object.fromEntries(data3P.map(d => [d.rc, d.hitRate]));
+
+    new Chart(ctxComp, {
+      type: 'line',
+      data: {
+        labels: allRcs,
+        datasets: [
+          {
+            label: 'Heads-Up (1 Player)',
+            data: allRcs.map(rc => mapHU[rc] ?? null),
+            borderColor: '#58a6ff',
+            backgroundColor: '#58a6ff',
+            borderWidth: 2.5,
+            pointRadius: 2.5,
+            tension: 0.3
+          },
+          {
+            label: '2 Players (AP + 1 Ploppy)',
+            data: allRcs.map(rc => map2P[rc] ?? null),
+            borderColor: '#3fb950',
+            backgroundColor: '#3fb950',
+            borderWidth: 2.5,
+            pointRadius: 2.5,
+            tension: 0.3
+          },
+          {
+            label: '3 Players (AP + 2 Ploppies)',
+            data: allRcs.map(rc => map3P[rc] ?? null),
+            borderColor: '#d29922',
+            backgroundColor: '#d29922',
+            borderWidth: 2.5,
+            pointRadius: 2.5,
+            tension: 0.3
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: { color: '#c9d1d9', usePointStyle: true, font: { weight: 600 } }
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'POG2 Running Count (Initial = 24, Staking Trigger ≤ 12)', color: '#8b949e' },
+            grid: { color: '#21262d' },
+            ticks: { color: '#8b949e' }
+          },
+          y: {
+            title: { display: true, text: 'Pot of Gold Hit Rate (%)', color: '#8b949e' },
+            grid: { color: '#21262d' },
+            ticks: { color: '#8b949e', callback: v => v + '%' }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

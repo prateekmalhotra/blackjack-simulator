@@ -1,0 +1,1928 @@
+{
+  "headsUp": {
+    "0": {
+      "roundsPlayed": 633,
+      "zeroLammers": 500,
+      "oneLammer": 109,
+      "twoLammers": 15,
+      "threeLammers": 8,
+      "fourOrMoreLammers": 1,
+      "totalHits": 133,
+      "totalSidePayout": 19925
+    },
+    "1": {
+      "roundsPlayed": 920,
+      "zeroLammers": 754,
+      "oneLammer": 147,
+      "twoLammers": 15,
+      "threeLammers": 3,
+      "fourOrMoreLammers": 1,
+      "totalHits": 166,
+      "totalSidePayout": 19025
+    },
+    "2": {
+      "roundsPlayed": 1190,
+      "zeroLammers": 955,
+      "oneLammer": 201,
+      "twoLammers": 28,
+      "threeLammers": 5,
+      "fourOrMoreLammers": 1,
+      "totalHits": 235,
+      "totalSidePayout": 28475
+    },
+    "3": {
+      "roundsPlayed": 1515,
+      "zeroLammers": 1226,
+      "oneLammer": 251,
+      "twoLammers": 21,
+      "threeLammers": 14,
+      "fourOrMoreLammers": 3,
+      "totalHits": 289,
+      "totalSidePayout": 39375
+    },
+    "4": {
+      "roundsPlayed": 2076,
+      "zeroLammers": 1686,
+      "oneLammer": 337,
+      "twoLammers": 38,
+      "threeLammers": 12,
+      "fourOrMoreLammers": 3,
+      "totalHits": 390,
+      "totalSidePayout": 51925
+    },
+    "5": {
+      "roundsPlayed": 2676,
+      "zeroLammers": 2117,
+      "oneLammer": 472,
+      "twoLammers": 66,
+      "threeLammers": 19,
+      "fourOrMoreLammers": 2,
+      "totalHits": 559,
+      "totalSidePayout": 71950
+    },
+    "6": {
+      "roundsPlayed": 3313,
+      "zeroLammers": 2713,
+      "oneLammer": 515,
+      "twoLammers": 66,
+      "threeLammers": 17,
+      "fourOrMoreLammers": 2,
+      "totalHits": 600,
+      "totalSidePayout": 73675
+    },
+    "7": {
+      "roundsPlayed": 4230,
+      "zeroLammers": 3456,
+      "oneLammer": 686,
+      "twoLammers": 68,
+      "threeLammers": 14,
+      "fourOrMoreLammers": 6,
+      "totalHits": 774,
+      "totalSidePayout": 89850
+    },
+    "8": {
+      "roundsPlayed": 5050,
+      "zeroLammers": 4075,
+      "oneLammer": 852,
+      "twoLammers": 91,
+      "threeLammers": 26,
+      "fourOrMoreLammers": 6,
+      "totalHits": 975,
+      "totalSidePayout": 120700
+    },
+    "9": {
+      "roundsPlayed": 6139,
+      "zeroLammers": 4952,
+      "oneLammer": 1039,
+      "twoLammers": 113,
+      "threeLammers": 28,
+      "fourOrMoreLammers": 7,
+      "totalHits": 1187,
+      "totalSidePayout": 144075
+    },
+    "10": {
+      "roundsPlayed": 7391,
+      "zeroLammers": 6086,
+      "oneLammer": 1126,
+      "twoLammers": 123,
+      "threeLammers": 44,
+      "fourOrMoreLammers": 12,
+      "totalHits": 1305,
+      "totalSidePayout": 169350
+    },
+    "11": {
+      "roundsPlayed": 8221,
+      "zeroLammers": 6732,
+      "oneLammer": 1302,
+      "twoLammers": 132,
+      "threeLammers": 41,
+      "fourOrMoreLammers": 14,
+      "totalHits": 1489,
+      "totalSidePayout": 186750
+    },
+    "12": {
+      "roundsPlayed": 9275,
+      "zeroLammers": 7688,
+      "oneLammer": 1387,
+      "twoLammers": 139,
+      "threeLammers": 46,
+      "fourOrMoreLammers": 15,
+      "totalHits": 1587,
+      "totalSidePayout": 205225
+    },
+    "13": {
+      "roundsPlayed": 10358,
+      "zeroLammers": 8571,
+      "oneLammer": 1574,
+      "twoLammers": 161,
+      "threeLammers": 44,
+      "fourOrMoreLammers": 8,
+      "totalHits": 1787,
+      "totalSidePayout": 211850
+    },
+    "14": {
+      "roundsPlayed": 11551,
+      "zeroLammers": 9598,
+      "oneLammer": 1721,
+      "twoLammers": 173,
+      "threeLammers": 49,
+      "fourOrMoreLammers": 10,
+      "totalHits": 1953,
+      "totalSidePayout": 232725
+    },
+    "15": {
+      "roundsPlayed": 12844,
+      "zeroLammers": 10768,
+      "oneLammer": 1806,
+      "twoLammers": 202,
+      "threeLammers": 53,
+      "fourOrMoreLammers": 15,
+      "totalHits": 2076,
+      "totalSidePayout": 262050
+    },
+    "16": {
+      "roundsPlayed": 13678,
+      "zeroLammers": 11404,
+      "oneLammer": 1978,
+      "twoLammers": 222,
+      "threeLammers": 56,
+      "fourOrMoreLammers": 18,
+      "totalHits": 2274,
+      "totalSidePayout": 283200
+    },
+    "17": {
+      "roundsPlayed": 14449,
+      "zeroLammers": 12132,
+      "oneLammer": 2020,
+      "twoLammers": 211,
+      "threeLammers": 67,
+      "fourOrMoreLammers": 19,
+      "totalHits": 2317,
+      "totalSidePayout": 295050
+    },
+    "18": {
+      "roundsPlayed": 15451,
+      "zeroLammers": 12988,
+      "oneLammer": 2132,
+      "twoLammers": 245,
+      "threeLammers": 68,
+      "fourOrMoreLammers": 18,
+      "totalHits": 2463,
+      "totalSidePayout": 310650
+    },
+    "19": {
+      "roundsPlayed": 15998,
+      "zeroLammers": 13396,
+      "oneLammer": 2308,
+      "twoLammers": 225,
+      "threeLammers": 55,
+      "fourOrMoreLammers": 14,
+      "totalHits": 2602,
+      "totalSidePayout": 304350
+    },
+    "20": {
+      "roundsPlayed": 16406,
+      "zeroLammers": 13840,
+      "oneLammer": 2259,
+      "twoLammers": 235,
+      "threeLammers": 56,
+      "fourOrMoreLammers": 16,
+      "totalHits": 2566,
+      "totalSidePayout": 306925
+    },
+    "21": {
+      "roundsPlayed": 16685,
+      "zeroLammers": 14100,
+      "oneLammer": 2252,
+      "twoLammers": 239,
+      "threeLammers": 80,
+      "fourOrMoreLammers": 14,
+      "totalHits": 2585,
+      "totalSidePayout": 321850
+    },
+    "22": {
+      "roundsPlayed": 17012,
+      "zeroLammers": 14339,
+      "oneLammer": 2359,
+      "twoLammers": 220,
+      "threeLammers": 75,
+      "fourOrMoreLammers": 19,
+      "totalHits": 2673,
+      "totalSidePayout": 326675
+    },
+    "23": {
+      "roundsPlayed": 16315,
+      "zeroLammers": 13756,
+      "oneLammer": 2254,
+      "twoLammers": 216,
+      "threeLammers": 72,
+      "fourOrMoreLammers": 17,
+      "totalHits": 2559,
+      "totalSidePayout": 315350
+    },
+    "24": {
+      "roundsPlayed": 21758,
+      "zeroLammers": 18346,
+      "oneLammer": 3024,
+      "twoLammers": 298,
+      "threeLammers": 72,
+      "fourOrMoreLammers": 18,
+      "totalHits": 3412,
+      "totalSidePayout": 396450
+    },
+    "25": {
+      "roundsPlayed": 13353,
+      "zeroLammers": 11289,
+      "oneLammer": 1815,
+      "twoLammers": 195,
+      "threeLammers": 44,
+      "fourOrMoreLammers": 10,
+      "totalHits": 2064,
+      "totalSidePayout": 240125
+    },
+    "26": {
+      "roundsPlayed": 11067,
+      "zeroLammers": 9368,
+      "oneLammer": 1502,
+      "twoLammers": 156,
+      "threeLammers": 32,
+      "fourOrMoreLammers": 9,
+      "totalHits": 1699,
+      "totalSidePayout": 194700
+    },
+    "27": {
+      "roundsPlayed": 9037,
+      "zeroLammers": 7662,
+      "oneLammer": 1220,
+      "twoLammers": 114,
+      "threeLammers": 34,
+      "fourOrMoreLammers": 7,
+      "totalHits": 1375,
+      "totalSidePayout": 161200
+    },
+    "28": {
+      "roundsPlayed": 7521,
+      "zeroLammers": 6389,
+      "oneLammer": 1018,
+      "twoLammers": 93,
+      "threeLammers": 19,
+      "fourOrMoreLammers": 2,
+      "totalHits": 1132,
+      "totalSidePayout": 121000
+    },
+    "29": {
+      "roundsPlayed": 5938,
+      "zeroLammers": 5086,
+      "oneLammer": 771,
+      "twoLammers": 59,
+      "threeLammers": 13,
+      "fourOrMoreLammers": 9,
+      "totalHits": 852,
+      "totalSidePayout": 97775
+    },
+    "30": {
+      "roundsPlayed": 4395,
+      "zeroLammers": 3731,
+      "oneLammer": 581,
+      "twoLammers": 59,
+      "threeLammers": 19,
+      "fourOrMoreLammers": 5,
+      "totalHits": 664,
+      "totalSidePayout": 83025
+    },
+    "31": {
+      "roundsPlayed": 3320,
+      "zeroLammers": 2861,
+      "oneLammer": 403,
+      "twoLammers": 41,
+      "threeLammers": 11,
+      "fourOrMoreLammers": 4,
+      "totalHits": 459,
+      "totalSidePayout": 55775
+    },
+    "32": {
+      "roundsPlayed": 2483,
+      "zeroLammers": 2112,
+      "oneLammer": 336,
+      "twoLammers": 24,
+      "threeLammers": 6,
+      "fourOrMoreLammers": 5,
+      "totalHits": 371,
+      "totalSidePayout": 45650
+    },
+    "33": {
+      "roundsPlayed": 1821,
+      "zeroLammers": 1567,
+      "oneLammer": 229,
+      "twoLammers": 18,
+      "threeLammers": 6,
+      "fourOrMoreLammers": 1,
+      "totalHits": 254,
+      "totalSidePayout": 28325
+    },
+    "34": {
+      "roundsPlayed": 1336,
+      "zeroLammers": 1137,
+      "oneLammer": 174,
+      "twoLammers": 17,
+      "threeLammers": 4,
+      "fourOrMoreLammers": 4,
+      "totalHits": 199,
+      "totalSidePayout": 28650
+    },
+    "35": {
+      "roundsPlayed": 986,
+      "zeroLammers": 861,
+      "oneLammer": 111,
+      "twoLammers": 10,
+      "threeLammers": 4,
+      "fourOrMoreLammers": 0,
+      "totalHits": 125,
+      "totalSidePayout": 14325
+    },
+    "36": {
+      "roundsPlayed": 757,
+      "zeroLammers": 654,
+      "oneLammer": 95,
+      "twoLammers": 4,
+      "threeLammers": 4,
+      "fourOrMoreLammers": 0,
+      "totalHits": 103,
+      "totalSidePayout": 11325
+    },
+    "37": {
+      "roundsPlayed": 531,
+      "zeroLammers": 454,
+      "oneLammer": 68,
+      "twoLammers": 8,
+      "threeLammers": 1,
+      "fourOrMoreLammers": 0,
+      "totalHits": 77,
+      "totalSidePayout": 8250
+    },
+    "38": {
+      "roundsPlayed": 371,
+      "zeroLammers": 325,
+      "oneLammer": 42,
+      "twoLammers": 3,
+      "threeLammers": 1,
+      "fourOrMoreLammers": 0,
+      "totalHits": 46,
+      "totalSidePayout": 4800
+    },
+    "39": {
+      "roundsPlayed": 234,
+      "zeroLammers": 194,
+      "oneLammer": 35,
+      "twoLammers": 4,
+      "threeLammers": 1,
+      "fourOrMoreLammers": 0,
+      "totalHits": 40,
+      "totalSidePayout": 4575
+    },
+    "40": {
+      "roundsPlayed": 162,
+      "zeroLammers": 145,
+      "oneLammer": 15,
+      "twoLammers": 2,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 17,
+      "totalSidePayout": 1725
+    },
+    "41": {
+      "roundsPlayed": 100,
+      "zeroLammers": 94,
+      "oneLammer": 6,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 6,
+      "totalSidePayout": 450
+    },
+    "42": {
+      "roundsPlayed": 52,
+      "zeroLammers": 42,
+      "oneLammer": 10,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 10,
+      "totalSidePayout": 750
+    },
+    "43": {
+      "roundsPlayed": 24,
+      "zeroLammers": 22,
+      "oneLammer": 2,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 2,
+      "totalSidePayout": 150
+    },
+    "44": {
+      "roundsPlayed": 9,
+      "zeroLammers": 8,
+      "oneLammer": 1,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 1,
+      "totalSidePayout": 75
+    },
+    "45": {
+      "roundsPlayed": 6,
+      "zeroLammers": 6,
+      "oneLammer": 0,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 0,
+      "totalSidePayout": 0
+    },
+    "46": {
+      "roundsPlayed": 2,
+      "zeroLammers": 2,
+      "oneLammer": 0,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 0,
+      "totalSidePayout": 0
+    },
+    "47": {
+      "roundsPlayed": 1,
+      "zeroLammers": 1,
+      "oneLammer": 0,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 0,
+      "totalSidePayout": 0
+    },
+    "48": {
+      "roundsPlayed": 1,
+      "zeroLammers": 0,
+      "oneLammer": 1,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 1,
+      "totalSidePayout": 75
+    },
+    "-1": {
+      "roundsPlayed": 459,
+      "zeroLammers": 394,
+      "oneLammer": 52,
+      "twoLammers": 8,
+      "threeLammers": 3,
+      "fourOrMoreLammers": 2,
+      "totalHits": 65,
+      "totalSidePayout": 11050
+    },
+    "-3": {
+      "roundsPlayed": 203,
+      "zeroLammers": 157,
+      "oneLammer": 38,
+      "twoLammers": 3,
+      "threeLammers": 5,
+      "fourOrMoreLammers": 0,
+      "totalHits": 46,
+      "totalSidePayout": 7500
+    },
+    "-2": {
+      "roundsPlayed": 309,
+      "zeroLammers": 226,
+      "oneLammer": 73,
+      "twoLammers": 9,
+      "threeLammers": 1,
+      "fourOrMoreLammers": 0,
+      "totalHits": 83,
+      "totalSidePayout": 8925
+    },
+    "-4": {
+      "roundsPlayed": 124,
+      "zeroLammers": 104,
+      "oneLammer": 14,
+      "twoLammers": 4,
+      "threeLammers": 2,
+      "fourOrMoreLammers": 0,
+      "totalHits": 20,
+      "totalSidePayout": 3750
+    },
+    "-5": {
+      "roundsPlayed": 96,
+      "zeroLammers": 80,
+      "oneLammer": 13,
+      "twoLammers": 3,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 16,
+      "totalSidePayout": 1875
+    },
+    "-6": {
+      "roundsPlayed": 58,
+      "zeroLammers": 48,
+      "oneLammer": 9,
+      "twoLammers": 1,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 10,
+      "totalSidePayout": 975
+    },
+    "-7": {
+      "roundsPlayed": 45,
+      "zeroLammers": 35,
+      "oneLammer": 9,
+      "twoLammers": 1,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 10,
+      "totalSidePayout": 975
+    },
+    "-8": {
+      "roundsPlayed": 29,
+      "zeroLammers": 22,
+      "oneLammer": 7,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 7,
+      "totalSidePayout": 525
+    },
+    "-9": {
+      "roundsPlayed": 16,
+      "zeroLammers": 12,
+      "oneLammer": 3,
+      "twoLammers": 1,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 4,
+      "totalSidePayout": 525
+    },
+    "-11": {
+      "roundsPlayed": 9,
+      "zeroLammers": 8,
+      "oneLammer": 1,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 1,
+      "totalSidePayout": 75
+    },
+    "-10": {
+      "roundsPlayed": 8,
+      "zeroLammers": 4,
+      "oneLammer": 3,
+      "twoLammers": 1,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 4,
+      "totalSidePayout": 525
+    },
+    "-12": {
+      "roundsPlayed": 2,
+      "zeroLammers": 2,
+      "oneLammer": 0,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 0,
+      "totalSidePayout": 0
+    },
+    "-13": {
+      "roundsPlayed": 1,
+      "zeroLammers": 1,
+      "oneLammer": 0,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 0,
+      "totalSidePayout": 0
+    }
+  },
+  "twoPlayer": {
+    "0": {
+      "roundsPlayed": 592,
+      "zeroLammers": 459,
+      "oneLammer": 112,
+      "twoLammers": 18,
+      "threeLammers": 3,
+      "fourOrMoreLammers": 0,
+      "totalHits": 133,
+      "totalSidePayout": 16050
+    },
+    "1": {
+      "roundsPlayed": 861,
+      "zeroLammers": 680,
+      "oneLammer": 147,
+      "twoLammers": 23,
+      "threeLammers": 9,
+      "fourOrMoreLammers": 2,
+      "totalHits": 181,
+      "totalSidePayout": 28425
+    },
+    "2": {
+      "roundsPlayed": 1216,
+      "zeroLammers": 993,
+      "oneLammer": 204,
+      "twoLammers": 14,
+      "threeLammers": 3,
+      "fourOrMoreLammers": 2,
+      "totalHits": 223,
+      "totalSidePayout": 25500
+    },
+    "3": {
+      "roundsPlayed": 1547,
+      "zeroLammers": 1261,
+      "oneLammer": 245,
+      "twoLammers": 27,
+      "threeLammers": 13,
+      "fourOrMoreLammers": 1,
+      "totalHits": 286,
+      "totalSidePayout": 38725
+    },
+    "4": {
+      "roundsPlayed": 2145,
+      "zeroLammers": 1728,
+      "oneLammer": 358,
+      "twoLammers": 41,
+      "threeLammers": 16,
+      "fourOrMoreLammers": 2,
+      "totalHits": 417,
+      "totalSidePayout": 53650
+    },
+    "5": {
+      "roundsPlayed": 2748,
+      "zeroLammers": 2206,
+      "oneLammer": 475,
+      "twoLammers": 48,
+      "threeLammers": 13,
+      "fourOrMoreLammers": 6,
+      "totalHits": 542,
+      "totalSidePayout": 68525
+    },
+    "6": {
+      "roundsPlayed": 3608,
+      "zeroLammers": 2888,
+      "oneLammer": 624,
+      "twoLammers": 69,
+      "threeLammers": 19,
+      "fourOrMoreLammers": 8,
+      "totalHits": 720,
+      "totalSidePayout": 94250
+    },
+    "7": {
+      "roundsPlayed": 4351,
+      "zeroLammers": 3537,
+      "oneLammer": 702,
+      "twoLammers": 85,
+      "threeLammers": 19,
+      "fourOrMoreLammers": 8,
+      "totalHits": 814,
+      "totalSidePayout": 104900
+    },
+    "8": {
+      "roundsPlayed": 5275,
+      "zeroLammers": 4226,
+      "oneLammer": 896,
+      "twoLammers": 111,
+      "threeLammers": 31,
+      "fourOrMoreLammers": 11,
+      "totalHits": 1049,
+      "totalSidePayout": 141250
+    },
+    "9": {
+      "roundsPlayed": 6251,
+      "zeroLammers": 5126,
+      "oneLammer": 965,
+      "twoLammers": 114,
+      "threeLammers": 34,
+      "fourOrMoreLammers": 12,
+      "totalHits": 1125,
+      "totalSidePayout": 148325
+    },
+    "10": {
+      "roundsPlayed": 7327,
+      "zeroLammers": 5987,
+      "oneLammer": 1140,
+      "twoLammers": 136,
+      "threeLammers": 49,
+      "fourOrMoreLammers": 15,
+      "totalHits": 1340,
+      "totalSidePayout": 183050
+    },
+    "11": {
+      "roundsPlayed": 8521,
+      "zeroLammers": 7004,
+      "oneLammer": 1320,
+      "twoLammers": 145,
+      "threeLammers": 39,
+      "fourOrMoreLammers": 13,
+      "totalHits": 1517,
+      "totalSidePayout": 189250
+    },
+    "12": {
+      "roundsPlayed": 9410,
+      "zeroLammers": 7823,
+      "oneLammer": 1372,
+      "twoLammers": 162,
+      "threeLammers": 37,
+      "fourOrMoreLammers": 16,
+      "totalHits": 1587,
+      "totalSidePayout": 203000
+    },
+    "13": {
+      "roundsPlayed": 10788,
+      "zeroLammers": 8980,
+      "oneLammer": 1567,
+      "twoLammers": 173,
+      "threeLammers": 51,
+      "fourOrMoreLammers": 17,
+      "totalHits": 1808,
+      "totalSidePayout": 232675
+    },
+    "14": {
+      "roundsPlayed": 11865,
+      "zeroLammers": 9829,
+      "oneLammer": 1791,
+      "twoLammers": 181,
+      "threeLammers": 52,
+      "fourOrMoreLammers": 12,
+      "totalHits": 2036,
+      "totalSidePayout": 247625
+    },
+    "15": {
+      "roundsPlayed": 12703,
+      "zeroLammers": 10568,
+      "oneLammer": 1868,
+      "twoLammers": 195,
+      "threeLammers": 52,
+      "fourOrMoreLammers": 20,
+      "totalHits": 2135,
+      "totalSidePayout": 263850
+    },
+    "16": {
+      "roundsPlayed": 13765,
+      "zeroLammers": 11551,
+      "oneLammer": 1944,
+      "twoLammers": 206,
+      "threeLammers": 53,
+      "fourOrMoreLammers": 11,
+      "totalHits": 2214,
+      "totalSidePayout": 264850
+    },
+    "17": {
+      "roundsPlayed": 14479,
+      "zeroLammers": 12130,
+      "oneLammer": 2043,
+      "twoLammers": 222,
+      "threeLammers": 66,
+      "fourOrMoreLammers": 18,
+      "totalHits": 2349,
+      "totalSidePayout": 296825
+    },
+    "18": {
+      "roundsPlayed": 15324,
+      "zeroLammers": 12871,
+      "oneLammer": 2159,
+      "twoLammers": 232,
+      "threeLammers": 49,
+      "fourOrMoreLammers": 13,
+      "totalHits": 2453,
+      "totalSidePayout": 287025
+    },
+    "19": {
+      "roundsPlayed": 15761,
+      "zeroLammers": 13303,
+      "oneLammer": 2173,
+      "twoLammers": 208,
+      "threeLammers": 60,
+      "fourOrMoreLammers": 17,
+      "totalHits": 2458,
+      "totalSidePayout": 297875
+    },
+    "20": {
+      "roundsPlayed": 16254,
+      "zeroLammers": 13740,
+      "oneLammer": 2203,
+      "twoLammers": 240,
+      "threeLammers": 55,
+      "fourOrMoreLammers": 16,
+      "totalHits": 2514,
+      "totalSidePayout": 303475
+    },
+    "21": {
+      "roundsPlayed": 16473,
+      "zeroLammers": 14003,
+      "oneLammer": 2194,
+      "twoLammers": 192,
+      "threeLammers": 61,
+      "fourOrMoreLammers": 23,
+      "totalHits": 2470,
+      "totalSidePayout": 304150
+    },
+    "22": {
+      "roundsPlayed": 16511,
+      "zeroLammers": 14006,
+      "oneLammer": 2194,
+      "twoLammers": 232,
+      "threeLammers": 64,
+      "fourOrMoreLammers": 15,
+      "totalHits": 2505,
+      "totalSidePayout": 304650
+    },
+    "23": {
+      "roundsPlayed": 15565,
+      "zeroLammers": 13147,
+      "oneLammer": 2160,
+      "twoLammers": 198,
+      "threeLammers": 50,
+      "fourOrMoreLammers": 10,
+      "totalHits": 2418,
+      "totalSidePayout": 277650
+    },
+    "24": {
+      "roundsPlayed": 24130,
+      "zeroLammers": 20336,
+      "oneLammer": 3322,
+      "twoLammers": 343,
+      "threeLammers": 109,
+      "fourOrMoreLammers": 20,
+      "totalHits": 3794,
+      "totalSidePayout": 465050
+    },
+    "25": {
+      "roundsPlayed": 12600,
+      "zeroLammers": 10707,
+      "oneLammer": 1651,
+      "twoLammers": 167,
+      "threeLammers": 53,
+      "fourOrMoreLammers": 22,
+      "totalHits": 1893,
+      "totalSidePayout": 248675
+    },
+    "26": {
+      "roundsPlayed": 10815,
+      "zeroLammers": 9191,
+      "oneLammer": 1420,
+      "twoLammers": 160,
+      "threeLammers": 32,
+      "fourOrMoreLammers": 12,
+      "totalHits": 1624,
+      "totalSidePayout": 196000
+    },
+    "27": {
+      "roundsPlayed": 9092,
+      "zeroLammers": 7801,
+      "oneLammer": 1126,
+      "twoLammers": 120,
+      "threeLammers": 39,
+      "fourOrMoreLammers": 6,
+      "totalHits": 1291,
+      "totalSidePayout": 158450
+    },
+    "28": {
+      "roundsPlayed": 7229,
+      "zeroLammers": 6127,
+      "oneLammer": 968,
+      "twoLammers": 102,
+      "threeLammers": 24,
+      "fourOrMoreLammers": 8,
+      "totalHits": 1102,
+      "totalSidePayout": 132450
+    },
+    "29": {
+      "roundsPlayed": 5587,
+      "zeroLammers": 4729,
+      "oneLammer": 742,
+      "twoLammers": 92,
+      "threeLammers": 18,
+      "fourOrMoreLammers": 6,
+      "totalHits": 858,
+      "totalSidePayout": 106750
+    },
+    "30": {
+      "roundsPlayed": 4246,
+      "zeroLammers": 3656,
+      "oneLammer": 530,
+      "twoLammers": 45,
+      "threeLammers": 12,
+      "fourOrMoreLammers": 3,
+      "totalHits": 590,
+      "totalSidePayout": 66000
+    },
+    "31": {
+      "roundsPlayed": 3261,
+      "zeroLammers": 2814,
+      "oneLammer": 396,
+      "twoLammers": 39,
+      "threeLammers": 8,
+      "fourOrMoreLammers": 4,
+      "totalHits": 447,
+      "totalSidePayout": 53650
+    },
+    "32": {
+      "roundsPlayed": 2445,
+      "zeroLammers": 2094,
+      "oneLammer": 305,
+      "twoLammers": 34,
+      "threeLammers": 7,
+      "fourOrMoreLammers": 5,
+      "totalHits": 351,
+      "totalSidePayout": 45825
+    },
+    "33": {
+      "roundsPlayed": 1786,
+      "zeroLammers": 1556,
+      "oneLammer": 206,
+      "twoLammers": 22,
+      "threeLammers": 1,
+      "fourOrMoreLammers": 1,
+      "totalHits": 230,
+      "totalSidePayout": 24050
+    },
+    "34": {
+      "roundsPlayed": 1270,
+      "zeroLammers": 1092,
+      "oneLammer": 160,
+      "twoLammers": 14,
+      "threeLammers": 2,
+      "fourOrMoreLammers": 2,
+      "totalHits": 178,
+      "totalSidePayout": 22700
+    },
+    "35": {
+      "roundsPlayed": 958,
+      "zeroLammers": 822,
+      "oneLammer": 124,
+      "twoLammers": 8,
+      "threeLammers": 3,
+      "fourOrMoreLammers": 1,
+      "totalHits": 136,
+      "totalSidePayout": 16450
+    },
+    "36": {
+      "roundsPlayed": 662,
+      "zeroLammers": 578,
+      "oneLammer": 73,
+      "twoLammers": 8,
+      "threeLammers": 3,
+      "fourOrMoreLammers": 0,
+      "totalHits": 84,
+      "totalSidePayout": 10125
+    },
+    "37": {
+      "roundsPlayed": 432,
+      "zeroLammers": 369,
+      "oneLammer": 51,
+      "twoLammers": 7,
+      "threeLammers": 2,
+      "fourOrMoreLammers": 3,
+      "totalHits": 63,
+      "totalSidePayout": 11175
+    },
+    "38": {
+      "roundsPlayed": 298,
+      "zeroLammers": 253,
+      "oneLammer": 41,
+      "twoLammers": 3,
+      "threeLammers": 1,
+      "fourOrMoreLammers": 0,
+      "totalHits": 45,
+      "totalSidePayout": 4725
+    },
+    "39": {
+      "roundsPlayed": 196,
+      "zeroLammers": 172,
+      "oneLammer": 20,
+      "twoLammers": 4,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 24,
+      "totalSidePayout": 2700
+    },
+    "40": {
+      "roundsPlayed": 136,
+      "zeroLammers": 118,
+      "oneLammer": 16,
+      "twoLammers": 2,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 18,
+      "totalSidePayout": 1800
+    },
+    "41": {
+      "roundsPlayed": 108,
+      "zeroLammers": 87,
+      "oneLammer": 19,
+      "twoLammers": 1,
+      "threeLammers": 1,
+      "fourOrMoreLammers": 0,
+      "totalHits": 21,
+      "totalSidePayout": 2475
+    },
+    "42": {
+      "roundsPlayed": 58,
+      "zeroLammers": 49,
+      "oneLammer": 9,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 9,
+      "totalSidePayout": 675
+    },
+    "43": {
+      "roundsPlayed": 51,
+      "zeroLammers": 46,
+      "oneLammer": 4,
+      "twoLammers": 1,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 5,
+      "totalSidePayout": 600
+    },
+    "44": {
+      "roundsPlayed": 25,
+      "zeroLammers": 21,
+      "oneLammer": 4,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 4,
+      "totalSidePayout": 300
+    },
+    "45": {
+      "roundsPlayed": 14,
+      "zeroLammers": 13,
+      "oneLammer": 1,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 1,
+      "totalSidePayout": 75
+    },
+    "46": {
+      "roundsPlayed": 10,
+      "zeroLammers": 9,
+      "oneLammer": 1,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 1,
+      "totalSidePayout": 75
+    },
+    "47": {
+      "roundsPlayed": 3,
+      "zeroLammers": 3,
+      "oneLammer": 0,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 0,
+      "totalSidePayout": 0
+    },
+    "48": {
+      "roundsPlayed": 3,
+      "zeroLammers": 3,
+      "oneLammer": 0,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 0,
+      "totalSidePayout": 0
+    },
+    "50": {
+      "roundsPlayed": 2,
+      "zeroLammers": 2,
+      "oneLammer": 0,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 0,
+      "totalSidePayout": 0
+    },
+    "53": {
+      "roundsPlayed": 1,
+      "zeroLammers": 1,
+      "oneLammer": 0,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 0,
+      "totalSidePayout": 0
+    },
+    "-1": {
+      "roundsPlayed": 443,
+      "zeroLammers": 345,
+      "oneLammer": 83,
+      "twoLammers": 7,
+      "threeLammers": 8,
+      "fourOrMoreLammers": 0,
+      "totalHits": 98,
+      "totalSidePayout": 14325
+    },
+    "-2": {
+      "roundsPlayed": 291,
+      "zeroLammers": 216,
+      "oneLammer": 66,
+      "twoLammers": 8,
+      "threeLammers": 1,
+      "fourOrMoreLammers": 0,
+      "totalHits": 75,
+      "totalSidePayout": 8100
+    },
+    "-4": {
+      "roundsPlayed": 136,
+      "zeroLammers": 95,
+      "oneLammer": 37,
+      "twoLammers": 1,
+      "threeLammers": 2,
+      "fourOrMoreLammers": 1,
+      "totalHits": 41,
+      "totalSidePayout": 5825
+    },
+    "-5": {
+      "roundsPlayed": 76,
+      "zeroLammers": 61,
+      "oneLammer": 14,
+      "twoLammers": 0,
+      "threeLammers": 1,
+      "fourOrMoreLammers": 0,
+      "totalHits": 15,
+      "totalSidePayout": 1800
+    },
+    "-3": {
+      "roundsPlayed": 180,
+      "zeroLammers": 139,
+      "oneLammer": 37,
+      "twoLammers": 2,
+      "threeLammers": 2,
+      "fourOrMoreLammers": 0,
+      "totalHits": 41,
+      "totalSidePayout": 4875
+    },
+    "-8": {
+      "roundsPlayed": 19,
+      "zeroLammers": 16,
+      "oneLammer": 3,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 3,
+      "totalSidePayout": 225
+    },
+    "-11": {
+      "roundsPlayed": 9,
+      "zeroLammers": 5,
+      "oneLammer": 4,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 4,
+      "totalSidePayout": 300
+    },
+    "-10": {
+      "roundsPlayed": 6,
+      "zeroLammers": 5,
+      "oneLammer": 1,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 1,
+      "totalSidePayout": 75
+    },
+    "-9": {
+      "roundsPlayed": 4,
+      "zeroLammers": 1,
+      "oneLammer": 3,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 3,
+      "totalSidePayout": 225
+    },
+    "-6": {
+      "roundsPlayed": 39,
+      "zeroLammers": 28,
+      "oneLammer": 8,
+      "twoLammers": 0,
+      "threeLammers": 2,
+      "fourOrMoreLammers": 1,
+      "totalHits": 11,
+      "totalSidePayout": 3350
+    },
+    "-7": {
+      "roundsPlayed": 25,
+      "zeroLammers": 20,
+      "oneLammer": 4,
+      "twoLammers": 1,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 5,
+      "totalSidePayout": 600
+    },
+    "-12": {
+      "roundsPlayed": 9,
+      "zeroLammers": 9,
+      "oneLammer": 0,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 0,
+      "totalSidePayout": 0
+    },
+    "-13": {
+      "roundsPlayed": 3,
+      "zeroLammers": 2,
+      "oneLammer": 0,
+      "twoLammers": 1,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 1,
+      "totalSidePayout": 300
+    },
+    "-14": {
+      "roundsPlayed": 2,
+      "zeroLammers": 0,
+      "oneLammer": 2,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 2,
+      "totalSidePayout": 150
+    }
+  },
+  "threePlayer": {
+    "0": {
+      "roundsPlayed": 680,
+      "zeroLammers": 543,
+      "oneLammer": 113,
+      "twoLammers": 13,
+      "threeLammers": 9,
+      "fourOrMoreLammers": 2,
+      "totalHits": 137,
+      "totalSidePayout": 21625
+    },
+    "1": {
+      "roundsPlayed": 897,
+      "zeroLammers": 721,
+      "oneLammer": 155,
+      "twoLammers": 9,
+      "threeLammers": 9,
+      "fourOrMoreLammers": 3,
+      "totalHits": 176,
+      "totalSidePayout": 26075
+    },
+    "2": {
+      "roundsPlayed": 1242,
+      "zeroLammers": 991,
+      "oneLammer": 213,
+      "twoLammers": 24,
+      "threeLammers": 11,
+      "fourOrMoreLammers": 3,
+      "totalHits": 251,
+      "totalSidePayout": 36425
+    },
+    "3": {
+      "roundsPlayed": 1672,
+      "zeroLammers": 1319,
+      "oneLammer": 290,
+      "twoLammers": 43,
+      "threeLammers": 14,
+      "fourOrMoreLammers": 6,
+      "totalHits": 353,
+      "totalSidePayout": 53900
+    },
+    "4": {
+      "roundsPlayed": 2092,
+      "zeroLammers": 1661,
+      "oneLammer": 366,
+      "twoLammers": 46,
+      "threeLammers": 13,
+      "fourOrMoreLammers": 6,
+      "totalHits": 431,
+      "totalSidePayout": 59750
+    },
+    "5": {
+      "roundsPlayed": 2759,
+      "zeroLammers": 2189,
+      "oneLammer": 484,
+      "twoLammers": 56,
+      "threeLammers": 21,
+      "fourOrMoreLammers": 9,
+      "totalHits": 570,
+      "totalSidePayout": 80100
+    },
+    "6": {
+      "roundsPlayed": 3552,
+      "zeroLammers": 2870,
+      "oneLammer": 585,
+      "twoLammers": 68,
+      "threeLammers": 20,
+      "fourOrMoreLammers": 9,
+      "totalHits": 682,
+      "totalSidePayout": 96775
+    },
+    "7": {
+      "roundsPlayed": 4209,
+      "zeroLammers": 3408,
+      "oneLammer": 705,
+      "twoLammers": 65,
+      "threeLammers": 20,
+      "fourOrMoreLammers": 11,
+      "totalHits": 801,
+      "totalSidePayout": 108625
+    },
+    "8": {
+      "roundsPlayed": 5184,
+      "zeroLammers": 4239,
+      "oneLammer": 832,
+      "twoLammers": 89,
+      "threeLammers": 19,
+      "fourOrMoreLammers": 5,
+      "totalHits": 945,
+      "totalSidePayout": 109600
+    },
+    "9": {
+      "roundsPlayed": 6209,
+      "zeroLammers": 5028,
+      "oneLammer": 1038,
+      "twoLammers": 104,
+      "threeLammers": 29,
+      "fourOrMoreLammers": 10,
+      "totalHits": 1181,
+      "totalSidePayout": 145800
+    },
+    "10": {
+      "roundsPlayed": 7364,
+      "zeroLammers": 6029,
+      "oneLammer": 1163,
+      "twoLammers": 122,
+      "threeLammers": 35,
+      "fourOrMoreLammers": 15,
+      "totalHits": 1335,
+      "totalSidePayout": 171325
+    },
+    "11": {
+      "roundsPlayed": 8389,
+      "zeroLammers": 6944,
+      "oneLammer": 1266,
+      "twoLammers": 115,
+      "threeLammers": 48,
+      "fourOrMoreLammers": 16,
+      "totalHits": 1445,
+      "totalSidePayout": 186700
+    },
+    "12": {
+      "roundsPlayed": 9513,
+      "zeroLammers": 7870,
+      "oneLammer": 1405,
+      "twoLammers": 177,
+      "threeLammers": 45,
+      "fourOrMoreLammers": 16,
+      "totalHits": 1643,
+      "totalSidePayout": 213475
+    },
+    "13": {
+      "roundsPlayed": 10499,
+      "zeroLammers": 8753,
+      "oneLammer": 1528,
+      "twoLammers": 161,
+      "threeLammers": 45,
+      "fourOrMoreLammers": 12,
+      "totalHits": 1746,
+      "totalSidePayout": 215400
+    },
+    "14": {
+      "roundsPlayed": 11520,
+      "zeroLammers": 9555,
+      "oneLammer": 1713,
+      "twoLammers": 184,
+      "threeLammers": 55,
+      "fourOrMoreLammers": 13,
+      "totalHits": 1965,
+      "totalSidePayout": 246175
+    },
+    "15": {
+      "roundsPlayed": 12676,
+      "zeroLammers": 10558,
+      "oneLammer": 1862,
+      "twoLammers": 192,
+      "threeLammers": 51,
+      "fourOrMoreLammers": 13,
+      "totalHits": 2118,
+      "totalSidePayout": 255500
+    },
+    "16": {
+      "roundsPlayed": 13438,
+      "zeroLammers": 11252,
+      "oneLammer": 1915,
+      "twoLammers": 202,
+      "threeLammers": 57,
+      "fourOrMoreLammers": 12,
+      "totalHits": 2186,
+      "totalSidePayout": 264475
+    },
+    "17": {
+      "roundsPlayed": 14474,
+      "zeroLammers": 12105,
+      "oneLammer": 2052,
+      "twoLammers": 230,
+      "threeLammers": 60,
+      "fourOrMoreLammers": 27,
+      "totalHits": 2369,
+      "totalSidePayout": 307900
+    },
+    "18": {
+      "roundsPlayed": 15090,
+      "zeroLammers": 12635,
+      "oneLammer": 2159,
+      "twoLammers": 222,
+      "threeLammers": 58,
+      "fourOrMoreLammers": 16,
+      "totalHits": 2455,
+      "totalSidePayout": 300775
+    },
+    "19": {
+      "roundsPlayed": 15884,
+      "zeroLammers": 13408,
+      "oneLammer": 2167,
+      "twoLammers": 241,
+      "threeLammers": 53,
+      "fourOrMoreLammers": 15,
+      "totalHits": 2476,
+      "totalSidePayout": 297075
+    },
+    "20": {
+      "roundsPlayed": 16150,
+      "zeroLammers": 13566,
+      "oneLammer": 2250,
+      "twoLammers": 259,
+      "threeLammers": 57,
+      "fourOrMoreLammers": 18,
+      "totalHits": 2584,
+      "totalSidePayout": 316700
+    },
+    "21": {
+      "roundsPlayed": 16376,
+      "zeroLammers": 13816,
+      "oneLammer": 2249,
+      "twoLammers": 229,
+      "threeLammers": 62,
+      "fourOrMoreLammers": 20,
+      "totalHits": 2560,
+      "totalSidePayout": 312625
+    },
+    "22": {
+      "roundsPlayed": 16003,
+      "zeroLammers": 13482,
+      "oneLammer": 2202,
+      "twoLammers": 226,
+      "threeLammers": 69,
+      "fourOrMoreLammers": 24,
+      "totalHits": 2521,
+      "totalSidePayout": 319700
+    },
+    "23": {
+      "roundsPlayed": 15325,
+      "zeroLammers": 12973,
+      "oneLammer": 2075,
+      "twoLammers": 199,
+      "threeLammers": 64,
+      "fourOrMoreLammers": 14,
+      "totalHits": 2352,
+      "totalSidePayout": 283325
+    },
+    "24": {
+      "roundsPlayed": 27018,
+      "zeroLammers": 22789,
+      "oneLammer": 3705,
+      "twoLammers": 399,
+      "threeLammers": 101,
+      "fourOrMoreLammers": 24,
+      "totalHits": 4229,
+      "totalSidePayout": 512075
+    },
+    "25": {
+      "roundsPlayed": 12375,
+      "zeroLammers": 10468,
+      "oneLammer": 1691,
+      "twoLammers": 162,
+      "threeLammers": 42,
+      "fourOrMoreLammers": 12,
+      "totalHits": 1907,
+      "totalSidePayout": 224425
+    },
+    "26": {
+      "roundsPlayed": 10604,
+      "zeroLammers": 8979,
+      "oneLammer": 1417,
+      "twoLammers": 154,
+      "threeLammers": 43,
+      "fourOrMoreLammers": 11,
+      "totalHits": 1625,
+      "totalSidePayout": 199725
+    },
+    "27": {
+      "roundsPlayed": 8723,
+      "zeroLammers": 7442,
+      "oneLammer": 1116,
+      "twoLammers": 120,
+      "threeLammers": 37,
+      "fourOrMoreLammers": 8,
+      "totalHits": 1281,
+      "totalSidePayout": 158700
+    },
+    "28": {
+      "roundsPlayed": 7053,
+      "zeroLammers": 5965,
+      "oneLammer": 951,
+      "twoLammers": 105,
+      "threeLammers": 28,
+      "fourOrMoreLammers": 4,
+      "totalHits": 1088,
+      "totalSidePayout": 130075
+    },
+    "29": {
+      "roundsPlayed": 5628,
+      "zeroLammers": 4812,
+      "oneLammer": 718,
+      "twoLammers": 78,
+      "threeLammers": 15,
+      "fourOrMoreLammers": 5,
+      "totalHits": 816,
+      "totalSidePayout": 96000
+    },
+    "30": {
+      "roundsPlayed": 4323,
+      "zeroLammers": 3720,
+      "oneLammer": 527,
+      "twoLammers": 54,
+      "threeLammers": 18,
+      "fourOrMoreLammers": 4,
+      "totalHits": 603,
+      "totalSidePayout": 76725
+    },
+    "31": {
+      "roundsPlayed": 3297,
+      "zeroLammers": 2845,
+      "oneLammer": 406,
+      "twoLammers": 34,
+      "threeLammers": 8,
+      "fourOrMoreLammers": 4,
+      "totalHits": 452,
+      "totalSidePayout": 51650
+    },
+    "32": {
+      "roundsPlayed": 2431,
+      "zeroLammers": 2100,
+      "oneLammer": 296,
+      "twoLammers": 28,
+      "threeLammers": 6,
+      "fourOrMoreLammers": 1,
+      "totalHits": 331,
+      "totalSidePayout": 36350
+    },
+    "33": {
+      "roundsPlayed": 1742,
+      "zeroLammers": 1504,
+      "oneLammer": 219,
+      "twoLammers": 16,
+      "threeLammers": 2,
+      "fourOrMoreLammers": 1,
+      "totalHits": 238,
+      "totalSidePayout": 23975
+    },
+    "34": {
+      "roundsPlayed": 1304,
+      "zeroLammers": 1126,
+      "oneLammer": 162,
+      "twoLammers": 13,
+      "threeLammers": 3,
+      "fourOrMoreLammers": 0,
+      "totalHits": 178,
+      "totalSidePayout": 18300
+    },
+    "35": {
+      "roundsPlayed": 895,
+      "zeroLammers": 778,
+      "oneLammer": 107,
+      "twoLammers": 9,
+      "threeLammers": 1,
+      "fourOrMoreLammers": 0,
+      "totalHits": 117,
+      "totalSidePayout": 11475
+    },
+    "36": {
+      "roundsPlayed": 673,
+      "zeroLammers": 577,
+      "oneLammer": 81,
+      "twoLammers": 9,
+      "threeLammers": 4,
+      "fourOrMoreLammers": 2,
+      "totalHits": 96,
+      "totalSidePayout": 15525
+    },
+    "37": {
+      "roundsPlayed": 419,
+      "zeroLammers": 368,
+      "oneLammer": 44,
+      "twoLammers": 5,
+      "threeLammers": 2,
+      "fourOrMoreLammers": 0,
+      "totalHits": 51,
+      "totalSidePayout": 6300
+    },
+    "38": {
+      "roundsPlayed": 269,
+      "zeroLammers": 237,
+      "oneLammer": 29,
+      "twoLammers": 1,
+      "threeLammers": 1,
+      "fourOrMoreLammers": 1,
+      "totalHits": 32,
+      "totalSidePayout": 4475
+    },
+    "39": {
+      "roundsPlayed": 185,
+      "zeroLammers": 166,
+      "oneLammer": 18,
+      "twoLammers": 1,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 19,
+      "totalSidePayout": 1650
+    },
+    "40": {
+      "roundsPlayed": 127,
+      "zeroLammers": 109,
+      "oneLammer": 16,
+      "twoLammers": 2,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 18,
+      "totalSidePayout": 1800
+    },
+    "41": {
+      "roundsPlayed": 68,
+      "zeroLammers": 58,
+      "oneLammer": 9,
+      "twoLammers": 1,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 10,
+      "totalSidePayout": 975
+    },
+    "42": {
+      "roundsPlayed": 46,
+      "zeroLammers": 38,
+      "oneLammer": 7,
+      "twoLammers": 0,
+      "threeLammers": 1,
+      "fourOrMoreLammers": 0,
+      "totalHits": 8,
+      "totalSidePayout": 1275
+    },
+    "43": {
+      "roundsPlayed": 38,
+      "zeroLammers": 33,
+      "oneLammer": 5,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 5,
+      "totalSidePayout": 375
+    },
+    "44": {
+      "roundsPlayed": 32,
+      "zeroLammers": 29,
+      "oneLammer": 2,
+      "twoLammers": 1,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 3,
+      "totalSidePayout": 450
+    },
+    "45": {
+      "roundsPlayed": 16,
+      "zeroLammers": 15,
+      "oneLammer": 1,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 1,
+      "totalSidePayout": 75
+    },
+    "46": {
+      "roundsPlayed": 11,
+      "zeroLammers": 9,
+      "oneLammer": 2,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 2,
+      "totalSidePayout": 150
+    },
+    "47": {
+      "roundsPlayed": 7,
+      "zeroLammers": 6,
+      "oneLammer": 0,
+      "twoLammers": 1,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 1,
+      "totalSidePayout": 300
+    },
+    "48": {
+      "roundsPlayed": 1,
+      "zeroLammers": 1,
+      "oneLammer": 0,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 0,
+      "totalSidePayout": 0
+    },
+    "49": {
+      "roundsPlayed": 3,
+      "zeroLammers": 3,
+      "oneLammer": 0,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 0,
+      "totalSidePayout": 0
+    },
+    "50": {
+      "roundsPlayed": 3,
+      "zeroLammers": 3,
+      "oneLammer": 0,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 0,
+      "totalSidePayout": 0
+    },
+    "-1": {
+      "roundsPlayed": 521,
+      "zeroLammers": 415,
+      "oneLammer": 90,
+      "twoLammers": 12,
+      "threeLammers": 4,
+      "fourOrMoreLammers": 0,
+      "totalHits": 106,
+      "totalSidePayout": 13350
+    },
+    "-2": {
+      "roundsPlayed": 339,
+      "zeroLammers": 257,
+      "oneLammer": 74,
+      "twoLammers": 3,
+      "threeLammers": 4,
+      "fourOrMoreLammers": 1,
+      "totalHits": 82,
+      "totalSidePayout": 10700
+    },
+    "-3": {
+      "roundsPlayed": 205,
+      "zeroLammers": 162,
+      "oneLammer": 33,
+      "twoLammers": 6,
+      "threeLammers": 3,
+      "fourOrMoreLammers": 1,
+      "totalHits": 43,
+      "totalSidePayout": 7775
+    },
+    "-4": {
+      "roundsPlayed": 167,
+      "zeroLammers": 127,
+      "oneLammer": 37,
+      "twoLammers": 1,
+      "threeLammers": 1,
+      "fourOrMoreLammers": 1,
+      "totalHits": 40,
+      "totalSidePayout": 5075
+    },
+    "-8": {
+      "roundsPlayed": 24,
+      "zeroLammers": 17,
+      "oneLammer": 7,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 7,
+      "totalSidePayout": 525
+    },
+    "-9": {
+      "roundsPlayed": 23,
+      "zeroLammers": 15,
+      "oneLammer": 7,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 1,
+      "totalHits": 8,
+      "totalSidePayout": 1775
+    },
+    "-5": {
+      "roundsPlayed": 85,
+      "zeroLammers": 71,
+      "oneLammer": 14,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 14,
+      "totalSidePayout": 1050
+    },
+    "-6": {
+      "roundsPlayed": 78,
+      "zeroLammers": 64,
+      "oneLammer": 11,
+      "twoLammers": 2,
+      "threeLammers": 1,
+      "fourOrMoreLammers": 0,
+      "totalHits": 14,
+      "totalSidePayout": 2175
+    },
+    "-7": {
+      "roundsPlayed": 31,
+      "zeroLammers": 24,
+      "oneLammer": 6,
+      "twoLammers": 1,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 7,
+      "totalSidePayout": 750
+    },
+    "-10": {
+      "roundsPlayed": 14,
+      "zeroLammers": 11,
+      "oneLammer": 3,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 3,
+      "totalSidePayout": 225
+    },
+    "-11": {
+      "roundsPlayed": 8,
+      "zeroLammers": 6,
+      "oneLammer": 1,
+      "twoLammers": 1,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 2,
+      "totalSidePayout": 375
+    },
+    "-13": {
+      "roundsPlayed": 7,
+      "zeroLammers": 6,
+      "oneLammer": 1,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 1,
+      "totalSidePayout": 75
+    },
+    "-12": {
+      "roundsPlayed": 6,
+      "zeroLammers": 5,
+      "oneLammer": 1,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 1,
+      "totalSidePayout": 75
+    },
+    "-14": {
+      "roundsPlayed": 4,
+      "zeroLammers": 4,
+      "oneLammer": 0,
+      "twoLammers": 0,
+      "threeLammers": 0,
+      "fourOrMoreLammers": 0,
+      "totalHits": 0,
+      "totalSidePayout": 0
+    }
+  }
+}
