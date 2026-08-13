@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>POG2 Shoe Trajectory & Count Distribution</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --border: #30363d;
+      --text: #c9d1d9;
+      --accent: #58a6ff;
+      --gold: #d29922;
+      --green: #3fb950;
+      --red: #f85149;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 2rem;
+    }
+    .header {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+    }
+    h1 { color: #fff; margin: 0 0 0.5rem 0; font-size: 1.75rem; }
+    p { margin: 0; color: #8b949e; font-size: 0.95rem; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.35rem;
+      font-weight: 600;
+      background: rgba(210, 153, 34, 0.2);
+      color: #d29922;
+    }
+    .chart-container {
+      position: relative;
+      height: 340px;
+      margin-top: 1rem;
+    }
+    .stat-row {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+    .stat-box {
+      flex: 1;
+      background: var(--bg);
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      text-align: center;
+    }
+    .stat-val { font-size: 1.15rem; font-weight: 700; color: #fff; font-family: monospace; }
+    .stat-lbl { font-size: 0.7rem; color: #8b949e; text-transform: uppercase; margin-top: 0.2rem; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>📉 POG2 Shoe Trajectory & Count Distribution (6 Decks, 83% Pen)</h1>
+    <p>Empirical results from 500,000 live rounds across ~10,000 complete shoes.</p>
+  </div>
+
+  <div class="grid">
+    <!-- Chart 1: Probability Distribution Histogram -->
+    <div class="card">
+      <div class="card-title">
+        <span>Probability Distribution of POG2 Counts</span>
+        <span class="badge">Shaded Gold = Trigger Window (RC ≤ 12)</span>
+      </div>
+      <p style="font-size: 0.8rem; color: #8b949e;">How often the shoe sits at each exact running count.</p>
+      <div class="chart-container">
+        <canvas id="histChart"></canvas>
+      </div>
+      <div class="stat-row">
+        <div class="stat-box">
+          <div class="stat-val" style="color: var(--gold);">18.22%</div>
+          <div class="stat-lbl">In Trigger (RC ≤ 12)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val">+19.5</div>
+          <div class="stat-lbl">Median Count</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val">81.78%</div>
+          <div class="stat-lbl">Outside Trigger (RC > 12)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart 2: Trajectory by Shoe Depth -->
+    <div class="card">
+      <div class="card-title">
+        <span>Shoe Trajectory & Trigger Probability by Depth</span>
+        <span class="badge">Deck 1 → Deck 5</span>
+      </div>
+      <p style="font-size: 0.8rem; color: #8b949e;">Average count drift and trigger probability as cards are dealt.</p>
+      <div class="chart-container">
+        <canvas id="depthChart"></canvas>
+      </div>
+      <div class="stat-row">
+        <div class="stat-box">
+          <div class="stat-val" style="color: var(--green);">64.51%</div>
+          <div class="stat-lbl">Shoes That Hit Trigger</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" style="color: var(--accent);">4.0 Rds</div>
+          <div class="stat-lbl">Avg Trigger Streak</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" style="color: var(--gold);">35.28%</div>
+          <div class="stat-lbl">Deck 5 Trigger Rate</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Histogram Data
+    const rawData = JSON.parse('${JSON.stringify(fs.readFileSync('/Users/pmlhtra/.gemini/jetski/brain/4da197b4-dd4e-44f9-ab42-54c63e898cde/scratch/shoe_trajectory_results.json', 'utf8'))}');
+    const dist = rawData.distribution;
+    const depths = rawData.depthSummary;
+
+    // Chart 1: Histogram
+    const ctxHist = document.getElementById('histChart').getContext('2d');
+    new Chart(ctxHist, {
+      type: 'bar',
+      data: {
+        labels: dist.map(d => d.rc),
+        datasets: [{
+          label: '% of Rounds',
+          data: dist.map(d => d.percentage),
+          backgroundColor: dist.map(d => d.rc <= 12 ? 'rgba(210, 153, 34, 0.8)' : 'rgba(88, 166, 255, 0.4)'),
+          borderColor: dist.map(d => d.rc <= 12 ? '#d29922' : '#58a6ff'),
+          borderWidth: 1,
+          borderRadius: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: items => 'Running Count: ' + items[0].label,
+              label: item => item.raw + '% of total rounds (' + (parseInt(item.label) <= 12 ? '🔥 STAKING TRIGGER' : 'Standard Play') + ')'
+            }
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'POG2 Running Count (Starts at +24, Trigger ≤ 12)', color: '#8b949e' },
+            grid: { color: '#21262d' },
+            ticks: { color: '#8b949e', maxTicksLimit: 20 }
+          },
+          y: {
+            title: { display: true, text: 'Frequency (% of Rounds)', color: '#8b949e' },
+            grid: { color: '#21262d' },
+            ticks: { color: '#8b949e', callback: v => v + '%' }
+          }
+        }
+      }
+    });
+
+    // Chart 2: Trajectory by Depth
+    const ctxDepth = document.getElementById('depthChart').getContext('2d');
+    new Chart(ctxDepth, {
+      data: {
+        labels: depths.map(d => 'Deck ' + d.deckNumber + ' (' + d.cardsDealtRange + ')'),
+        datasets: [
+          {
+            type: 'bar',
+            label: 'Trigger Frequency (%)',
+            data: depths.map(d => d.triggerFrequency),
+            backgroundColor: 'rgba(210, 153, 34, 0.7)',
+            borderColor: '#d29922',
+            borderWidth: 1.5,
+            yAxisID: 'y1',
+            borderRadius: 4
+          },
+          {
+            type: 'line',
+            label: 'Average Running Count',
+            data: depths.map(d => d.averageRC),
+            borderColor: '#58a6ff',
+            backgroundColor: '#58a6ff',
+            borderWidth: 3,
+            pointRadius: 6,
+            pointBackgroundColor: '#fff',
+            yAxisID: 'y',
+            tension: 0.2
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { color: '#c9d1d9' } },
+          tooltip: {
+            callbacks: {
+              label: item => item.dataset.label + ': ' + (item.dataset.yAxisID === 'y1' ? item.raw + '%' : item.raw)
+            }
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'Shoe Depth (Cards Dealt)', color: '#8b949e' },
+            grid: { color: '#21262d' },
+            ticks: { color: '#8b949e' }
+          },
+          y: {
+            type: 'linear',
+            position: 'left',
+            title: { display: true, text: 'Average Running Count', color: '#58a6ff' },
+            grid: { color: '#21262d' },
+            ticks: { color: '#58a6ff' },
+            min: 10,
+            max: 26
+          },
+          y1: {
+            type: 'linear',
+            position: 'right',
+            title: { display: true, text: 'Trigger Probability (%)', color: '#d29922' },
+            grid: { drawOnChartArea: false },
+            ticks: { color: '#d29922', callback: v => v + '%' },
+            min: 0,
+            max: 40
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
