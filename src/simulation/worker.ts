@@ -332,7 +332,11 @@ function runSimulation(config: SimulationConfig) {
             seat.totalEarned -= totalInitialBet;
           }
         } else {
-          // Ploppy seat: Always bets 1 hand of minBet
+          // Ploppy seat: Always bets 1 hand of minBet and takes all free splits/doubles
+          if (seat.bankroll < rules.minBet) {
+            seat.bankroll = startingBankroll;
+            seat.replacementCount++;
+          }
           activePlayingCount++;
           seat.hands = [{
             cards: [],
