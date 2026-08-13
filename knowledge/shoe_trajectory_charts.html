@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>POG2 Shoe Trajectory & Count Distribution</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
     :root {
       --bg: #0d1117;
@@ -143,120 +143,120 @@
   </div>
 
   <script>
-    // Histogram Data
-    const rawData = JSON.parse('${JSON.stringify(fs.readFileSync('/Users/pmlhtra/.gemini/jetski/brain/4da197b4-dd4e-44f9-ab42-54c63e898cde/scratch/shoe_trajectory_results.json', 'utf8'))}');
-    const dist = rawData.distribution;
-    const depths = rawData.depthSummary;
+    const dist = [{"rc":-19,"rounds":1,"percentage":0},{"rc":-17,"rounds":2,"percentage":0},{"rc":-16,"rounds":1,"percentage":0},{"rc":-14,"rounds":1,"percentage":0},{"rc":-12,"rounds":2,"percentage":0},{"rc":-11,"rounds":12,"percentage":0.002},{"rc":-10,"rounds":9,"percentage":0.002},{"rc":-9,"rounds":20,"percentage":0.004},{"rc":-8,"rounds":24,"percentage":0.005},{"rc":-7,"rounds":59,"percentage":0.012},{"rc":-6,"rounds":88,"percentage":0.018},{"rc":-5,"rounds":158,"percentage":0.032},{"rc":-4,"rounds":205,"percentage":0.041},{"rc":-3,"rounds":332,"percentage":0.066},{"rc":-2,"rounds":553,"percentage":0.111},{"rc":-1,"rounds":759,"percentage":0.152},{"rc":0,"rounds":1082,"percentage":0.216},{"rc":1,"rounds":1462,"percentage":0.292},{"rc":2,"rounds":1984,"percentage":0.397},{"rc":3,"rounds":2782,"percentage":0.556},{"rc":4,"rounds":3498,"percentage":0.7},{"rc":5,"rounds":4530,"percentage":0.906},{"rc":6,"rounds":5723,"percentage":1.145},{"rc":7,"rounds":7017,"percentage":1.403},{"rc":8,"rounds":8584,"percentage":1.717},{"rc":9,"rounds":10440,"percentage":2.088},{"rc":10,"rounds":11945,"percentage":2.389},{"rc":11,"rounds":13860,"percentage":2.772},{"rc":12,"rounds":15965,"percentage":3.193},{"rc":13,"rounds":17710,"percentage":3.542},{"rc":14,"rounds":19511,"percentage":3.902},{"rc":15,"rounds":21249,"percentage":4.25},{"rc":16,"rounds":22558,"percentage":4.512},{"rc":17,"rounds":23856,"percentage":4.771},{"rc":18,"rounds":25260,"percentage":5.052},{"rc":19,"rounds":26000,"percentage":5.2},{"rc":20,"rounds":27183,"percentage":5.437},{"rc":21,"rounds":27058,"percentage":5.412},{"rc":22,"rounds":26775,"percentage":5.355},{"rc":23,"rounds":25280,"percentage":5.056},{"rc":24,"rounds":44899,"percentage":8.98},{"rc":25,"rounds":21040,"percentage":4.208},{"rc":26,"rounds":17915,"percentage":3.583},{"rc":27,"rounds":14822,"percentage":2.964},{"rc":28,"rounds":12129,"percentage":2.426},{"rc":29,"rounds":9362,"percentage":1.872},{"rc":30,"rounds":7066,"percentage":1.413},{"rc":31,"rounds":5430,"percentage":1.086},{"rc":32,"rounds":3971,"percentage":0.794},{"rc":33,"rounds":2909,"percentage":0.582},{"rc":34,"rounds":2108,"percentage":0.422},{"rc":35,"rounds":1556,"percentage":0.311},{"rc":36,"rounds":1029,"percentage":0.206},{"rc":37,"rounds":735,"percentage":0.147},{"rc":38,"rounds":544,"percentage":0.109},{"rc":39,"rounds":350,"percentage":0.07},{"rc":40,"rounds":209,"percentage":0.042},{"rc":41,"rounds":153,"percentage":0.031},{"rc":42,"rounds":95,"percentage":0.019},{"rc":43,"rounds":62,"percentage":0.012},{"rc":44,"rounds":34,"percentage":0.007},{"rc":45,"rounds":20,"percentage":0.004},{"rc":46,"rounds":12,"percentage":0.002},{"rc":47,"rounds":4,"percentage":0.001},{"rc":48,"rounds":2,"percentage":0},{"rc":49,"rounds":2,"percentage":0},{"rc":50,"rounds":2,"percentage":0},{"rc":51,"rounds":2,"percentage":0}];
+    const depths = [{"deckNumber":1,"cardsDealtRange":"0-52 cards","averageRC":22.97,"triggerFrequency":1.12,"totalRoundsInDeck":108331},{"deckNumber":2,"cardsDealtRange":"52-104 cards","averageRC":20.83,"triggerFrequency":9.78,"totalRoundsInDeck":98450},{"deckNumber":3,"cardsDealtRange":"104-156 cards","averageRC":18.89,"triggerFrequency":19.47,"totalRoundsInDeck":98391},{"deckNumber":4,"cardsDealtRange":"156-208 cards","averageRC":16.93,"triggerFrequency":27.52,"totalRoundsInDeck":98462},{"deckNumber":5,"cardsDealtRange":"208-260 cards","averageRC":14.98,"triggerFrequency":35.28,"totalRoundsInDeck":96366}];
 
-    // Chart 1: Histogram
-    const ctxHist = document.getElementById('histChart').getContext('2d');
-    new Chart(ctxHist, {
-      type: 'bar',
-      data: {
-        labels: dist.map(d => d.rc),
-        datasets: [{
-          label: '% of Rounds',
-          data: dist.map(d => d.percentage),
-          backgroundColor: dist.map(d => d.rc <= 12 ? 'rgba(210, 153, 34, 0.8)' : 'rgba(88, 166, 255, 0.4)'),
-          borderColor: dist.map(d => d.rc <= 12 ? '#d29922' : '#58a6ff'),
-          borderWidth: 1,
-          borderRadius: 2
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              title: items => 'Running Count: ' + items[0].label,
-              label: item => item.raw + '% of total rounds (' + (parseInt(item.label) <= 12 ? '🔥 STAKING TRIGGER' : 'Standard Play') + ')'
+    window.addEventListener('DOMContentLoaded', () => {
+      // Chart 1: Histogram
+      const ctxHist = document.getElementById('histChart').getContext('2d');
+      new Chart(ctxHist, {
+        type: 'bar',
+        data: {
+          labels: dist.map(d => d.rc),
+          datasets: [{
+            label: '% of Rounds',
+            data: dist.map(d => d.percentage),
+            backgroundColor: dist.map(d => d.rc <= 12 ? 'rgba(210, 153, 34, 0.85)' : 'rgba(88, 166, 255, 0.45)'),
+            borderColor: dist.map(d => d.rc <= 12 ? '#d29922' : '#58a6ff'),
+            borderWidth: 1,
+            borderRadius: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: items => 'POG2 Running Count: ' + items[0].label,
+                label: item => item.raw + '% of total rounds (' + (parseInt(item.label) <= 12 ? '🔥 STAKING TRIGGER' : 'Standard Play') + ')'
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'POG2 Running Count (Starts at +24, Trigger ≤ 12)', color: '#8b949e' },
+              grid: { color: '#21262d' },
+              ticks: { color: '#8b949e', maxTicksLimit: 20 }
+            },
+            y: {
+              title: { display: true, text: 'Frequency (% of Rounds)', color: '#8b949e' },
+              grid: { color: '#21262d' },
+              ticks: { color: '#8b949e', callback: v => v + '%' }
             }
           }
-        },
-        scales: {
-          x: {
-            title: { display: true, text: 'POG2 Running Count (Starts at +24, Trigger ≤ 12)', color: '#8b949e' },
-            grid: { color: '#21262d' },
-            ticks: { color: '#8b949e', maxTicksLimit: 20 }
-          },
-          y: {
-            title: { display: true, text: 'Frequency (% of Rounds)', color: '#8b949e' },
-            grid: { color: '#21262d' },
-            ticks: { color: '#8b949e', callback: v => v + '%' }
-          }
         }
-      }
-    });
+      });
 
-    // Chart 2: Trajectory by Depth
-    const ctxDepth = document.getElementById('depthChart').getContext('2d');
-    new Chart(ctxDepth, {
-      data: {
-        labels: depths.map(d => 'Deck ' + d.deckNumber + ' (' + d.cardsDealtRange + ')'),
-        datasets: [
-          {
-            type: 'bar',
-            label: 'Trigger Frequency (%)',
-            data: depths.map(d => d.triggerFrequency),
-            backgroundColor: 'rgba(210, 153, 34, 0.7)',
-            borderColor: '#d29922',
-            borderWidth: 1.5,
-            yAxisID: 'y1',
-            borderRadius: 4
+      // Chart 2: Trajectory by Depth
+      const ctxDepth = document.getElementById('depthChart').getContext('2d');
+      new Chart(ctxDepth, {
+        data: {
+          labels: depths.map(d => 'Deck ' + d.deckNumber + ' (' + d.cardsDealtRange + ')'),
+          datasets: [
+            {
+              type: 'bar',
+              label: 'Trigger Frequency (%)',
+              data: depths.map(d => d.triggerFrequency),
+              backgroundColor: 'rgba(210, 153, 34, 0.75)',
+              borderColor: '#d29922',
+              borderWidth: 1.5,
+              yAxisID: 'y1',
+              borderRadius: 4
+            },
+            {
+              type: 'line',
+              label: 'Average Running Count',
+              data: depths.map(d => d.averageRC),
+              borderColor: '#58a6ff',
+              backgroundColor: '#58a6ff',
+              borderWidth: 3,
+              pointRadius: 6,
+              pointBackgroundColor: '#fff',
+              yAxisID: 'y',
+              tension: 0.2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { color: '#c9d1d9' } },
+            tooltip: {
+              callbacks: {
+                label: item => item.dataset.label + ': ' + (item.dataset.yAxisID === 'y1' ? item.raw + '%' : item.raw)
+              }
+            }
           },
-          {
-            type: 'line',
-            label: 'Average Running Count',
-            data: depths.map(d => d.averageRC),
-            borderColor: '#58a6ff',
-            backgroundColor: '#58a6ff',
-            borderWidth: 3,
-            pointRadius: 6,
-            pointBackgroundColor: '#fff',
-            yAxisID: 'y',
-            tension: 0.2
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'top', labels: { color: '#c9d1d9' } },
-          tooltip: {
-            callbacks: {
-              label: item => item.dataset.label + ': ' + (item.dataset.yAxisID === 'y1' ? item.raw + '%' : item.raw)
+          scales: {
+            x: {
+              title: { display: true, text: 'Shoe Depth (Cards Dealt)', color: '#8b949e' },
+              grid: { color: '#21262d' },
+              ticks: { color: '#8b949e' }
+            },
+            y: {
+              type: 'linear',
+              position: 'left',
+              title: { display: true, text: 'Average Running Count', color: '#58a6ff' },
+              grid: { color: '#21262d' },
+              ticks: { color: '#58a6ff' },
+              min: 10,
+              max: 26
+            },
+            y1: {
+              type: 'linear',
+              position: 'right',
+              title: { display: true, text: 'Trigger Probability (%)', color: '#d29922' },
+              grid: { drawOnChartArea: false },
+              ticks: { color: '#d29922', callback: v => v + '%' },
+              min: 0,
+              max: 40
             }
           }
-        },
-        scales: {
-          x: {
-            title: { display: true, text: 'Shoe Depth (Cards Dealt)', color: '#8b949e' },
-            grid: { color: '#21262d' },
-            ticks: { color: '#8b949e' }
-          },
-          y: {
-            type: 'linear',
-            position: 'left',
-            title: { display: true, text: 'Average Running Count', color: '#58a6ff' },
-            grid: { color: '#21262d' },
-            ticks: { color: '#58a6ff' },
-            min: 10,
-            max: 26
-          },
-          y1: {
-            type: 'linear',
-            position: 'right',
-            title: { display: true, text: 'Trigger Probability (%)', color: '#d29922' },
-            grid: { drawOnChartArea: false },
-            ticks: { color: '#d29922', callback: v => v + '%' },
-            min: 0,
-            max: 40
-          }
         }
-      }
+      });
     });
   </script>
 </body>
