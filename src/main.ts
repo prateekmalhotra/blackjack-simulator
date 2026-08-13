@@ -68,12 +68,49 @@ const pogRaiseMainEnabledCheckbox = document.getElementById('pog-raise-main-enab
 const pogRaiseMainControls = document.getElementById('pog-raise-main-controls') as HTMLDivElement;
 const pogTriggerMainBetInput = document.getElementById('pog-trigger-main-bet') as HTMLInputElement;
 
+const pogPreset1HandBtn = document.getElementById('pog-preset-1hand') as HTMLButtonElement;
+const pogPreset2HandsBtn = document.getElementById('pog-preset-2hands') as HTMLButtonElement;
+
 pogWongEnabledCheckbox.addEventListener('change', () => {
   pogWongControls.style.display = pogWongEnabledCheckbox.checked ? 'flex' : 'none';
 });
 
 pogRaiseMainEnabledCheckbox.addEventListener('change', () => {
   pogRaiseMainControls.style.display = pogRaiseMainEnabledCheckbox.checked ? 'flex' : 'none';
+});
+
+function updatePogPresetStyles() {
+  const val = pogTriggerMainBetInput.value.trim().toLowerCase();
+  const is2Hands = val.includes('2x') || val.includes('2×') || val.includes('2*');
+  if (is2Hands) {
+    pogPreset2HandsBtn.style.borderColor = 'var(--color-primary)';
+    pogPreset2HandsBtn.style.color = 'var(--color-primary)';
+    pogPreset2HandsBtn.style.fontWeight = '600';
+    pogPreset1HandBtn.style.borderColor = 'var(--border-color)';
+    pogPreset1HandBtn.style.color = 'var(--text-secondary)';
+    pogPreset1HandBtn.style.fontWeight = '400';
+  } else {
+    pogPreset1HandBtn.style.borderColor = 'var(--color-primary)';
+    pogPreset1HandBtn.style.color = 'var(--color-primary)';
+    pogPreset1HandBtn.style.fontWeight = '600';
+    pogPreset2HandsBtn.style.borderColor = 'var(--border-color)';
+    pogPreset2HandsBtn.style.color = 'var(--text-secondary)';
+    pogPreset2HandsBtn.style.fontWeight = '400';
+  }
+}
+
+pogPreset1HandBtn?.addEventListener('click', () => {
+  pogTriggerMainBetInput.value = '25';
+  updatePogPresetStyles();
+});
+
+pogPreset2HandsBtn?.addEventListener('click', () => {
+  pogTriggerMainBetInput.value = '2x25';
+  updatePogPresetStyles();
+});
+
+pogTriggerMainBetInput?.addEventListener('input', () => {
+  updatePogPresetStyles();
 });
 
 // Toggle game type UI
@@ -447,6 +484,8 @@ function setInputsDisabled(disabled: boolean) {
   pogWongOutInput.disabled = disabled;
   pogRaiseMainEnabledCheckbox.disabled = disabled;
   pogTriggerMainBetInput.disabled = disabled;
+  if (pogPreset1HandBtn) pogPreset1HandBtn.disabled = disabled;
+  if (pogPreset2HandsBtn) pogPreset2HandsBtn.disabled = disabled;
   simHandsSelect.disabled = disabled;
 
   const inputs = betSpreadContainer.querySelectorAll('input');
