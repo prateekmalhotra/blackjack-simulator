@@ -44,6 +44,9 @@ const ruleMinBetInput = document.getElementById('rule-minbet') as HTMLInputEleme
 const ruleMaxBetInput = document.getElementById('rule-maxbet') as HTMLInputElement;
 const ruleRoundingSelect = document.getElementById('rule-rounding') as HTMLSelectElement;
 
+const standardRulesContainer = document.getElementById('standard-rules-container') as HTMLDivElement;
+const standardPlayerSettings = document.getElementById('standard-player-settings') as HTMLDivElement;
+
 const playSeatsInput = document.getElementById('play-seats') as HTMLInputElement;
 const playTableSeatsSelect = document.getElementById('play-table-seats') as HTMLSelectElement;
 const playBankrollInput = document.getElementById('play-bankroll') as HTMLInputElement;
@@ -56,66 +59,117 @@ const hiloSpreadSection = document.getElementById('hilo-spread-section') as HTML
 // Pot of Gold UI Elements
 const pogConfigSection = document.getElementById('pog-config-section') as HTMLDivElement;
 const pogPaytableSelect = document.getElementById('pog-paytable') as HTMLSelectElement;
-const pogMainBetInput = document.getElementById('pog-main-bet') as HTMLInputElement;
+const pogStakingModeSelect = document.getElementById('pog-staking-mode') as HTMLSelectElement;
+const pogBtn1Hand = document.getElementById('pog-btn-1hand') as HTMLButtonElement;
+const pogBtn2Hands = document.getElementById('pog-btn-2hands') as HTMLButtonElement;
+const pogHandsHint = document.getElementById('pog-hands-hint') as HTMLDivElement;
 const pogSideBetInput = document.getElementById('pog-side-bet') as HTMLInputElement;
+const pogCustomMainContainer = document.getElementById('pog-custom-main-container') as HTMLDivElement;
+const pogTriggerMainBetInput = document.getElementById('pog-trigger-main-bet') as HTMLInputElement;
+const pogSideBetCapSelect = document.getElementById('pog-side-bet-cap') as HTMLSelectElement;
+const pogCustomCapContainer = document.getElementById('pog-custom-cap-container') as HTMLDivElement;
+const pogCustomCapInput = document.getElementById('pog-custom-cap') as HTMLInputElement;
 const pogTriggerRcInput = document.getElementById('pog-trigger-rc') as HTMLInputElement;
 const pogFarmFivesCheckbox = document.getElementById('pog-farm-fives') as HTMLInputElement;
 const pogWongEnabledCheckbox = document.getElementById('pog-wong-enabled') as HTMLInputElement;
 const pogWongControls = document.getElementById('pog-wong-controls') as HTMLDivElement;
 const pogWongInInput = document.getElementById('pog-wong-in') as HTMLInputElement;
 const pogWongOutInput = document.getElementById('pog-wong-out') as HTMLInputElement;
-const pogRaiseMainEnabledCheckbox = document.getElementById('pog-raise-main-enabled') as HTMLInputElement;
-const pogRaiseMainControls = document.getElementById('pog-raise-main-controls') as HTMLDivElement;
-const pogTriggerMainBetInput = document.getElementById('pog-trigger-main-bet') as HTMLInputElement;
+const pogPreviewContent = document.getElementById('pog-preview-content') as HTMLDivElement;
 
-const pogPreset1HandBtn = document.getElementById('pog-preset-1hand') as HTMLButtonElement;
-const pogPreset2HandsBtn = document.getElementById('pog-preset-2hands') as HTMLButtonElement;
+let pogSpotsOnTrigger: 1 | 2 = 2; // default 2 spots
 
 pogWongEnabledCheckbox.addEventListener('change', () => {
   pogWongControls.style.display = pogWongEnabledCheckbox.checked ? 'flex' : 'none';
 });
 
-pogRaiseMainEnabledCheckbox.addEventListener('change', () => {
-  pogRaiseMainControls.style.display = pogRaiseMainEnabledCheckbox.checked ? 'flex' : 'none';
+pogStakingModeSelect.addEventListener('change', () => {
+  pogCustomMainContainer.style.display = pogStakingModeSelect.value === 'custom' ? 'flex' : 'none';
+  updatePogPreview();
 });
 
-function updatePogPresetStyles() {
-  const val = pogTriggerMainBetInput.value.trim().toLowerCase();
-  const is2Hands = val.includes('2x') || val.includes('2×') || val.includes('2*');
-  if (is2Hands) {
-    pogPreset2HandsBtn.style.borderColor = 'var(--color-primary)';
-    pogPreset2HandsBtn.style.color = 'var(--color-primary)';
-    pogPreset2HandsBtn.style.fontWeight = '600';
-    pogPreset1HandBtn.style.borderColor = 'var(--border-color)';
-    pogPreset1HandBtn.style.color = 'var(--text-secondary)';
-    pogPreset1HandBtn.style.fontWeight = '400';
-  } else {
-    pogPreset1HandBtn.style.borderColor = 'var(--color-primary)';
-    pogPreset1HandBtn.style.color = 'var(--color-primary)';
-    pogPreset1HandBtn.style.fontWeight = '600';
-    pogPreset2HandsBtn.style.borderColor = 'var(--border-color)';
-    pogPreset2HandsBtn.style.color = 'var(--text-secondary)';
-    pogPreset2HandsBtn.style.fontWeight = '400';
+pogSideBetCapSelect.addEventListener('change', () => {
+  pogCustomCapContainer.style.display = pogSideBetCapSelect.value === 'custom' ? 'flex' : 'none';
+  updatePogPreview();
+});
+
+pogBtn1Hand?.addEventListener('click', () => {
+  pogSpotsOnTrigger = 1;
+  pogBtn1Hand.style.borderColor = 'var(--color-primary)';
+  pogBtn1Hand.style.color = 'var(--color-primary)';
+  pogBtn1Hand.style.fontWeight = '700';
+  pogBtn2Hands.style.borderColor = 'var(--border-color)';
+  pogBtn2Hands.style.color = 'var(--text-secondary)';
+  pogBtn2Hands.style.fontWeight = '500';
+  updatePogPreview();
+});
+
+pogBtn2Hands?.addEventListener('click', () => {
+  pogSpotsOnTrigger = 2;
+  pogBtn2Hands.style.borderColor = 'var(--color-primary)';
+  pogBtn2Hands.style.color = 'var(--color-primary)';
+  pogBtn2Hands.style.fontWeight = '700';
+  pogBtn1Hand.style.borderColor = 'var(--border-color)';
+  pogBtn1Hand.style.color = 'var(--text-secondary)';
+  pogBtn1Hand.style.fontWeight = '500';
+  updatePogPreview();
+});
+
+ruleMinBetInput.addEventListener('input', updatePogPreview);
+pogSideBetInput.addEventListener('input', updatePogPreview);
+pogTriggerMainBetInput.addEventListener('input', updatePogPreview);
+pogCustomCapInput.addEventListener('input', updatePogPreview);
+
+function updatePogPreview() {
+  if (!pogPreviewContent) return;
+  const minBet = parseInt(ruleMinBetInput.value, 10) || 10;
+  const rawSideBet = parseInt(pogSideBetInput.value, 10) || 25;
+  const stakingMode = pogStakingModeSelect ? pogStakingModeSelect.value : 'tied';
+  const capMode = pogSideBetCapSelect ? pogSideBetCapSelect.value : 'none';
+  const customCap = parseInt(pogCustomCapInput?.value || '25', 10) || 25;
+  
+  const spots = pogSpotsOnTrigger;
+  const minMainForSpots = spots === 2 ? (minBet * 2) : minBet;
+
+  let triggerMainPerSpot = minMainForSpots;
+  if (stakingMode === 'tied') {
+    triggerMainPerSpot = Math.max(minMainForSpots, rawSideBet);
+  } else if (stakingMode === 'custom') {
+    triggerMainPerSpot = Math.max(minMainForSpots, parseInt(pogTriggerMainBetInput.value, 10) || minMainForSpots);
   }
+
+  let effectiveCap = 1000;
+  if (capMode === '25') effectiveCap = 25;
+  else if (capMode === '50') effectiveCap = 50;
+  else if (capMode === '100') effectiveCap = 100;
+  else if (capMode === 'custom') effectiveCap = customCap;
+
+  let triggerSidePerSpot = Math.min(rawSideBet, effectiveCap);
+  if (stakingMode === 'tied') {
+    triggerSidePerSpot = Math.min(triggerSidePerSpot, triggerMainPerSpot);
+  }
+
+  const outsideTotal = minBet;
+  const triggerTotalRound = spots * (triggerMainPerSpot + triggerSidePerSpot);
+
+  if (pogHandsHint) {
+    pogHandsHint.innerHTML = spots === 2
+      ? `Playing 2 spots requires <strong>2× Table Min ($${minBet * 2}/spot)</strong>.`
+      : `Playing 1 spot requires <strong>1× Table Min ($${minBet}/spot)</strong>.`;
+  }
+
+  pogPreviewContent.innerHTML = `
+    <div style="margin-bottom: 0.35rem;">
+      <span style="color: var(--text-muted); font-weight: 600;">🟡 Outside Trigger (RC &gt; 12):</span><br>
+      &nbsp;&nbsp;1 spot × $${minBet} Main + $0 Side = <strong>$${outsideTotal} / round</strong>
+    </div>
+    <div>
+      <span style="color: var(--color-success); font-weight: 700;">🟢 Inside Trigger (RC ≤ 12):</span><br>
+      &nbsp;&nbsp;${spots} ${spots === 1 ? 'spot' : 'spots'} × ($${triggerMainPerSpot} Main + $${triggerSidePerSpot} Side) = <strong>$${triggerTotalRound} / round</strong>
+      ${triggerSidePerSpot < rawSideBet ? `<span style="display:block; font-size: 0.72rem; color: var(--color-danger); margin-top: 0.15rem;">*Side bet clamped to $${triggerSidePerSpot} by house cap</span>` : ''}
+    </div>
+  `;
 }
-
-pogPreset1HandBtn?.addEventListener('click', () => {
-  pogRaiseMainEnabledCheckbox.checked = true;
-  pogRaiseMainControls.style.display = 'flex';
-  pogTriggerMainBetInput.value = '25';
-  updatePogPresetStyles();
-});
-
-pogPreset2HandsBtn?.addEventListener('click', () => {
-  pogRaiseMainEnabledCheckbox.checked = true;
-  pogRaiseMainControls.style.display = 'flex';
-  pogTriggerMainBetInput.value = '2x25';
-  updatePogPresetStyles();
-});
-
-pogTriggerMainBetInput?.addEventListener('input', () => {
-  updatePogPresetStyles();
-});
 
 // Toggle game type UI
 ruleGameTypeSelect.addEventListener('change', () => {
@@ -123,6 +177,8 @@ ruleGameTypeSelect.addEventListener('change', () => {
   if (isPotOfGold) {
     pogConfigSection.style.display = 'block';
     hiloSpreadSection.style.display = 'none';
+    if (standardRulesContainer) standardRulesContainer.style.display = 'none';
+    if (standardPlayerSettings) standardPlayerSettings.style.display = 'none';
     
     // Pot of Gold defaults
     playBankrollInput.value = '10000';
@@ -130,7 +186,8 @@ ruleGameTypeSelect.addEventListener('change', () => {
     rulePenetrationInput.value = '83';
     ruleMinBetInput.value = '10';
     pogPaytableSelect.value = 'pt2';
-    pogMainBetInput.value = '10';
+    pogStakingModeSelect.value = 'tied';
+    pogSpotsOnTrigger = 2;
     pogSideBetInput.value = '25';
     pogTriggerRcInput.value = '12';
     pogFarmFivesCheckbox.checked = true;
@@ -138,17 +195,25 @@ ruleGameTypeSelect.addEventListener('change', () => {
     pogWongControls.style.display = 'none';
     pogWongInInput.value = '12';
     pogWongOutInput.value = '20';
-    pogRaiseMainEnabledCheckbox.checked = false;
-    pogRaiseMainControls.style.display = 'none';
-    pogTriggerMainBetInput.value = '25';
     playStrategySelect.value = 'basic';
     playWongoutInput.checked = false;
     ruleSoft17Select.value = 'hit';
     ruleDasSelect.value = 'true';
     ruleSurrenderSelect.value = 'false';
+
+    pogBtn2Hands.style.borderColor = 'var(--color-primary)';
+    pogBtn2Hands.style.color = 'var(--color-primary)';
+    pogBtn2Hands.style.fontWeight = '700';
+    pogBtn1Hand.style.borderColor = 'var(--border-color)';
+    pogBtn1Hand.style.color = 'var(--text-secondary)';
+    pogBtn1Hand.style.fontWeight = '500';
+
+    updatePogPreview();
   } else {
     pogConfigSection.style.display = 'none';
     hiloSpreadSection.style.display = 'block';
+    if (standardRulesContainer) standardRulesContainer.style.display = 'block';
+    if (standardPlayerSettings) standardPlayerSettings.style.display = 'block';
     playBankrollInput.value = '25000';
     rulePenetrationInput.value = '83';
     ruleMinBetInput.value = '10';
@@ -383,8 +448,17 @@ function startFastSimulation() {
   initChart();
   
   const isPotOfGold = ruleGameTypeSelect.value === 'free_bet';
-  const mainBetRaw = isPotOfGold ? pogMainBetInput.value.trim() : ruleMinBetInput.value.trim();
-  const sideBetRaw = pogSideBetInput.value.trim();
+  const minBet = parseInt(ruleMinBetInput.value, 10) || 10;
+  const spots = isPotOfGold ? pogSpotsOnTrigger : 1;
+  const minMainForSpots = spots === 2 ? (minBet * 2) : minBet;
+  const rawSideBet = parseInt(pogSideBetInput?.value || '25', 10) || 25;
+
+  let triggerMainPerSpot = minMainForSpots;
+  if (pogStakingModeSelect.value === 'tied') {
+    triggerMainPerSpot = Math.max(minMainForSpots, rawSideBet);
+  } else if (pogStakingModeSelect.value === 'custom') {
+    triggerMainPerSpot = Math.max(minMainForSpots, parseInt(pogTriggerMainBetInput?.value || '25', 10) || minMainForSpots);
+  }
 
   const rules: GameRules = {
     gameType: isPotOfGold ? 'free_bet' : 'standard',
@@ -395,16 +469,18 @@ function startFastSimulation() {
     maxSplits: 3,
     surrenderAllowed: isPotOfGold ? false : (ruleSurrenderSelect.value === 'true'),
     penetration: parseInt(rulePenetrationInput.value, 10) / 100,
-    minBet: parseSpreadNumber(mainBetRaw, 10),
+    minBet: minBet,
     maxBet: parseInt(ruleMaxBetInput.value, 10) || 1000,
     potOfGold: isPotOfGold ? {
       enabled: true,
       paytable: pogPaytableSelect.value as 'pt2' | 'pt1',
-      mainBetNotation: mainBetRaw,
-      triggerMainBetNotation: pogTriggerMainBetInput.value.trim() || '25',
-      raiseMainOnTrigger: pogRaiseMainEnabledCheckbox.checked,
-      sideBetNotation: sideBetRaw,
-      sideBetAmount: parseSpreadNumber(sideBetRaw, 25),
+      handsOnTrigger: spots,
+      sideBetAmount: rawSideBet,
+      sideBetCapType: (pogStakingModeSelect.value === 'tied' ? 'tied' : pogSideBetCapSelect.value) as any,
+      sideBetCapValue: pogSideBetCapSelect.value === 'custom' ? parseInt(pogCustomCapInput?.value || '25', 10) || 25 : undefined,
+      mainBetNotation: minBet,
+      triggerMainBetNotation: `${spots}x${triggerMainPerSpot}`,
+      raiseMainOnTrigger: pogStakingModeSelect.value === 'tied' || pogStakingModeSelect.value === 'custom',
       triggerRC: parseInt(pogTriggerRcInput.value, 10) || 12,
       farmFives: pogFarmFivesCheckbox.checked,
       wonging: {
@@ -478,18 +554,19 @@ function setInputsDisabled(disabled: boolean) {
   playStrategySelect.disabled = disabled;
   playWongoutInput.disabled = disabled;
   playWongoutMinInput.disabled = disabled;
-  pogPaytableSelect.disabled = disabled;
-  pogMainBetInput.disabled = disabled;
-  pogSideBetInput.disabled = disabled;
-  pogTriggerRcInput.disabled = disabled;
-  pogFarmFivesCheckbox.disabled = disabled;
-  pogWongEnabledCheckbox.disabled = disabled;
-  pogWongInInput.disabled = disabled;
-  pogWongOutInput.disabled = disabled;
-  pogRaiseMainEnabledCheckbox.disabled = disabled;
-  pogTriggerMainBetInput.disabled = disabled;
-  if (pogPreset1HandBtn) pogPreset1HandBtn.disabled = disabled;
-  if (pogPreset2HandsBtn) pogPreset2HandsBtn.disabled = disabled;
+  if (pogPaytableSelect) pogPaytableSelect.disabled = disabled;
+  if (pogStakingModeSelect) pogStakingModeSelect.disabled = disabled;
+  if (pogBtn1Hand) pogBtn1Hand.disabled = disabled;
+  if (pogBtn2Hands) pogBtn2Hands.disabled = disabled;
+  if (pogSideBetInput) pogSideBetInput.disabled = disabled;
+  if (pogTriggerMainBetInput) pogTriggerMainBetInput.disabled = disabled;
+  if (pogSideBetCapSelect) pogSideBetCapSelect.disabled = disabled;
+  if (pogCustomCapInput) pogCustomCapInput.disabled = disabled;
+  if (pogTriggerRcInput) pogTriggerRcInput.disabled = disabled;
+  if (pogFarmFivesCheckbox) pogFarmFivesCheckbox.disabled = disabled;
+  if (pogWongEnabledCheckbox) pogWongEnabledCheckbox.disabled = disabled;
+  if (pogWongInInput) pogWongInInput.disabled = disabled;
+  if (pogWongOutInput) pogWongOutInput.disabled = disabled;
   simHandsSelect.disabled = disabled;
 
   const inputs = betSpreadContainer.querySelectorAll('input');
@@ -603,3 +680,4 @@ function renderProgress(progress: SimulationProgress, config: SimulationConfig) 
 // --------------------------------------------------------------------------
 renderBetSpreadEditor();
 initChart();
+updatePogPreview();

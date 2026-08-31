@@ -42,11 +42,14 @@ export interface PlayerSeat {
 export interface PotOfGoldConfig {
   enabled: boolean;
   paytable: 'pt2' | 'pt1'; // PT2 (3/12/30/50/100) or PT1 (Jackpot 3/10/30/60/100/300/1000)
+  handsOnTrigger?: 1 | 2; // 1 hand vs 2 hands (2 hands automatically requires 2x min bet)
+  sideBetAmount: number; // e.g. 25
+  sideBetCapType?: 'none' | 'tied' | '25' | '50' | '100' | 'custom';
+  sideBetCapValue?: number; // numeric cap when custom or fixed
   mainBetNotation?: string | number;
   triggerMainBetNotation?: string | number; // e.g. "25" or "2x25"
-  raiseMainOnTrigger?: boolean; // true = raise main bet during trigger window (Tied Staking: side <= main)
+  raiseMainOnTrigger?: boolean; // true = raise main bet during trigger window
   sideBetNotation?: string | number;
-  sideBetAmount: number; // e.g. 25
   triggerRC: number; // default 12 for 6 decks
   farmFives: boolean; // true = split 5s when side bet is active
   wonging?: {

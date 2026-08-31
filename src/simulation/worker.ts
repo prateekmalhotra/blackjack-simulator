@@ -209,23 +209,62 @@ function runSimulation(config: SimulationConfig) {
             }
 
             // Pot of Gold Side Bet Staking via POG2 Count
-            const triggerRC = rules.potOfGold?.triggerRC ?? 12;
+            const pog = rules.potOfGold;
+            const triggerRC = pog?.triggerRC ?? 12;
             const isSideStaked = table.pogRunningCount <= triggerRC;
             isSideStakedMap[seat.id] = isSideStaked;
 
-            // Parse main bet notation (supports base bet and raised bet on trigger)
-            const isRaiseOnTrigger = !!rules.potOfGold?.raiseMainOnTrigger && isSideStaked;
-            const mainNotation = isRaiseOnTrigger
-              ? (rules.potOfGold?.triggerMainBetNotation ?? rules.potOfGold?.sideBetNotation ?? 25)
-              : (rules.potOfGold?.mainBetNotation ?? rules.minBet);
+            let numHands = 1;
+            let mainBetPerHand = rules.minBet;
+            let sideBetPerHand = 0;
 
-            const mainSpread = parseSpreadValue(mainNotation, rules.minBet, 1, rules.maxBet);
-            let numHands = mainSpread.numHands;
-            let mainBetPerHand = mainSpread.betPerHand;
+            if (isSideStaked) {
+              const handsOnTrigger = pog?.handsOnTrigger ?? (String(pog?.triggerMainBetNotation || '').includes('2x') ? 2 : 1);
+              numHands = handsOnTrigger;
 
-            // Parse side bet notation (e.g. "2x25", "2×25", "25")
-            const sideSpread = parseSpreadValue(rules.potOfGold?.sideBetNotation ?? rules.potOfGold?.sideBetAmount ?? 25, 25, 1, 1000);
-            let sideBetPerHand = isSideStaked ? sideSpread.betPerHand : 0;
+              // If playing 2 hands, enforce casino 2x table minimum rule
+              const minAllowedMain = numHands === 2 ? (rules.minBet * 2) : rules.minBet;
+
+              if (pog?.raiseMainOnTrigger && pog?.triggerMainBetNotation) {
+                const parsed = parseSpreadValue(pog.triggerMainBetNotation, minAllowedMain, minAllowedMain, rules.maxBet);
+                mainBetPerHand = Math.max(minAllowedMain, parsed.betPerHand);
+              } else if (pog?.mainBetNotation) {
+                const parsed = parseSpreadValue(pog.mainBetNotation, minAllowedMain, minAllowedMain, rules.maxBet);
+                mainBetPerHand = Math.max(minAllowedMain, parsed.betPerHand);
+              } else {
+                mainBetPerHand = minAllowedMain;
+              }
+
+              // Determine Side Bet & apply Side Bet Cap
+              let rawSideBet = pog?.sideBetAmount ?? 25;
+              if (pog?.sideBetNotation) {
+                rawSideBet = parseSpreadValue(pog.sideBetNotation, 25, 1, 1000).betPerHand;
+              }
+
+              let effectiveCap = 1000;
+              if (pog?.sideBetCapType === 'tied') {
+                effectiveCap = mainBetPerHand; // Side <= Main
+              } else if (pog?.sideBetCapType === '25') {
+                effectiveCap = 25;
+              } else if (pog?.sideBetCapType === '50') {
+                effectiveCap = 50;
+              } else if (pog?.sideBetCapType === '100') {
+                effectiveCap = 100;
+              } else if (pog?.sideBetCapType === 'custom' && pog?.sideBetCapValue !== undefined) {
+                effectiveCap = pog.sideBetCapValue;
+              }
+
+              sideBetPerHand = Math.max(0, Math.min(rawSideBet, effectiveCap));
+            } else {
+              // Outside trigger: Always 1 hand of base main bet, 0 side bet
+              numHands = 1;
+              if (pog?.mainBetNotation) {
+                mainBetPerHand = parseSpreadValue(pog.mainBetNotation, rules.minBet, rules.minBet, rules.maxBet).betPerHand;
+              } else {
+                mainBetPerHand = rules.minBet;
+              }
+              sideBetPerHand = 0;
+            }
 
             let totalInitialBet = numHands * (mainBetPerHand + sideBetPerHand);
 

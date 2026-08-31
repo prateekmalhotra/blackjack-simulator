@@ -31,6 +31,10 @@
                 </select>
               </div>
               <div class="form-field">
+                <label>Table Minimum Bet ($)</label>
+                <input type="number" id="rule-minbet" value="10" min="1" max="1000" />
+              </div>
+              <div class="form-field">
                 <label>Decks in Shoe <span class="label-hint">(1 - 8)</span></label>
                 <input type="number" id="rule-decks" value="6" min="1" max="8" />
               </div>
@@ -52,19 +56,25 @@
                 <label>Deck Penetration <span class="label-hint">(%)</span></label>
                 <input type="number" id="rule-penetration" value="83" min="10" max="95" />
               </div>
-              <div class="form-field">
-                <label>Double After Split</label>
-                <select id="rule-das">
-                  <option value="true" selected>Allowed (DAS)</option>
-                  <option value="false">Not Allowed</option>
-                </select>
+              <div class="form-field" id="rule-maxbet-field">
+                <label>Table Maximum Bet ($)</label>
+                <input type="number" id="rule-maxbet" value="1000" min="10" />
               </div>
-              <div class="form-field">
-                <label>Late Surrender</label>
-                <select id="rule-surrender">
-                  <option value="false" selected>Not Allowed</option>
-                  <option value="true">Allowed</option>
-                </select>
+              <div id="standard-rules-container">
+                <div class="form-field">
+                  <label>Double After Split</label>
+                  <select id="rule-das">
+                    <option value="true" selected>Allowed (DAS)</option>
+                    <option value="false">Not Allowed</option>
+                  </select>
+                </div>
+                <div class="form-field" style="margin-top: 1.25rem;">
+                  <label>Late Surrender</label>
+                  <select id="rule-surrender">
+                    <option value="false" selected>Not Allowed</option>
+                    <option value="true">Allowed</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
@@ -90,45 +100,35 @@
                 <label>Starting Bankroll ($)</label>
                 <input type="number" id="play-bankroll" value="25000" min="100" max="1000000" step="100" />
               </div>
-              <div class="form-field">
-                <label>Strategy Model</label>
-                <select id="play-strategy">
-                  <option value="basic">Basic Strategy</option>
-                  <option value="i18" selected>Illustrious 18 Deviations</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label>Table Limits (Min / Max)</label>
-                <div style="display: flex; gap: 0.5rem;">
-                  <input type="number" id="rule-minbet" value="10" min="1" style="width: 50%;" />
-                  <input type="number" id="rule-maxbet" value="1000" min="1" style="width: 50%;" />
+              <div id="standard-player-settings">
+                <div class="form-field">
+                  <label>Strategy Model</label>
+                  <select id="play-strategy">
+                    <option value="basic">Basic Strategy</option>
+                    <option value="i18" selected>Illustrious 18 Deviations</option>
+                  </select>
                 </div>
-              </div>
-              <div class="form-field">
-                <label>True Count Rounding</label>
-                <select id="rule-rounding">
-                  <option value="ceil" selected>Safe / Round Up (frac ≥ 0.2 -> UP)</option>
-                  <option value="floor">Floor / Truncate</option>
-                  <option value="half">Round to nearest 0.5</option>
-                  <option value="whole">Round to nearest 1.0</option>
-                </select>
-              </div>
-              <div class="form-field" style="flex-direction: row; align-items: center; gap: 0.5rem; padding-top: 0.25rem;">
-                <input type="checkbox" id="play-wongout" style="width: auto; cursor: pointer;" checked />
-                <label for="play-wongout" style="margin-bottom: 0; cursor: pointer; user-select: none;">"Wong Out" (Skip if TC ≤</label>
-                <input type="number" id="play-wongout-min" value="-3" min="-10" max="10" style="width: 3.5rem; padding: 0.25rem; font-size: 0.8rem; margin: 0; border: 1px solid var(--border-color); border-radius: 4px; text-align: center; background-color: var(--bg-panel); color: var(--text-color);" />
-                <label for="play-wongout" style="margin-bottom: 0; cursor: pointer; user-select: none;">)</label>
-              </div>
-              <div class="form-field" style="margin-top: -0.5rem;">
-                <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin: 0;">
-                  Wonging Out: If the True Count falls to the selected threshold or lower, players leave the table and sit out until the next game (shoe starts) to avoid playing low-probability hands.
-                </p>
+                <div class="form-field" style="margin-top: 1.25rem;">
+                  <label>True Count Rounding</label>
+                  <select id="rule-rounding">
+                    <option value="ceil" selected>Safe / Round Up (frac ≥ 0.2 -> UP)</option>
+                    <option value="floor">Floor / Truncate</option>
+                    <option value="half">Round to nearest 0.5</option>
+                    <option value="whole">Round to nearest 1.0</option>
+                  </select>
+                </div>
+                <div class="form-field" style="flex-direction: row; align-items: center; gap: 0.5rem; padding-top: 0.5rem;">
+                  <input type="checkbox" id="play-wongout" style="width: auto; cursor: pointer;" checked />
+                  <label for="play-wongout" style="margin-bottom: 0; cursor: pointer; user-select: none;">"Wong Out" (Skip if TC ≤</label>
+                  <input type="number" id="play-wongout-min" value="-3" min="-10" max="10" style="width: 3.5rem; padding: 0.25rem; font-size: 0.8rem; margin: 0; border: 1px solid var(--border-color); border-radius: 4px; text-align: center; background-color: var(--bg-panel); color: var(--text-color);" />
+                  <label for="play-wongout" style="margin-bottom: 0; cursor: pointer; user-select: none;">)</label>
+                </div>
               </div>
             </div>
           </div>
 
           <div id="pog-config-section" style="display: none;">
-            <h2 class="section-title">Pot of Gold (POG2 System)</h2>
+            <h2 class="section-title">Pot of Gold Strategy (POG2)</h2>
             <div class="control-group">
               <div class="form-field">
                 <label>Side Bet Paytable</label>
@@ -137,25 +137,66 @@
                   <option value="pt1">Pay Table 1 (Jackpot 1000:1)</option>
                 </select>
               </div>
+
               <div class="form-field">
-                <label>Main Bet <span class="label-hint">(e.g. 10 or 2x20)</span></label>
-                <input type="text" id="pog-main-bet" value="10" placeholder="10 or 2x20" />
+                <label>Staking Mode / Casino Rule</label>
+                <select id="pog-staking-mode">
+                  <option value="tied" selected>Tied Staking (Side ≤ Main) ⭐ Recommended</option>
+                  <option value="unconstrained">Unconstrained (Flat Min Main + Side Bet)</option>
+                  <option value="custom">Custom Main Bet on Trigger</option>
+                </select>
               </div>
+
               <div class="form-field">
-                <label>Side Bet <span class="label-hint">(e.g. 25 or 2x25)</span></label>
-                <input type="text" id="pog-side-bet" value="25" placeholder="25 or 2x25" />
+                <label>Spots Played on Trigger (RC ≤ 12)</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                  <button type="button" id="pog-btn-1hand" class="btn btn-secondary" style="padding: 0.5rem 0.3rem; font-size: 0.78rem; font-weight: 600; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-secondary);">1 Spot</button>
+                  <button type="button" id="pog-btn-2hands" class="btn btn-secondary" style="padding: 0.5rem 0.3rem; font-size: 0.78rem; font-weight: 600; border: 1.5px solid var(--color-primary); background: var(--bg-panel); color: var(--color-primary);">2 Spots ⭐</button>
+                </div>
+                <div id="pog-hands-hint" style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.4; margin-top: 0.2rem;">
+                  Playing 2 spots requires <strong>2× Table Min ($20/spot)</strong>.
+                </div>
               </div>
+
               <div class="form-field">
-                <label>POG2 Staking Trigger Threshold</label>
+                <label>Side Bet Amount per Spot ($)</label>
+                <input type="number" id="pog-side-bet" value="25" min="1" max="1000" />
+              </div>
+
+              <div class="form-field" id="pog-custom-main-container" style="display: none;">
+                <label>Custom Main Bet per Spot on Trigger ($)</label>
+                <input type="number" id="pog-trigger-main-bet" value="25" min="1" max="1000" />
+              </div>
+
+              <div class="form-field">
+                <label>Side Bet Table Max Cap</label>
+                <select id="pog-side-bet-cap">
+                  <option value="none" selected>No Table Cap / Max ($500)</option>
+                  <option value="25">Max $25 Table Limit</option>
+                  <option value="50">Max $50 Table Limit</option>
+                  <option value="100">Max $100 Table Limit</option>
+                  <option value="custom">Custom Dollar Cap ($)</option>
+                </select>
+              </div>
+
+              <div class="form-field" id="pog-custom-cap-container" style="display: none;">
+                <label>Custom Side Bet Cap ($)</label>
+                <input type="number" id="pog-custom-cap" value="25" min="1" max="1000" />
+              </div>
+
+              <div class="form-field">
+                <label>POG2 Staking Trigger</label>
                 <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 0.5rem 0.75rem;">
                   <span style="font-size: 0.8125rem; color: var(--text-secondary); font-weight: 500;">Stake Side Bet when RC ≤</span>
                   <input type="number" id="pog-trigger-rc" value="12" min="-50" max="50" style="width: 4rem; padding: 0.35rem 0.5rem; border: 1px solid var(--border-color); border-radius: 0.375rem; text-align: center; background-color: var(--bg-sidebar); color: var(--text-primary); font-family: var(--font-mono); font-weight: 600;" />
                 </div>
               </div>
-              <div class="form-field" style="flex-direction: row; align-items: center; gap: 0.625rem; padding: 0.25rem 0;">
+
+              <div class="form-field" style="flex-direction: row; align-items: center; gap: 0.625rem; padding: 0.15rem 0;">
                 <input type="checkbox" id="pog-farm-fives" style="width: 1rem; height: 1rem; cursor: pointer; accent-color: var(--color-primary);" checked />
                 <label for="pog-farm-fives" style="margin-bottom: 0; cursor: pointer; user-select: none; font-size: 0.8125rem; font-weight: 500; color: var(--text-secondary);">"Farm" 5s (Split 5,5 while side bet active)</label>
               </div>
+
               <div class="form-field" style="padding: 0.75rem; background: var(--bg-panel); border-radius: 0.625rem; border: 1px solid var(--border-color);">
                 <div style="display: flex; align-items: center; justify-content: space-between;">
                   <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -165,53 +206,27 @@
                 </div>
                 <div id="pog-wong-controls" style="display: none; flex-direction: column; gap: 0.625rem; padding-top: 0.625rem; margin-top: 0.5rem; border-top: 1px dashed var(--border-color);">
                   <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <span style="font-size: 0.8125rem; color: var(--text-secondary);">Wong-In (Join Table):</span>
+                    <span style="font-size: 0.8125rem; color: var(--text-secondary);">Wong-In (Join):</span>
                     <div style="display: flex; align-items: center; gap: 0.35rem;">
                       <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">RC ≤</span>
                       <input type="number" id="pog-wong-in" value="12" min="-50" max="50" style="width: 3.5rem; padding: 0.25rem 0.35rem; border: 1px solid var(--border-color); border-radius: 0.375rem; text-align: center; font-family: var(--font-mono); font-weight: 600;" />
                     </div>
                   </div>
                   <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <span style="font-size: 0.8125rem; color: var(--text-secondary);">Wong-Out (Leave Table):</span>
+                    <span style="font-size: 0.8125rem; color: var(--text-secondary);">Wong-Out (Leave):</span>
                     <div style="display: flex; align-items: center; gap: 0.35rem;">
                       <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">RC &gt;</span>
                       <input type="number" id="pog-wong-out" value="20" min="-50" max="50" style="width: 3.5rem; padding: 0.25rem 0.35rem; border: 1px solid var(--border-color); border-radius: 0.375rem; text-align: center; font-family: var(--font-mono); font-weight: 600;" />
                     </div>
                   </div>
-                  <div style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.35; margin-top: 0.25rem;">
-                    Watch shoe without betting until RC ≤ in-threshold. Stay &amp; play until RC &gt; out-threshold or shoe shuffles.
-                  </div>
                 </div>
               </div>
-              <div class="form-field" style="padding: 0.75rem; background: var(--bg-panel); border-radius: 0.625rem; border: 1px solid var(--border-color);">
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                  <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <input type="checkbox" id="pog-raise-main-enabled" style="width: 1rem; height: 1rem; cursor: pointer; accent-color: var(--color-primary);" />
-                    <label for="pog-raise-main-enabled" style="margin-bottom: 0; cursor: pointer; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary);">Tied Staking / Trigger Bet Sizing</label>
-                  </div>
-                </div>
-                <div id="pog-raise-main-controls" style="display: none; flex-direction: column; gap: 0.625rem; padding-top: 0.625rem; margin-top: 0.5rem; border-top: 1px dashed var(--border-color);">
-                  <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <span style="font-size: 0.8125rem; color: var(--text-secondary);">Trigger Bet (RC ≤ 12):</span>
-                    <input type="text" id="pog-trigger-main-bet" value="2x25" placeholder="e.g. 2x25 or 25" style="width: 6.5rem; padding: 0.35rem 0.5rem; border: 1px solid var(--border-color); border-radius: 0.375rem; text-align: center; font-family: var(--font-sans); font-weight: 600;" />
-                  </div>
-                  <div style="display: flex; gap: 0.5rem;">
-                    <button type="button" id="pog-preset-1hand" class="btn btn-secondary" style="flex: 1; padding: 0.3rem 0.4rem; font-size: 0.72rem;">1 Hand ($25)</button>
-                    <button type="button" id="pog-preset-2hands" class="btn btn-secondary" style="flex: 1; padding: 0.3rem 0.4rem; font-size: 0.72rem; border-color: var(--color-primary); color: var(--color-primary); font-weight: 600;">2 Hands (2x$25) ⭐</button>
-                  </div>
-                  <div style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.35;">
-                    • <strong>Outside Trigger (RC &gt; 12):</strong> Bets base main bet (1 hand of $10).<br>
-                    • <strong>Inside Trigger (RC ≤ 12):</strong> Spreads to 2 hands of $25 Main + $25 Side each ($50 Main + $50 Side total).
-                  </div>
-                </div>
-              </div>
-              <div class="form-field" style="margin-top: 0.25rem; padding: 0.875rem; background: var(--bg-panel); border-radius: 0.625rem; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
-                <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.5rem;">POG2 Count Tags:</div>
-                <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.6; font-family: var(--font-mono);">
-                  • <strong>A, 10, J, Q, K:</strong> <span style="color: var(--color-danger); font-weight: 700;">-1</span><br>
-                  • <strong>3, 4, 6, 7 &amp; Red 2 (♥/♦):</strong> <span style="color: var(--color-success); font-weight: 700;">+1</span><br>
-                  • <strong>5, 8, 9, Black 2:</strong> <span>0</span><br>
-                  <div style="margin-top: 0.35rem; font-style: italic; color: var(--text-muted); font-size: 0.72rem; font-family: var(--font-sans);">Initial Shoe RC = 24 (6 decks). Trigger RC ≤ 12.</div>
+
+              <!-- Live Staking Preview -->
+              <div id="pog-live-preview" style="padding: 0.875rem; background: var(--bg-panel); border-radius: 0.625rem; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.5rem;">Live Staking Preview:</div>
+                <div id="pog-preview-content" style="font-size: 0.78rem; line-height: 1.6; color: var(--text-secondary);">
+                  <!-- Dynamically rendered in main.ts -->
                 </div>
               </div>
             </div>

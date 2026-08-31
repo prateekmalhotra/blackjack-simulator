@@ -148,8 +148,13 @@ export function getFreeBetStrategyAction(
   if (value >= 17) return 'S';
   if (value <= 8) return 'H';
 
-  // Hard 12-16: Stand vs 4-6, Hit vs 2,3,7-11
-  if (value >= 12 && value <= 16) {
+  // Hard 13-16: Stand vs 2-6, Hit vs 7-11
+  if (value >= 13 && value <= 16) {
+    return dVal >= 2 && dVal <= 6 ? 'S' : 'H';
+  }
+
+  // Hard 12: Stand vs 4-6, Hit vs 2, 3, 7-11
+  if (value === 12) {
     return dVal >= 4 && dVal <= 6 ? 'S' : 'H';
   }
 
