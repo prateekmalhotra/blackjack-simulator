@@ -119,6 +119,7 @@ ruleMinBetInput.addEventListener('input', updatePogPreview);
 pogSideBetInput.addEventListener('input', updatePogPreview);
 pogTriggerMainBetInput.addEventListener('input', updatePogPreview);
 pogCustomCapInput.addEventListener('input', updatePogPreview);
+pogTriggerRcInput.addEventListener('input', updatePogPreview);
 
 function updatePogPreview() {
   if (!pogPreviewContent) return;
@@ -127,6 +128,8 @@ function updatePogPreview() {
   const stakingMode = pogStakingModeSelect ? pogStakingModeSelect.value : 'tied';
   const capMode = pogSideBetCapSelect ? pogSideBetCapSelect.value : 'none';
   const customCap = parseInt(pogCustomCapInput?.value || '25', 10) || 25;
+  const triggerRC = parseInt(pogTriggerRcInput?.value || '12', 10);
+  const displayRC = isNaN(triggerRC) ? 12 : triggerRC;
   
   const spots = pogSpotsOnTrigger;
   const minMainForSpots = spots === 2 ? (minBet * 2) : minBet;
@@ -160,11 +163,11 @@ function updatePogPreview() {
 
   pogPreviewContent.innerHTML = `
     <div style="margin-bottom: 0.35rem;">
-      <span style="color: var(--text-muted); font-weight: 600;">🟡 Outside Trigger (RC &gt; 12):</span><br>
+      <span style="color: var(--text-muted); font-weight: 600;">🟡 Outside Trigger (RC &gt; ${displayRC}):</span><br>
       &nbsp;&nbsp;1 spot × $${minBet} Main + $0 Side = <strong>$${outsideTotal} / round</strong>
     </div>
     <div>
-      <span style="color: var(--color-success); font-weight: 700;">🟢 Inside Trigger (RC ≤ 12):</span><br>
+      <span style="color: var(--color-success); font-weight: 700;">🟢 Inside Trigger (RC ≤ ${displayRC}):</span><br>
       &nbsp;&nbsp;${spots} ${spots === 1 ? 'spot' : 'spots'} × ($${triggerMainPerSpot} Main + $${triggerSidePerSpot} Side) = <strong>$${triggerTotalRound} / round</strong>
       ${triggerSidePerSpot < rawSideBet ? `<span style="display:block; font-size: 0.72rem; color: var(--color-danger); margin-top: 0.15rem;">*Side bet clamped to $${triggerSidePerSpot} by house cap</span>` : ''}
     </div>
