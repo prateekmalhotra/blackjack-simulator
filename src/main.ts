@@ -435,15 +435,6 @@ function updateChart(progress: SimulationProgress, config: SimulationConfig) {
 simStartBtn.addEventListener('click', startFastSimulation);
 simStopBtn.addEventListener('click', stopFastSimulation);
 
-function parseSpreadNumber(val: string | number, defaultVal: number): number {
-  if (typeof val === 'number') return val;
-  const clean = String(val).trim().toLowerCase().replace('$', '').replace(/\s+/g, '');
-  const match = clean.match(/^(\d+)[xX\u00d7*](\d+)$/);
-  if (match) return parseInt(match[2], 10);
-  const n = parseInt(clean, 10);
-  return isNaN(n) ? defaultVal : n;
-}
-
 function startFastSimulation() {
   initChart();
   
