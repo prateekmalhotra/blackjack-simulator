@@ -226,10 +226,10 @@ function runSimulation(config: SimulationConfig) {
               const minAllowedMain = numHands === 2 ? (rules.minBet * 2) : rules.minBet;
 
               if (pog?.raiseMainOnTrigger && pog?.triggerMainBetNotation) {
-                const parsed = parseSpreadValue(pog.triggerMainBetNotation, minAllowedMain, minAllowedMain, rules.maxBet);
-                mainBetPerHand = Math.max(minAllowedMain, parsed.betPerHand);
+                const parsed = parseSpreadValue(pog.triggerMainBetNotation, rules.minBet, 1, rules.maxBet);
+                mainBetPerHand = parsed.betPerHand;
               } else if (pog?.mainBetNotation) {
-                const parsed = parseSpreadValue(pog.mainBetNotation, minAllowedMain, minAllowedMain, rules.maxBet);
+                const parsed = parseSpreadValue(pog.mainBetNotation, minAllowedMain, 1, rules.maxBet);
                 mainBetPerHand = Math.max(minAllowedMain, parsed.betPerHand);
               } else {
                 mainBetPerHand = minAllowedMain;

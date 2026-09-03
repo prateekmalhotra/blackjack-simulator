@@ -138,7 +138,10 @@ function updatePogPreview() {
   if (stakingMode === 'tied') {
     triggerMainPerSpot = Math.max(minMainForSpots, rawSideBet);
   } else if (stakingMode === 'custom') {
-    triggerMainPerSpot = Math.max(minMainForSpots, parseInt(pogTriggerMainBetInput.value, 10) || minMainForSpots);
+    const customVal = parseInt(pogTriggerMainBetInput.value, 10);
+    triggerMainPerSpot = isNaN(customVal) ? minBet : Math.max(1, customVal);
+  } else if (stakingMode === 'unconstrained') {
+    triggerMainPerSpot = minMainForSpots;
   }
 
   let effectiveCap = 1000;
@@ -156,9 +159,15 @@ function updatePogPreview() {
   const triggerTotalRound = spots * (triggerMainPerSpot + triggerSidePerSpot);
 
   if (pogHandsHint) {
-    pogHandsHint.innerHTML = spots === 2
-      ? `Playing 2 spots requires <strong>2× Table Min ($${minBet * 2}/spot)</strong>.`
-      : `Playing 1 spot requires <strong>1× Table Min ($${minBet}/spot)</strong>.`;
+    if (stakingMode === 'custom') {
+      pogHandsHint.innerHTML = spots === 2
+        ? `Playing 2 spots with <strong>Custom Main ($${triggerMainPerSpot}/spot)</strong>.`
+        : `Playing 1 spot with <strong>Custom Main ($${triggerMainPerSpot}/spot)</strong>.`;
+    } else {
+      pogHandsHint.innerHTML = spots === 2
+        ? `Playing 2 spots requires <strong>2× Table Min ($${minBet * 2}/spot)</strong>.`
+        : `Playing 1 spot requires <strong>1× Table Min ($${minBet}/spot)</strong>.`;
+    }
   }
 
   pogPreviewContent.innerHTML = `
@@ -451,7 +460,10 @@ function startFastSimulation() {
   if (pogStakingModeSelect.value === 'tied') {
     triggerMainPerSpot = Math.max(minMainForSpots, rawSideBet);
   } else if (pogStakingModeSelect.value === 'custom') {
-    triggerMainPerSpot = Math.max(minMainForSpots, parseInt(pogTriggerMainBetInput?.value || '25', 10) || minMainForSpots);
+    const customVal = parseInt(pogTriggerMainBetInput?.value || '', 10);
+    triggerMainPerSpot = isNaN(customVal) ? minBet : Math.max(1, customVal);
+  } else if (pogStakingModeSelect.value === 'unconstrained') {
+    triggerMainPerSpot = minMainForSpots;
   }
 
   const rules: GameRules = {

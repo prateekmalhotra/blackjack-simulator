@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shoe Dynamics, Granular Edge & Lammer Cascade Guide</title>
+  <!-- Chart.js for interactive visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #090d13;
+      --card-bg: #111722;
+      --card-alt: #17202f;
+      --border: #243042;
+      --text: #c9d1d9;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --gold: #f1c40f;
+      --gold-glow: rgba(241, 196, 15, 0.15);
+      --green: #2ecc71;
+      --green-glow: rgba(46, 204, 113, 0.15);
+      --red: #e74c3c;
+      --purple: #9b59b6;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      margin: 0;
+      padding: 2.5rem 1.5rem;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      background: linear-gradient(180deg, rgba(88, 166, 255, 0.08) 0%, rgba(17, 23, 34, 0) 100%);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 2rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+      background: var(--gold-glow);
+      color: var(--gold);
+      border: 1px solid rgba(241, 196, 15, 0.4);
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      color: #fff;
+      margin: 0.5rem 0 1rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    /* Stat Cards Grid */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
+      background: var(--accent);
+    }
+
+    .stat-card.gold::before { background: var(--gold); }
+    .stat-card.green::before { background: var(--green); }
+    .stat-card.purple::before { background: var(--purple); }
+
+    .stat-val {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #fff;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      margin: 0.25rem 0;
+    }
+
+    .stat-lbl {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .stat-sub {
+      font-size: 0.75rem;
+      color: #8b949e;
+      margin-top: 0.35rem;
+    }
+
+    /* Sections */
+    section {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      color: #fff;
+      margin-top: 0;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      color: var(--accent);
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Callouts */
+    .callout {
+      background: var(--card-alt);
+      border-left: 4px solid var(--accent);
+      padding: 1.25rem;
+      border-radius: 0 0.5rem 0.5rem 0;
+      margin: 1.5rem 0;
+    }
+
+    .callout.gold {
+      border-left-color: var(--gold);
+      background: rgba(241, 196, 15, 0.06);
+    }
+
+    .callout.green {
+      border-left-color: var(--green);
+      background: rgba(46, 204, 113, 0.06);
+    }
+
+    .callout.red {
+      border-left-color: var(--red);
+      background: rgba(231, 76, 60, 0.06);
+    }
+
+    .callout-title {
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* Tables */
+    .table-container {
+      overflow-x: auto;
+      margin: 1.5rem 0;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.92rem;
+    }
+
+    th {
+      background: #141c28;
+      color: #fff;
+      padding: 0.85rem 1rem;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    .tag-win { color: var(--green); font-weight: 700; }
+    .tag-loss { color: var(--red); font-weight: 700; }
+    .tag-gold { color: var(--gold); font-weight: 700; }
+
+    /* Chart wrappers */
+    .chart-box {
+      background: #0d121b;
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .chart-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    /* Grid layout */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    @media (max-width: 768px) {
+      .two-col { grid-template-columns: 1fr; }
+      body { padding: 1rem; }
+    }
+
+    .box {
+      background: var(--card-alt);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 1.25rem;
+    }
+
+    .box-title {
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .number-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 800;
+      margin-right: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="badge">Advantage Play Quantitative Manual</div>
+    <h1>Shoe Dynamics, Granular Edge & Cascade Guide</h1>
+    <p class="subtitle">Complete mathematical breakdown of player edge curves from -10 to -24, 75% vs 83% penetration shoe trigger frequencies, and the exact probability of lammer cascades.</p>
+    
+    <div class="stat-grid">
+      <div class="stat-card gold">
+        <div class="stat-lbl">Trigger Shoe Frequency</div>
+        <div class="stat-val">65.7%</div>
+        <div class="stat-sub">Nearly 2 in 3 shoes at 83% Pen</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-lbl">2-Lammer Hit Odds</div>
+        <div class="stat-val">1 in 57</div>
+        <div class="stat-sub">+$300 Hit ~1-2 times every session</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-lbl">Max Player Advantage</div>
+        <div class="stat-val">+33.1%</div>
+        <div class="stat-sub">At Count -24 (+$8.29 EV per $25 bet)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">Hourly Action (Heads-Up)</div>
+        <div class="stat-val">~64 Bets</div>
+        <div class="stat-sub">Trigger Side Bets per Hour</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- SECTION 1: GRANULAR PLAYER EDGE BY COUNT -->
+  <section>
+    <h2>📈 1. The Granular Player Edge: Count -10 to -24</h2>
+    
+    <p>Many players wonder: <em>"At what count does the gold mine open, and how fast does my edge grow?"</em></p>
+    <p>Below are the results of a <strong>10,000,000-hand simulation</strong> measuring the exact player advantage on every $25 Pot of Gold side bet placed at each integer count level:</p>
+
+    <div class="chart-box">
+      <div class="chart-title">🚀 Player Advantage Hockey Stick Curve (% Edge by Count)</div>
+      <canvas id="edgeChart" height="90"></canvas>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Your Count (from 0)</th>
+            <th>Standard RC</th>
+            <th>Player Edge (PT2 Standard)</th>
+            <th>Player Edge (PT1 Jackpot)</th>
+            <th>Profit per $25 Bet</th>
+            <th>Any Lammer Hit %</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>-10</strong></td>
+            <td>+14</td>
+            <td class="tag-loss">-1.13%</td>
+            <td class="tag-loss">-2.61%</td>
+            <td class="tag-loss">-$0.28</td>
+            <td>17.55%</td>
+          </tr>
+          <tr>
+            <td><strong>-11</strong></td>
+            <td>+13</td>
+            <td class="tag-win">+1.04%</td>
+            <td class="tag-win">+0.16%</td>
+            <td>+$0.26</td>
+            <td>17.91%</td>
+          </tr>
+          <tr style="background: rgba(46, 204, 113, 0.08); font-weight: 700;">
+            <td><strong>-12 (Trigger Line) 🎯</strong></td>
+            <td>+12</td>
+            <td class="tag-win">+4.00%</td>
+            <td class="tag-win">+3.10%</td>
+            <td class="tag-win">+$1.00</td>
+            <td>18.06%</td>
+          </tr>
+          <tr>
+            <td><strong>-13</strong></td>
+            <td>+11</td>
+            <td class="tag-win">+6.44%</td>
+            <td class="tag-win">+5.16%</td>
+            <td class="tag-win">+$1.61</td>
+            <td>18.30%</td>
+          </tr>
+          <tr>
+            <td><strong>-14</strong></td>
+            <td>+10</td>
+            <td class="tag-win">+7.15%</td>
+            <td class="tag-win">+5.74%</td>
+            <td class="tag-win">+$1.79</td>
+            <td>18.62%</td>
+          </tr>
+          <tr style="background: rgba(241, 196, 15, 0.08); font-weight: 700;">
+            <td><strong>-15 (Double-Digit Zone) 🚀</strong></td>
+            <td>+9</td>
+            <td class="tag-gold">+10.20%</td>
+            <td class="tag-gold">+9.24%</td>
+            <td class="tag-gold">+$2.55</td>
+            <td>18.93%</td>
+          </tr>
+          <tr>
+            <td><strong>-16</strong></td>
+            <td>+8</td>
+            <td class="tag-gold">+10.48%</td>
+            <td class="tag-gold">+8.92%</td>
+            <td class="tag-gold">+$2.62</td>
+            <td>19.04%</td>
+          </tr>
+          <tr>
+            <td><strong>-17</strong></td>
+            <td>+7</td>
+            <td class="tag-gold">+14.97%</td>
+            <td class="tag-gold">+14.32%</td>
+            <td class="tag-gold">+$3.74</td>
+            <td>19.60%</td>
+          </tr>
+          <tr style="background: rgba(155, 89, 182, 0.1); font-weight: 700;">
+            <td><strong>-18 to -20 (Nuclear Zone) 🔥</strong></td>
+            <td>+6 to +4</td>
+            <td class="tag-gold">+18.8% to +23.2%</td>
+            <td class="tag-gold">+17.8% to +23.4%</td>
+            <td class="tag-gold">+$4.70 to +$5.79</td>
+            <td>20.0% to 20.6%</td>
+          </tr>
+          <tr style="background: rgba(155, 89, 182, 0.15); font-weight: 700;">
+            <td><strong>-22 to -24 (All-Time High) 👑</strong></td>
+            <td>+2 to 0</td>
+            <td class="tag-gold">+30.2% to +33.1%</td>
+            <td class="tag-gold">+30.9% to +35.7%</td>
+            <td class="tag-gold">+$7.54 to +$8.29</td>
+            <td>21.1% to 21.8%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-title">⚠️ The Count -11 Trap: Why We Don't Bet $10 Here</div>
+      <p style="margin: 0;">At Count -11, the side bet edge is only <strong>+0.16%</strong> (PT1) to <strong>+1.04%</strong> (PT2). On a $10 bet, that earns just <strong>1.6 cents</strong>. Meanwhile, your $10 main bet loses <strong>-10.4¢</strong> to the house in 3:2 and <strong>-24.7¢</strong> in 6:5. Adding a side bet at -11 leaves you in the red while risking $10 on an 82% losing proposition. <strong>Discipline rule: Wait for &le; -12!</strong></p>
+    </div>
+  </section>
+
+  <!-- SECTION 2: LAMMER PROBABILITIES & CASCADES -->
+  <section>
+    <h2>🎲 2. The Lammer Cascade: What Happens When You Bet?</h2>
+    
+    <p>When you bet $25 on the side bet in the trigger zone, here is the exact probability of what happens, both unconditionally and once a lammer lands on your spot:</p>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Outcome</th>
+            <th>Payout (PT2)</th>
+            <th>Payout (PT1)</th>
+            <th>Cash on $25 Bet</th>
+            <th>Unconditional Odds (Every Bet Placed)</th>
+            <th>In Real Play Time (Heads-Up)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>0 Lammers (Loss)</strong></td>
+            <td>—</td>
+            <td>—</td>
+            <td class="tag-loss">-$25</td>
+            <td><strong>81.8% (4 in 5 hands)</strong></td>
+            <td>Almost every minute</td>
+          </tr>
+          <tr>
+            <td><strong>1 Lammer</strong></td>
+            <td>3:1</td>
+            <td>3:1</td>
+            <td class="tag-win">+$75</td>
+            <td><strong>1 in 6.3 hands (15.8%)</strong></td>
+            <td>~3 to 4 times per hour</td>
+          </tr>
+          <tr style="background: rgba(46, 204, 113, 0.08); font-weight: 700;">
+            <td><strong>2 Lammers 🚀</strong></td>
+            <td>12:1</td>
+            <td>10:1</td>
+            <td class="tag-win">+$300 (PT2)</td>
+            <td><strong>1 in 57 hands (1.74%)</strong></td>
+            <td>~1 to 2 times every 4-hour session!</td>
+          </tr>
+          <tr>
+            <td><strong>3 Lammers 🚀🚀</strong></td>
+            <td>30:1</td>
+            <td>30:1</td>
+            <td class="tag-gold">+$750</td>
+            <td><strong>1 in 208 hands (0.48%)</strong></td>
+            <td>~Once every 4-hour session!</td>
+          </tr>
+          <tr>
+            <td><strong>4 Lammers 🏆</strong></td>
+            <td>50:1</td>
+            <td>60:1</td>
+            <td class="tag-gold">+$1,250 to $1,500</td>
+            <td><strong>1 in 877 hands (0.11%)</strong></td>
+            <td>~Once a week (15 hrs/wk)</td>
+          </tr>
+          <tr>
+            <td><strong>5 Lammers 👑</strong></td>
+            <td>100:1</td>
+            <td>100:1</td>
+            <td class="tag-gold">+$2,500</td>
+            <td><strong>1 in 4,310 hands (0.02%)</strong></td>
+            <td>~Once every 2 to 3 months</td>
+          </tr>
+          <tr>
+            <td><strong>6+ Lammers 🦄</strong></td>
+            <td>100:1</td>
+            <td>300:1 to 1000:1</td>
+            <td class="tag-gold">+$7,500 to $25k</td>
+            <td><strong>1 in 75,000 hands (0.001%)</strong></td>
+            <td>Career jackpot (~1.5 to 2 years)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="two-col">
+      <div class="box">
+        <div class="box-title" style="color: var(--green);">🎯 What "1 in 57 Hands" Means:</div>
+        <p style="font-size: 0.9rem; margin-bottom: 0;">Playing 2 spots heads-up, you play 2 trigger bets per round. 57 bets is only <strong>~28 table rounds (about 4 to 5 trigger shoes)</strong>. You have a <strong>63% chance</strong> of hitting a +$300 score in 57 bets, and an <strong>86% chance</strong> across 2 sessions!</p>
+      </div>
+      <div class="box">
+        <div class="box-title" style="color: var(--accent);">🔄 The Conditional Cascade:</div>
+        <p style="font-size: 0.9rem; margin-bottom: 0;">Once the dealer puts 1 lammer on your spot, you have an <strong>almost 10% chance (1 in 10.4)</strong> of that hand cascading into 2 lammers (+$300) and a <strong>1 in 38 chance</strong> of exploding into 3 lammers (+$750)!</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: SHOE PENETRATION & DURATION -->
+  <section>
+    <h2>🃏 3. Shoe Penetration & Duration: 75% vs. 83% Heads-Up</h2>
+    
+    <p>From our <strong>100,000-shoe simulation</strong>, here is exactly how often shoes trigger and how long they stay hot when playing Heads-Up against the dealer:</p>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Shoe Metric</th>
+            <th>75% Penetration (Hotel Game)</th>
+            <th>83% Penetration (Good Table)</th>
+            <th>Advantage of 83% Pen</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Trigger Shoe Frequency</strong></td>
+            <td><strong>59.0% (1 in 1.70 shoes)</strong></td>
+            <td><strong>65.7% (1 in 1.52 shoes)</strong></td>
+            <td>🟢 <strong>+6.7% more hot shoes!</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Out of 10 Shoes Played</strong></td>
+            <td>~6 trigger | 4 cold</td>
+            <td>~7 trigger | 3 cold</td>
+            <td>Less time wasted on dead shoes</td>
+          </tr>
+          <tr>
+            <td><strong>Avg Trigger Rounds (In Hot Shoe)</strong></td>
+            <td><strong>7.8 rounds</strong> (15.6 hands @ 2 spots)</td>
+            <td><strong>8.6 rounds</strong> (17.2 hands @ 2 spots)</td>
+            <td>🟢 +1 full round deeper into hot shoe</td>
+          </tr>
+          <tr>
+            <td><strong>Median Hot Shoe Run</strong></td>
+            <td>6 rounds (12 hands)</td>
+            <td>7 rounds (14 hands)</td>
+            <td>Steady harvesting</td>
+          </tr>
+          <tr>
+            <td><strong>Top 10% Great Run 🚀</strong></td>
+            <td>16 rounds (32 hands)</td>
+            <td>18 rounds (36 hands)</td>
+            <td>Extended gold rush</td>
+          </tr>
+          <tr>
+            <td><strong>Max Hot Run Seen 👑</strong></td>
+            <td>27 rounds (54 hands)</td>
+            <td>29 rounds (58 hands)</td>
+            <td>Half the entire shoe was hot!</td>
+          </tr>
+          <tr style="background: rgba(46, 204, 113, 0.08); font-weight: 700;">
+            <td><strong>Trigger Bets per 1 Clock Hour</strong></td>
+            <td><strong>~56 trigger bets / hr</strong></td>
+            <td><strong>~64 trigger bets / hr</strong></td>
+            <td>🟢 <strong>+8 more shots at $300 hits per hour!</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout gold">
+      <div class="callout-title">💡 The Heads-Up Velocity Advantage</div>
+      <p style="margin: 0;">Because you are heads-up, a round takes only ~14 seconds outside trigger and ~22 seconds inside trigger. You burn through <strong>5.5 to 6 shoes every hour</strong>. In a 4-hour session, you see <strong>~22 shoes</strong>, trigger <strong>~14 of them</strong>, and play over <strong>240 trigger side bets</strong>!</p>
+    </div>
+  </section>
+
+  <!-- SECTION 4: THE 5s FARMING PROOF -->
+  <section>
+    <h2>🌱 4. The 5,5 Free Split (5s Farming) Mathematical Proof</h2>
+
+    <p>When you are dealt <strong>5,5 (Hard 10)</strong> with a side bet active, basic strategy tells you to <strong>split the 5s</strong> instead of doing a Free Double. Here is the 1,000,000-hand proof of why this is massive +EV:</p>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Strategy on Pair of 5s</th>
+            <th>Main Hand Profit</th>
+            <th>Side Bet Profit</th>
+            <th>Total Net Profit per Hand</th>
+            <th>Multi-Lammer Probability</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Free Double 5,5 ($25 Side Bet)</strong></td>
+            <td>+$4.16</td>
+            <td>+$70.24</td>
+            <td><strong>+$74.40</strong></td>
+            <td>0% chance of &gt;1 lammer (Hard locked at 1)</td>
+          </tr>
+          <tr style="background: rgba(46, 204, 113, 0.1); font-weight: 700;">
+            <td><strong>Free Split 5,5 (5s Farming @ $25)</strong> 🏆</td>
+            <td>+$1.76</td>
+            <td>+$219.79</td>
+            <td class="tag-win" style="font-size: 1.1rem;">+$221.55 (3× HIGHER PROFIT!)</td>
+            <td>41% chance of 2+ lammers! (31% for 2 | 10% for 3+)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-size: 0.9rem; color: var(--text-muted);"><strong>The Key:</strong> You sacrifice $2.40 of main hand profit ($4.16 down to $1.76) in exchange for <strong>+$149.55 of additional side bet profit</strong>. Splitting 5s is one of the single most profitable individual decisions in the entire game of Free Bet Blackjack!</p>
+  </section>
+
+</div>
+
+<!-- Interactive Chart Script -->
+<script>
+  const edgeCtx = document.getElementById('edgeChart').getContext('2d');
+
+  const counts = ['-10', '-11', '-12', '-13', '-14', '-15', '-16', '-17', '-18', '-19', '-20', '-22', '-24'];
+  const pt2Edges = [-1.13, 1.04, 4.00, 6.44, 7.15, 10.20, 10.48, 14.97, 18.78, 18.46, 23.15, 30.15, 33.14];
+  const zeroLine = Array(counts.length).fill(0);
+
+  new Chart(edgeCtx, {
+    type: 'line',
+    data: {
+      labels: counts.map(c => 'Count ' + c),
+      datasets: [
+        {
+          label: 'Player Edge % (Paytable 2)',
+          data: pt2Edges,
+          borderColor: '#f1c40f',
+          backgroundColor: 'rgba(241, 196, 15, 0.12)',
+          fill: true,
+          borderWidth: 3,
+          tension: 0.25,
+          pointBackgroundColor: '#f1c40f',
+          pointRadius: 4
+        },
+        {
+          label: 'Zero Edge (Break-Even)',
+          data: zeroLine,
+          borderColor: '#8b949e',
+          borderWidth: 1.5,
+          borderDash: [4, 4],
+          pointRadius: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels: { color: '#c9d1d9', font: { size: 11 } } },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return context.dataset.label + ': ' + context.raw.toFixed(2) + '%';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: '#243042' },
+          ticks: { color: '#8b949e' }
+        },
+        y: {
+          grid: { color: '#243042' },
+          ticks: {
+            color: '#8b949e',
+            callback: function(value) { return value + '%'; }
+          }
+        }
+      }
+    }
+  });
+</script>
+
+</body>
+</html>
