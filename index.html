@@ -141,9 +141,9 @@
               <div class="form-field">
                 <label>Staking Mode / Casino Rule</label>
                 <select id="pog-staking-mode">
-                  <option value="tied" selected>Tied Staking (Side ≤ Main) ⭐ Recommended</option>
-                  <option value="unconstrained">Unconstrained (Flat Min Main + Side Bet)</option>
-                  <option value="custom">Custom Main Bet on Trigger</option>
+                  <option value="custom" selected>Custom / Flexible Main &amp; Side Bets ⭐ (e.g. $5 Main + $40 Side)</option>
+                  <option value="tied">Tied Staking (Enforce Side ≤ Main, e.g. $40 Main + $40 Side)</option>
+                  <option value="unconstrained">Flat Table Min Main Bet (e.g. $10 Main + $40 Side)</option>
                 </select>
               </div>
 
@@ -170,18 +170,21 @@
                   <button type="button" id="pog-btn-2hands" class="btn btn-secondary" style="padding: 0.5rem 0.3rem; font-size: 0.78rem; font-weight: 600; border: 1.5px solid var(--color-primary); background: var(--bg-panel); color: var(--color-primary);">2 Spots ⭐</button>
                 </div>
                 <div id="pog-hands-hint" style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.4; margin-top: 0.2rem;">
-                  Playing 2 spots requires <strong>2× Table Min ($20/spot)</strong>.
+                  Playing 2 spots on trigger.
+                </div>
+              </div>
+
+              <div class="form-field" id="pog-custom-main-container">
+                <label>Main Bet per Spot on Trigger ($)</label>
+                <input type="number" id="pog-trigger-main-bet" value="5" min="1" max="1000" />
+                <div style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.3; margin-top: 0.2rem;">
+                  e.g. Set to 5 for your $5 main bet play.
                 </div>
               </div>
 
               <div class="form-field">
                 <label>Side Bet Amount per Spot ($)</label>
-                <input type="number" id="pog-side-bet" value="25" min="1" max="1000" />
-              </div>
-
-              <div class="form-field" id="pog-custom-main-container" style="display: none;">
-                <label>Custom Main Bet per Spot on Trigger ($)</label>
-                <input type="number" id="pog-trigger-main-bet" value="25" min="1" max="1000" />
+                <input type="number" id="pog-side-bet" value="40" min="1" max="1000" />
               </div>
 
               <div class="form-field">

@@ -222,17 +222,14 @@ function runSimulation(config: SimulationConfig) {
               const handsOnTrigger = pog?.handsOnTrigger ?? (String(pog?.triggerMainBetNotation || '').includes('2x') ? 2 : 1);
               numHands = handsOnTrigger;
 
-              // If playing 2 hands, enforce casino 2x table minimum rule
-              const minAllowedMain = numHands === 2 ? (rules.minBet * 2) : rules.minBet;
-
-              if (pog?.raiseMainOnTrigger && pog?.triggerMainBetNotation) {
+              if (pog?.triggerMainBetNotation) {
                 const parsed = parseSpreadValue(pog.triggerMainBetNotation, rules.minBet, 1, rules.maxBet);
                 mainBetPerHand = parsed.betPerHand;
               } else if (pog?.mainBetNotation) {
-                const parsed = parseSpreadValue(pog.mainBetNotation, minAllowedMain, 1, rules.maxBet);
-                mainBetPerHand = Math.max(minAllowedMain, parsed.betPerHand);
+                const parsed = parseSpreadValue(pog.mainBetNotation, rules.minBet, 1, rules.maxBet);
+                mainBetPerHand = parsed.betPerHand;
               } else {
-                mainBetPerHand = minAllowedMain;
+                mainBetPerHand = rules.minBet;
               }
 
               // Determine Side Bet & apply Side Bet Cap
