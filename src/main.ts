@@ -60,6 +60,10 @@ const hiloSpreadSection = document.getElementById('hilo-spread-section') as HTML
 const pogConfigSection = document.getElementById('pog-config-section') as HTMLDivElement;
 const pogPaytableSelect = document.getElementById('pog-paytable') as HTMLSelectElement;
 const pogStakingModeSelect = document.getElementById('pog-staking-mode') as HTMLSelectElement;
+const pogOutsideBtn1Hand = document.getElementById('pog-outside-btn-1hand') as HTMLButtonElement;
+const pogOutsideBtn2Hands = document.getElementById('pog-outside-btn-2hands') as HTMLButtonElement;
+const pogOutsideMainBetInput = document.getElementById('pog-outside-main-bet') as HTMLInputElement;
+
 const pogBtn1Hand = document.getElementById('pog-btn-1hand') as HTMLButtonElement;
 const pogBtn2Hands = document.getElementById('pog-btn-2hands') as HTMLButtonElement;
 const pogHandsHint = document.getElementById('pog-hands-hint') as HTMLDivElement;
@@ -77,7 +81,8 @@ const pogWongInInput = document.getElementById('pog-wong-in') as HTMLInputElemen
 const pogWongOutInput = document.getElementById('pog-wong-out') as HTMLInputElement;
 const pogPreviewContent = document.getElementById('pog-preview-content') as HTMLDivElement;
 
-let pogSpotsOnTrigger: 1 | 2 = 2; // default 2 spots
+let pogSpotsOutsideTrigger: 1 | 2 = 1; // default 1 spot from start
+let pogSpotsOnTrigger: 1 | 2 = 2; // default 2 spots on trigger
 
 pogWongEnabledCheckbox.addEventListener('change', () => {
   pogWongControls.style.display = pogWongEnabledCheckbox.checked ? 'flex' : 'none';
@@ -90,6 +95,52 @@ pogStakingModeSelect.addEventListener('change', () => {
 
 pogSideBetCapSelect.addEventListener('change', () => {
   pogCustomCapContainer.style.display = pogSideBetCapSelect.value === 'custom' ? 'flex' : 'none';
+  updatePogPreview();
+});
+
+pogOutsideBtn1Hand?.addEventListener('click', () => {
+  pogSpotsOutsideTrigger = 1;
+  pogOutsideBtn1Hand.style.borderColor = 'var(--color-primary)';
+  pogOutsideBtn1Hand.style.color = 'var(--color-primary)';
+  pogOutsideBtn1Hand.style.fontWeight = '700';
+  pogOutsideBtn2Hands.style.borderColor = 'var(--border-color)';
+  pogOutsideBtn2Hands.style.color = 'var(--text-secondary)';
+  pogOutsideBtn2Hands.style.fontWeight = '500';
+  updatePogPreview();
+});
+
+pogOutsideBtn2Hands?.addEventListener('click', () => {
+  pogSpotsOutsideTrigger = 2;
+  pogOutsideBtn2Hands.style.borderColor = 'var(--color-primary)';
+  pogOutsideBtn2Hands.style.color = 'var(--color-primary)';
+  pogOutsideBtn2Hands.style.fontWeight = '700';
+  pogOutsideBtn1Hand.style.borderColor = 'var(--border-color)';
+  pogOutsideBtn1Hand.style.color = 'var(--text-secondary)';
+  pogOutsideBtn1Hand.style.fontWeight = '500';
+  updatePogPreview();
+});
+
+pogOutsideMainBetInput?.addEventListener('input', () => {
+  const val = pogOutsideMainBetInput.value.trim().toLowerCase();
+  const match = val.match(/^(\d+)[xX\u00d7*](\d+)$/);
+  if (match) {
+    pogSpotsOutsideTrigger = Math.min(2, Math.max(1, parseInt(match[1], 10))) as 1 | 2;
+    if (pogSpotsOutsideTrigger === 2) {
+      pogOutsideBtn2Hands.style.borderColor = 'var(--color-primary)';
+      pogOutsideBtn2Hands.style.color = 'var(--color-primary)';
+      pogOutsideBtn2Hands.style.fontWeight = '700';
+      pogOutsideBtn1Hand.style.borderColor = 'var(--border-color)';
+      pogOutsideBtn1Hand.style.color = 'var(--text-secondary)';
+      pogOutsideBtn1Hand.style.fontWeight = '500';
+    } else {
+      pogOutsideBtn1Hand.style.borderColor = 'var(--color-primary)';
+      pogOutsideBtn1Hand.style.color = 'var(--color-primary)';
+      pogOutsideBtn1Hand.style.fontWeight = '700';
+      pogOutsideBtn2Hands.style.borderColor = 'var(--border-color)';
+      pogOutsideBtn2Hands.style.color = 'var(--text-secondary)';
+      pogOutsideBtn2Hands.style.fontWeight = '500';
+    }
+  }
   updatePogPreview();
 });
 
@@ -131,6 +182,21 @@ function updatePogPreview() {
   const triggerRC = parseInt(pogTriggerRcInput?.value || '12', 10);
   const displayRC = isNaN(triggerRC) ? 12 : triggerRC;
   
+  // Outside Trigger settings
+  const rawOutsideStr = pogOutsideMainBetInput ? pogOutsideMainBetInput.value.trim().toLowerCase() : '';
+  const matchOutside = rawOutsideStr.match(/^(\d+)[xX\u00d7*](\d+)$/);
+  let outsideSpots = pogSpotsOutsideTrigger;
+  let outsideMainPerSpot = minBet;
+  if (matchOutside) {
+    outsideSpots = Math.min(2, Math.max(1, parseInt(matchOutside[1], 10))) as 1 | 2;
+    outsideMainPerSpot = parseInt(matchOutside[2], 10) || minBet;
+  } else {
+    const parsedNum = parseInt(rawOutsideStr, 10);
+    outsideMainPerSpot = isNaN(parsedNum) ? minBet : Math.max(1, parsedNum);
+  }
+  const outsideTotal = outsideSpots * outsideMainPerSpot;
+
+  // Inside Trigger settings
   const spots = pogSpotsOnTrigger;
   const minMainForSpots = spots === 2 ? (minBet * 2) : minBet;
 
@@ -155,25 +221,24 @@ function updatePogPreview() {
     triggerSidePerSpot = Math.min(triggerSidePerSpot, triggerMainPerSpot);
   }
 
-  const outsideTotal = minBet;
   const triggerTotalRound = spots * (triggerMainPerSpot + triggerSidePerSpot);
 
   if (pogHandsHint) {
     if (stakingMode === 'custom') {
       pogHandsHint.innerHTML = spots === 2
-        ? `Playing 2 spots with <strong>Custom Main ($${triggerMainPerSpot}/spot)</strong>.`
-        : `Playing 1 spot with <strong>Custom Main ($${triggerMainPerSpot}/spot)</strong>.`;
+        ? `Playing 2 spots on trigger with <strong>Custom Main ($${triggerMainPerSpot}/spot)</strong>.`
+        : `Playing 1 spot on trigger with <strong>Custom Main ($${triggerMainPerSpot}/spot)</strong>.`;
     } else {
       pogHandsHint.innerHTML = spots === 2
-        ? `Playing 2 spots requires <strong>2× Table Min ($${minBet * 2}/spot)</strong>.`
-        : `Playing 1 spot requires <strong>1× Table Min ($${minBet}/spot)</strong>.`;
+        ? `Playing 2 spots on trigger requires <strong>2× Table Min ($${minBet * 2}/spot)</strong>.`
+        : `Playing 1 spot on trigger requires <strong>1× Table Min ($${minBet}/spot)</strong>.`;
     }
   }
 
   pogPreviewContent.innerHTML = `
     <div style="margin-bottom: 0.35rem;">
       <span style="color: var(--text-muted); font-weight: 600;">🟡 Outside Trigger (RC &gt; ${displayRC}):</span><br>
-      &nbsp;&nbsp;1 spot × $${minBet} Main + $0 Side = <strong>$${outsideTotal} / round</strong>
+      &nbsp;&nbsp;${outsideSpots} ${outsideSpots === 1 ? 'spot' : 'spots'} × $${outsideMainPerSpot} Main + $0 Side = <strong>$${outsideTotal} / round</strong>
     </div>
     <div>
       <span style="color: var(--color-success); font-weight: 700;">🟢 Inside Trigger (RC ≤ ${displayRC}):</span><br>
@@ -199,6 +264,8 @@ ruleGameTypeSelect.addEventListener('change', () => {
     ruleMinBetInput.value = '10';
     pogPaytableSelect.value = 'pt2';
     pogStakingModeSelect.value = 'tied';
+    pogSpotsOutsideTrigger = 1;
+    if (pogOutsideMainBetInput) pogOutsideMainBetInput.value = '10';
     pogSpotsOnTrigger = 2;
     pogSideBetInput.value = '25';
     pogTriggerRcInput.value = '12';
@@ -212,6 +279,15 @@ ruleGameTypeSelect.addEventListener('change', () => {
     ruleSoft17Select.value = 'hit';
     ruleDasSelect.value = 'true';
     ruleSurrenderSelect.value = 'false';
+
+    if (pogOutsideBtn1Hand && pogOutsideBtn2Hands) {
+      pogOutsideBtn1Hand.style.borderColor = 'var(--color-primary)';
+      pogOutsideBtn1Hand.style.color = 'var(--color-primary)';
+      pogOutsideBtn1Hand.style.fontWeight = '700';
+      pogOutsideBtn2Hands.style.borderColor = 'var(--border-color)';
+      pogOutsideBtn2Hands.style.color = 'var(--text-secondary)';
+      pogOutsideBtn2Hands.style.fontWeight = '500';
+    }
 
     pogBtn2Hands.style.borderColor = 'var(--color-primary)';
     pogBtn2Hands.style.color = 'var(--color-primary)';
@@ -466,6 +542,19 @@ function startFastSimulation() {
     triggerMainPerSpot = minMainForSpots;
   }
 
+  // Outside Trigger parse
+  const rawOutsideStr = pogOutsideMainBetInput ? pogOutsideMainBetInput.value.trim().toLowerCase() : '';
+  const matchOutside = rawOutsideStr.match(/^(\d+)[xX\u00d7*](\d+)$/);
+  let outsideSpots = pogSpotsOutsideTrigger;
+  let outsideMainPerSpot = minBet;
+  if (matchOutside) {
+    outsideSpots = Math.min(2, Math.max(1, parseInt(matchOutside[1], 10))) as 1 | 2;
+    outsideMainPerSpot = parseInt(matchOutside[2], 10) || minBet;
+  } else {
+    const parsedNum = parseInt(rawOutsideStr, 10);
+    outsideMainPerSpot = isNaN(parsedNum) ? minBet : Math.max(1, parsedNum);
+  }
+
   const rules: GameRules = {
     gameType: isPotOfGold ? 'free_bet' : 'standard',
     numDecks: parseInt(ruleDecksInput.value, 10),
@@ -480,11 +569,13 @@ function startFastSimulation() {
     potOfGold: isPotOfGold ? {
       enabled: true,
       paytable: pogPaytableSelect.value as 'pt2' | 'pt1',
+      handsOutsideTrigger: outsideSpots,
       handsOnTrigger: spots,
+      outsideMainBet: outsideMainPerSpot,
       sideBetAmount: rawSideBet,
       sideBetCapType: (pogStakingModeSelect.value === 'tied' ? 'tied' : pogSideBetCapSelect.value) as any,
       sideBetCapValue: pogSideBetCapSelect.value === 'custom' ? parseInt(pogCustomCapInput?.value || '25', 10) || 25 : undefined,
-      mainBetNotation: minBet,
+      mainBetNotation: `${outsideSpots}x${outsideMainPerSpot}`,
       triggerMainBetNotation: `${spots}x${triggerMainPerSpot}`,
       raiseMainOnTrigger: pogStakingModeSelect.value === 'tied' || pogStakingModeSelect.value === 'custom',
       triggerRC: parseInt(pogTriggerRcInput.value, 10) || 12,
@@ -562,6 +653,9 @@ function setInputsDisabled(disabled: boolean) {
   playWongoutMinInput.disabled = disabled;
   if (pogPaytableSelect) pogPaytableSelect.disabled = disabled;
   if (pogStakingModeSelect) pogStakingModeSelect.disabled = disabled;
+  if (pogOutsideBtn1Hand) pogOutsideBtn1Hand.disabled = disabled;
+  if (pogOutsideBtn2Hands) pogOutsideBtn2Hands.disabled = disabled;
+  if (pogOutsideMainBetInput) pogOutsideMainBetInput.disabled = disabled;
   if (pogBtn1Hand) pogBtn1Hand.disabled = disabled;
   if (pogBtn2Hands) pogBtn2Hands.disabled = disabled;
   if (pogSideBetInput) pogSideBetInput.disabled = disabled;

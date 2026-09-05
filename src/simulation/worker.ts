@@ -256,10 +256,13 @@ function runSimulation(config: SimulationConfig) {
 
               sideBetPerHand = Math.max(0, Math.min(rawSideBet, effectiveCap));
             } else {
-              // Outside trigger: Always 1 hand of base main bet, 0 side bet
-              numHands = 1;
+              // Outside trigger: Base spots from start
+              const handsOutside = pog?.handsOutsideTrigger ?? (String(pog?.mainBetNotation || '').includes('2x') ? 2 : 1);
+              numHands = handsOutside;
               if (pog?.mainBetNotation) {
-                mainBetPerHand = parseSpreadValue(pog.mainBetNotation, rules.minBet, rules.minBet, rules.maxBet).betPerHand;
+                const parsed = parseSpreadValue(pog.mainBetNotation, rules.minBet, 1, rules.maxBet);
+                mainBetPerHand = parsed.betPerHand;
+                if (parsed.numHands) numHands = parsed.numHands;
               } else {
                 mainBetPerHand = rules.minBet;
               }
