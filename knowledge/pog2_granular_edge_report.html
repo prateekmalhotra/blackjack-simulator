@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pot of Gold (POG2) Granular Edge & Count Curve Report</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #090d13;
+      --card-bg: #111722;
+      --card-alt: #17202f;
+      --border: #243042;
+      --text: #c9d1d9;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --gold: #f1c40f;
+      --gold-glow: rgba(241, 196, 15, 0.15);
+      --green: #2ecc71;
+      --green-glow: rgba(46, 204, 113, 0.15);
+      --red: #e74c3c;
+      --red-glow: rgba(231, 76, 60, 0.15);
+      --purple: #9b59b6;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      margin: 0;
+      padding: 2.5rem 1.5rem;
+    }
+
+    .container {
+      max-width: 1160px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      background: linear-gradient(180deg, rgba(88, 166, 255, 0.1) 0%, rgba(17, 23, 34, 0) 100%);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.3rem 0.85rem;
+      border-radius: 2rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+      background: var(--gold-glow);
+      color: var(--gold);
+      border: 1px solid rgba(241, 196, 15, 0.4);
+    }
+
+    h1 {
+      font-size: 2.35rem;
+      color: #fff;
+      margin: 0.5rem 0 1rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-size: 1.08rem;
+      color: var(--text-muted);
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    /* Stat Cards Grid */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+      margin: 2rem 0;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.35rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
+      background: var(--accent);
+    }
+
+    .stat-card.gold::before { background: var(--gold); }
+    .stat-card.green::before { background: var(--green); }
+    .stat-card.red::before { background: var(--red); }
+    .stat-card.purple::before { background: var(--purple); }
+
+    .stat-val {
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: #fff;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      margin: 0.25rem 0;
+    }
+
+    .stat-val.positive { color: var(--green); }
+    .stat-val.negative { color: var(--red); }
+    .stat-val.gold { color: var(--gold); }
+
+    .stat-lbl {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .stat-sub {
+      font-size: 0.76rem;
+      color: #8b949e;
+      margin-top: 0.35rem;
+    }
+
+    /* Sections */
+    section {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 2.25rem;
+      margin-bottom: 2.25rem;
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      color: #fff;
+      margin-top: 0;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      color: var(--accent);
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Callouts */
+    .callout {
+      background: var(--card-alt);
+      border-left: 4px solid var(--accent);
+      padding: 1.25rem 1.5rem;
+      border-radius: 0 0.5rem 0.5rem 0;
+      margin: 1.5rem 0;
+    }
+
+    .callout.gold {
+      border-left-color: var(--gold);
+      background: rgba(241, 196, 15, 0.06);
+    }
+
+    .callout.green {
+      border-left-color: var(--green);
+      background: rgba(46, 204, 113, 0.06);
+    }
+
+    .callout.red {
+      border-left-color: var(--red);
+      background: rgba(231, 76, 60, 0.06);
+    }
+
+    .callout-title {
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* Chart Container */
+    .chart-container {
+      position: relative;
+      width: 100%;
+      height: 380px;
+      margin: 1.5rem 0 2rem;
+      background: var(--card-alt);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1rem;
+    }
+
+    /* Tables */
+    .table-container {
+      overflow-x: auto;
+      margin: 1.5rem 0;
+      border: 1px solid var(--border);
+      border-radius: 0.6rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+
+    th {
+      background: var(--card-alt);
+      color: #fff;
+      padding: 0.85rem 1rem;
+      font-weight: 700;
+      border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr.row-trigger {
+      background: rgba(46, 204, 113, 0.08);
+      border-left: 3px solid var(--green);
+    }
+
+    tr.row-monster {
+      background: rgba(46, 204, 113, 0.16);
+      font-weight: 600;
+    }
+
+    tr.row-supernova {
+      background: rgba(241, 196, 15, 0.12);
+      font-weight: 700;
+    }
+
+    tr.row-danger {
+      background: rgba(231, 76, 60, 0.05);
+    }
+
+    tr.row-severe {
+      background: rgba(231, 76, 60, 0.12);
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 0.2rem 0.55rem;
+      border-radius: 1rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .pill-green { background: var(--green-glow); color: var(--green); border: 1px solid rgba(46, 204, 113, 0.3); }
+    .pill-gold { background: var(--gold-glow); color: var(--gold); border: 1px solid rgba(241, 196, 15, 0.3); }
+    .pill-red { background: var(--red-glow); color: var(--red); border: 1px solid rgba(231, 76, 60, 0.3); }
+    .pill-gray { background: rgba(139, 148, 158, 0.15); color: #8b949e; }
+
+    /* Legend */
+    .legend-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin: 1rem 0;
+      font-size: 0.8rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="badge">Mathematical Advantage Play Audit</div>
+    <h1>Pot of Gold (POG2) Granular Edge Curve</h1>
+    <div class="subtitle">
+      Exact empirical player edge, expected dollar returns, and hit frequencies across all counts from <strong>+20 down to -24</strong>. Based on an 8,000,000-round Monte Carlo simulation on a 6-deck, 83% penetration Free Bet Blackjack shoe (Paytable 2).
+    </div>
+  </div>
+
+  <!-- Key Stat Cards -->
+  <div class="stat-grid">
+    <div class="stat-card red">
+      <div class="stat-lbl">Baseline House Edge (Count 0)</div>
+      <div class="stat-val negative">-13.53%</div>
+      <div class="stat-sub">Donation Zone (Never bet outside trigger)</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-lbl">Trigger Cross (Count -12)</div>
+      <div class="stat-val positive">+4.11%</div>
+      <div class="stat-sub">Moment of Advantage (+$1.64 per $40 bet)</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="stat-lbl">Weighted Trigger Pool Edge</div>
+      <div class="stat-val gold">+10.45%</div>
+      <div class="stat-sub">Avg over all rounds where Count &le; -12</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-lbl">Deep Shoe Peak (Count -24)</div>
+      <div class="stat-val positive">+33.52%</div>
+      <div class="stat-sub">Max Edge (+$13.41 per $40 bet)</div>
+    </div>
+  </div>
+
+  <!-- Section 1: The Interactive Curve -->
+  <section>
+    <h2>📈 The Edge Curve Visualized: Why Negative is Gold</h2>
+    <p>
+      In card counting for the <strong>Pot of Gold side bet</strong>, high cards (10s, Jacks, Queens, Kings, Aces) leaving the shoe cause the count to plunge into <strong>negative territory</strong>. This leaves the remaining deck saturated with <strong>5s, 4s, 3s, and pairs</strong>, which triggers a geometric explosion in <strong>Free Splits</strong> and <strong>Free Doubles</strong>.
+    </p>
+
+    <div class="chart-container">
+      <canvas id="edgeChart"></canvas>
+    </div>
+
+    <div class="legend-row">
+      <div class="legend-item"><span class="dot" style="background: var(--red);"></span> <strong>Red Zone (+20 to -11):</strong> Negative player edge (-43.7% to -2.2%). Never touch the side bet.</div>
+      <div class="legend-item"><span class="dot" style="background: var(--green);"></span> <strong>Green Zone (-12 to -24):</strong> Positive player edge (+4.1% to +33.5%). Drop maximum allowed side action.</div>
+    </div>
+  </section>
+
+  <!-- Section 2: Complete Master Table -->
+  <section>
+    <h2>📊 Granular Edge Master Table (+20 to -24)</h2>
+    <p>
+      This table lists the exact empirical advantage at each count integer. Your count starts at <strong>0</strong> upon shuffle. (Internal simulator RC starts at <strong>24</strong> for 6 decks).
+    </p>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>User Count (0-based)</th>
+            <th>Sim RC (24-based)</th>
+            <th>Sample Rounds</th>
+            <th>Player Edge (%)</th>
+            <th>EV per $25 Bet</th>
+            <th>EV per $40 Bet</th>
+            <th>1+ Lammer Hit %</th>
+            <th>2+ Lammers (12:1+)</th>
+            <th>Action Protocol</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-severe">
+            <td class="mono"><strong>+20</strong></td>
+            <td class="mono">44</td>
+            <td class="mono">567</td>
+            <td class="mono" style="color: var(--red); font-weight: 800;">-43.74%</td>
+            <td class="mono">-$10.93</td>
+            <td class="mono">-$17.50</td>
+            <td>10.41%</td>
+            <td>0.88%</td>
+            <td><span class="pill pill-red">No Side Bet</span></td>
+          </tr>
+          <tr class="row-severe">
+            <td class="mono"><strong>+18</strong></td>
+            <td class="mono">42</td>
+            <td class="mono">1,544</td>
+            <td class="mono" style="color: var(--red); font-weight: 800;">-40.41%</td>
+            <td class="mono">-$10.10</td>
+            <td class="mono">-$16.17</td>
+            <td>11.66%</td>
+            <td>0.91%</td>
+            <td><span class="pill pill-red">No Side Bet</span></td>
+          </tr>
+          <tr class="row-severe">
+            <td class="mono"><strong>+16</strong></td>
+            <td class="mono">40</td>
+            <td class="mono">3,800</td>
+            <td class="mono" style="color: var(--red); font-weight: 800;">-24.21%</td>
+            <td class="mono">-$6.05</td>
+            <td class="mono">-$9.68</td>
+            <td>12.66%</td>
+            <td>1.42%</td>
+            <td><span class="pill pill-red">No Side Bet</span></td>
+          </tr>
+          <tr class="row-danger">
+            <td class="mono"><strong>+14</strong></td>
+            <td class="mono">38</td>
+            <td class="mono">8,254</td>
+            <td class="mono" style="color: var(--red); font-weight: 700;">-25.98%</td>
+            <td class="mono">-$6.49</td>
+            <td class="mono">-$10.39</td>
+            <td>14.28%</td>
+            <td>1.21%</td>
+            <td><span class="pill pill-red">No Side Bet</span></td>
+          </tr>
+          <tr class="row-danger">
+            <td class="mono"><strong>+12</strong></td>
+            <td class="mono">36</td>
+            <td class="mono">17,937</td>
+            <td class="mono" style="color: var(--red); font-weight: 700;">-28.90%</td>
+            <td class="mono">-$7.23</td>
+            <td class="mono">-$11.56</td>
+            <td>13.35%</td>
+            <td>1.25%</td>
+            <td><span class="pill pill-red">No Side Bet</span></td>
+          </tr>
+          <tr class="row-danger">
+            <td class="mono"><strong>+10</strong></td>
+            <td class="mono">34</td>
+            <td class="mono">35,629</td>
+            <td class="mono" style="color: var(--red); font-weight: 700;">-23.32%</td>
+            <td class="mono">-$5.83</td>
+            <td class="mono">-$9.33</td>
+            <td>13.81%</td>
+            <td>1.48%</td>
+            <td><span class="pill pill-red">No Side Bet</span></td>
+          </tr>
+          <tr class="row-danger">
+            <td class="mono"><strong>+8</strong></td>
+            <td class="mono">32</td>
+            <td class="mono">67,150</td>
+            <td class="mono" style="color: var(--red); font-weight: 700;">-21.77%</td>
+            <td class="mono">-$5.44</td>
+            <td class="mono">-$8.71</td>
+            <td>14.07%</td>
+            <td>1.43%</td>
+            <td><span class="pill pill-red">No Side Bet</span></td>
+          </tr>
+          <tr class="row-danger">
+            <td class="mono"><strong>+6</strong></td>
+            <td class="mono">30</td>
+            <td class="mono">117,983</td>
+            <td class="mono" style="color: var(--red); font-weight: 600;">-18.62%</td>
+            <td class="mono">-$4.66</td>
+            <td class="mono">-$7.45</td>
+            <td>14.67%</td>
+            <td>1.47%</td>
+            <td><span class="pill pill-red">No Side Bet</span></td>
+          </tr>
+          <tr class="row-danger">
+            <td class="mono"><strong>+4</strong></td>
+            <td class="mono">28</td>
+            <td class="mono">196,207</td>
+            <td class="mono" style="color: var(--red); font-weight: 600;">-17.97%</td>
+            <td class="mono">-$4.49</td>
+            <td class="mono">-$7.19</td>
+            <td>14.79%</td>
+            <td>1.53%</td>
+            <td><span class="pill pill-red">No Side Bet</span></td>
+          </tr>
+          <tr class="row-danger">
+            <td class="mono"><strong>+2</strong></td>
+            <td class="mono">26</td>
+            <td class="mono">305,668</td>
+            <td class="mono" style="color: var(--red); font-weight: 600;">-14.95%</td>
+            <td class="mono">-$3.74</td>
+            <td class="mono">-$5.98</td>
+            <td>15.22%</td>
+            <td>1.58%</td>
+            <td><span class="pill pill-red">No Side Bet</span></td>
+          </tr>
+          <tr style="background: rgba(255, 255, 255, 0.03); font-weight: 600;">
+            <td class="mono"><strong>0 (Shuffle)</strong></td>
+            <td class="mono">24</td>
+            <td class="mono">423,987</td>
+            <td class="mono" style="color: var(--red);">-13.53%</td>
+            <td class="mono">-$3.38</td>
+            <td class="mono">-$5.41</td>
+            <td>15.37%</td>
+            <td>1.62%</td>
+            <td><span class="pill pill-gray">Base Flat Bet</span></td>
+          </tr>
+          <tr>
+            <td class="mono"><strong>-2</strong></td>
+            <td class="mono">22</td>
+            <td class="mono">454,634</td>
+            <td class="mono" style="color: #ea580c;">-11.11%</td>
+            <td class="mono">-$2.78</td>
+            <td class="mono">-$4.44</td>
+            <td>15.67%</td>
+            <td>1.69%</td>
+            <td><span class="pill pill-gray">Wait</span></td>
+          </tr>
+          <tr>
+            <td class="mono"><strong>-4</strong></td>
+            <td class="mono">20</td>
+            <td class="mono">438,780</td>
+            <td class="mono" style="color: #ea580c;">-10.05%</td>
+            <td class="mono">-$2.51</td>
+            <td class="mono">-$4.02</td>
+            <td>15.76%</td>
+            <td>1.71%</td>
+            <td><span class="pill pill-gray">Wait</span></td>
+          </tr>
+          <tr>
+            <td class="mono"><strong>-6</strong></td>
+            <td class="mono">18</td>
+            <td class="mono">410,818</td>
+            <td class="mono" style="color: #ea580c;">-8.45%</td>
+            <td class="mono">-$2.11</td>
+            <td class="mono">-$3.38</td>
+            <td>16.01%</td>
+            <td>1.72%</td>
+            <td><span class="pill pill-gray">Wait</span></td>
+          </tr>
+          <tr>
+            <td class="mono"><strong>-8</strong></td>
+            <td class="mono">16</td>
+            <td class="mono">370,721</td>
+            <td class="mono" style="color: #ca8a04;">-6.04%</td>
+            <td class="mono">-$1.51</td>
+            <td class="mono">-$2.41</td>
+            <td>16.45%</td>
+            <td>1.81%</td>
+            <td><span class="pill pill-gray">Approaching</span></td>
+          </tr>
+          <tr>
+            <td class="mono"><strong>-10</strong></td>
+            <td class="mono">14</td>
+            <td class="mono">319,782</td>
+            <td class="mono" style="color: #ca8a04;">-2.78%</td>
+            <td class="mono">-$0.70</td>
+            <td class="mono">-$1.11</td>
+            <td>16.85%</td>
+            <td>1.86%</td>
+            <td><span class="pill pill-gray">Get Chips Ready</span></td>
+          </tr>
+          <tr>
+            <td class="mono"><strong>-11</strong></td>
+            <td class="mono">13</td>
+            <td class="mono">291,427</td>
+            <td class="mono" style="color: #ca8a04;">-2.23%</td>
+            <td class="mono">-$0.56</td>
+            <td class="mono">-$0.89</td>
+            <td>17.03%</td>
+            <td>1.89%</td>
+            <td><span class="pill pill-gray">Doorstep</span></td>
+          </tr>
+          <!-- TRIGGER THRESHOLD -->
+          <tr class="row-trigger">
+            <td class="mono"><strong>-12 ⭐</strong></td>
+            <td class="mono">12</td>
+            <td class="mono">260,498</td>
+            <td class="mono" style="color: var(--green); font-weight: 800;">+4.11%</td>
+            <td class="mono" style="color: var(--green); font-weight: 700;">+$1.03</td>
+            <td class="mono" style="color: var(--green); font-weight: 700;">+$1.64</td>
+            <td>17.26%</td>
+            <td>2.22%</td>
+            <td><span class="pill pill-green">STRIKE: $40 SIDE</span></td>
+          </tr>
+          <tr class="row-trigger">
+            <td class="mono"><strong>-13</strong></td>
+            <td class="mono">11</td>
+            <td class="mono">229,240</td>
+            <td class="mono" style="color: var(--green); font-weight: 800;">+4.19%</td>
+            <td class="mono" style="color: var(--green); font-weight: 700;">+$1.05</td>
+            <td class="mono" style="color: var(--green); font-weight: 700;">+$1.67</td>
+            <td>17.38%</td>
+            <td>2.18%</td>
+            <td><span class="pill pill-green">STRIKE: $40 SIDE</span></td>
+          </tr>
+          <tr class="row-trigger">
+            <td class="mono"><strong>-14</strong></td>
+            <td class="mono">10</td>
+            <td class="mono">199,178</td>
+            <td class="mono" style="color: var(--green); font-weight: 800;">+8.35%</td>
+            <td class="mono" style="color: var(--green); font-weight: 700;">+$2.09</td>
+            <td class="mono" style="color: var(--green); font-weight: 700;">+$3.34</td>
+            <td>17.78%</td>
+            <td>2.31%</td>
+            <td><span class="pill pill-green">STRIKE: $40 SIDE</span></td>
+          </tr>
+          <tr class="row-trigger">
+            <td class="mono"><strong>-15</strong></td>
+            <td class="mono">9</td>
+            <td class="mono">170,201</td>
+            <td class="mono" style="color: var(--green); font-weight: 800;">+9.32%</td>
+            <td class="mono" style="color: var(--green); font-weight: 700;">+$2.33</td>
+            <td class="mono" style="color: var(--green); font-weight: 700;">+$3.73</td>
+            <td>18.18%</td>
+            <td>2.30%</td>
+            <td><span class="pill pill-green">STRIKE: $40 SIDE</span></td>
+          </tr>
+          <!-- MONSTER ZONE -->
+          <tr class="row-monster">
+            <td class="mono"><strong>-16 🚀</strong></td>
+            <td class="mono">8</td>
+            <td class="mono">141,602</td>
+            <td class="mono" style="color: var(--green); font-weight: 900;">+13.50%</td>
+            <td class="mono" style="color: var(--green); font-weight: 800;">+$3.37</td>
+            <td class="mono" style="color: var(--green); font-weight: 800;">+$5.40</td>
+            <td>18.38%</td>
+            <td>2.44%</td>
+            <td><span class="pill pill-green">MONSTER ADVANTAGE</span></td>
+          </tr>
+          <tr class="row-monster">
+            <td class="mono"><strong>-17</strong></td>
+            <td class="mono">7</td>
+            <td class="mono">116,686</td>
+            <td class="mono" style="color: var(--green); font-weight: 900;">+14.40%</td>
+            <td class="mono" style="color: var(--green); font-weight: 800;">+$3.60</td>
+            <td class="mono" style="color: var(--green); font-weight: 800;">+$5.76</td>
+            <td>18.70%</td>
+            <td>2.41%</td>
+            <td><span class="pill pill-green">MONSTER ADVANTAGE</span></td>
+          </tr>
+          <tr class="row-monster">
+            <td class="mono"><strong>-18</strong></td>
+            <td class="mono">6</td>
+            <td class="mono">93,869</td>
+            <td class="mono" style="color: var(--green); font-weight: 900;">+16.66%</td>
+            <td class="mono" style="color: var(--green); font-weight: 800;">+$4.16</td>
+            <td class="mono" style="color: var(--green); font-weight: 800;">+$6.66</td>
+            <td>19.09%</td>
+            <td>2.45%</td>
+            <td><span class="pill pill-green">MONSTER ADVANTAGE</span></td>
+          </tr>
+          <!-- SUPERNOVA -->
+          <tr class="row-supernova">
+            <td class="mono"><strong>-19 🔥</strong></td>
+            <td class="mono">5</td>
+            <td class="mono">74,821</td>
+            <td class="mono" style="color: var(--gold); font-weight: 900;">+21.06%</td>
+            <td class="mono" style="color: var(--gold); font-weight: 800;">+$5.27</td>
+            <td class="mono" style="color: var(--gold); font-weight: 800;">+$8.42</td>
+            <td>19.23%</td>
+            <td>2.57%</td>
+            <td><span class="pill pill-gold">SUPERNOVA</span></td>
+          </tr>
+          <tr class="row-supernova">
+            <td class="mono"><strong>-20</strong></td>
+            <td class="mono">4</td>
+            <td class="mono">58,566</td>
+            <td class="mono" style="color: var(--gold); font-weight: 900;">+22.38%</td>
+            <td class="mono" style="color: var(--gold); font-weight: 800;">+$5.60</td>
+            <td class="mono" style="color: var(--gold); font-weight: 800;">+$8.95</td>
+            <td>19.85%</td>
+            <td>2.63%</td>
+            <td><span class="pill pill-gold">SUPERNOVA</span></td>
+          </tr>
+          <tr class="row-supernova">
+            <td class="mono"><strong>-21</strong></td>
+            <td class="mono">3</td>
+            <td class="mono">44,412</td>
+            <td class="mono" style="color: var(--gold); font-weight: 900;">+23.01%</td>
+            <td class="mono" style="color: var(--gold); font-weight: 800;">+$5.75</td>
+            <td class="mono" style="color: var(--gold); font-weight: 800;">+$9.21</td>
+            <td>19.84%</td>
+            <td>2.66%</td>
+            <td><span class="pill pill-gold">SUPERNOVA</span></td>
+          </tr>
+          <tr class="row-supernova">
+            <td class="mono"><strong>-22 💎</strong></td>
+            <td class="mono">2</td>
+            <td class="mono">32,827</td>
+            <td class="mono" style="color: var(--gold); font-weight: 900;">+30.06%</td>
+            <td class="mono" style="color: var(--gold); font-weight: 800;">+$7.51</td>
+            <td class="mono" style="color: var(--gold); font-weight: 800;">+$12.02</td>
+            <td>20.33%</td>
+            <td>2.68%</td>
+            <td><span class="pill pill-gold">MAX EDGE</span></td>
+          </tr>
+          <tr class="row-supernova">
+            <td class="mono"><strong>-23</strong></td>
+            <td class="mono">1</td>
+            <td class="mono">24,400</td>
+            <td class="mono" style="color: var(--gold); font-weight: 900;">+29.21%</td>
+            <td class="mono" style="color: var(--gold); font-weight: 800;">+$7.30</td>
+            <td class="mono" style="color: var(--gold); font-weight: 800;">+$11.68</td>
+            <td>20.41%</td>
+            <td>2.82%</td>
+            <td><span class="pill pill-gold">MAX EDGE</span></td>
+          </tr>
+          <tr class="row-supernova">
+            <td class="mono"><strong>-24 💎</strong></td>
+            <td class="mono">0</td>
+            <td class="mono">17,591</td>
+            <td class="mono" style="color: var(--gold); font-weight: 900;">+33.52%</td>
+            <td class="mono" style="color: var(--gold); font-weight: 800;">+$8.38</td>
+            <td class="mono" style="color: var(--gold); font-weight: 800;">+$13.41</td>
+            <td>21.07%</td>
+            <td>2.96%</td>
+            <td><span class="pill pill-gold">PEAK ADVANTAGE</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Section 3: The 10% Weighted Pool Explained -->
+  <section>
+    <h2>🎯 Why the "10% at -12" Rule of Thumb Exists</h2>
+    <div class="callout gold">
+      <div class="callout-title">The Crossover vs The Pool Average</div>
+      <p style="margin-bottom: 0;">
+        You remembered <strong>"10% edge at -12"</strong> because $-12$ is your <strong>entry gate</strong> to a pool of rounds that averages <strong>+10.45%</strong>!
+      </p>
+    </div>
+    <p>
+      When a shoe reaches Count $-12$, it rarely stays parked exactly at $-12$. As more cards are dealt:
+    </p>
+    <ul>
+      <li><strong>32% of the time:</strong> The shoe hovers around $-12$ to $-13$ (where your edge is <strong>+4.1%</strong>).</li>
+      <li><strong>41% of the time:</strong> The shoe dives deeper into $-14$ to $-17$ (where your edge jumps to <strong>+8% to +14%</strong>).</li>
+      <li><strong>27% of the time:</strong> The shoe hits a super-rich vein of small cards and plunges past $-18$ to $-24$ (where your edge explodes to <strong>+16% to +33.5%</strong>).</li>
+    </ul>
+    <p>
+      When you weight every single triggered round by its real shoe frequency, your <strong>average return on capital is +10.45%</strong>! That means over an extended session:
+    </p>
+    <ul>
+      <li>Every time you bet <strong>1 spot of $40 Side Bet:</strong> You are realizing <strong>+$4.18 in pure mathematical EV</strong>.</li>
+      <li>Every time you bet <strong>2 spots of $40 Side Bet ($80 total):</strong> You are realizing <strong>+$8.36 in pure mathematical EV per round</strong>.</li>
+    </ul>
+  </section>
+
+  <!-- Section 4: Paytable Mechanics & Fives Farming -->
+  <section>
+    <h2>💎 Fives Farming: The Turbocharger of Your Edge</h2>
+    <p>
+      On standard Free Bet Blackjack, basic strategy dictates that a player should <strong>double on a pair of 5,5</strong> (hard 10). 
+    </p>
+    <div class="callout green">
+      <div class="callout-title">The POG Advantage Play Deviation</div>
+      <p style="margin-bottom: 0;">
+        When the Pot of Gold side bet is active ($\text{Count} \le -12$), you must <strong>SPLIT 5s instead of doubling</strong>.
+      </p>
+    </div>
+    <p>
+      Why? Splitting 5,5 accomplishes three massive things:
+    </p>
+    <ol>
+      <li><strong>Instant Free Lammer:</strong> The split itself is free and awards an automatic lammer.</li>
+      <li><strong>Secondary Double Opportunities:</strong> Each 5 has an enormous probability of catching a 4, 5, or 6, giving you <strong>another Free Double</strong> on 9, 10, or 11 on the split hands!</li>
+      <li><strong>Lammer Stacking:</strong> A single hand starting with 5,5 frequently produces <strong>2, 3, or even 4 lammers</strong>, paying $12:1$ ($480) or $30:1$ ($1,200).</li>
+    </ol>
+  </section>
+
+  <!-- Section 5: Casino Playbook for Vegas -->
+  <section>
+    <h2>🎰 Tactical Summary for Las Vegas Locals (Boyd & Station)</h2>
+    <ul>
+      <li><strong>Count &ge; -11:</strong> Play your base main bet (e.g. 2 spots of $20 or 1 spot of $10) with <strong>$0 on the Pot of Gold</strong>. Don't donate money to the house edge.</li>
+      <li><strong>Count reaches -12:</strong> Immediately drop your $40 on the Pot of Gold circle ($25 green + three $5 reds).</li>
+      <li><strong>Count reaches -16 or deeper:</strong> You are in a mathematically certified money printer (+13.5% to +33.5% player advantage). Stay calm, do not change your physical demeanor, and take every free split and free double.</li>
+      <li><strong>The Walkout Signal:</strong> The moment you hit a 2-lammer ($12:1 = +$480) or 3-lammer ($30:1 = +$1,200), color up on the next shuffle, tip the dealer a red chip, and exit.</li>
+    </ul>
+  </section>
+
+</div>
+
+<script>
+  // Chart.js render
+  const ctx = document.getElementById('edgeChart').getContext('2d');
+  
+  const counts = [
+    20, 18, 16, 14, 12, 10, 8, 6, 4, 2, 0,
+    -2, -4, -6, -8, -10, -11, -12, -13, -14, -15, -16, -17, -18, -19, -20, -22, -24
+  ];
+
+  const edges = [
+    -43.74, -40.41, -24.21, -25.98, -28.90, -23.32, -21.77, -18.62, -17.97, -14.95, -13.53,
+    -11.11, -10.05, -8.45, -6.04, -2.78, -2.23, 4.11, 4.19, 8.35, 9.32, 13.50, 14.40, 16.66, 21.06, 22.38, 30.06, 33.52
+  ];
+
+  const colors = edges.map(e => e >= 0 ? '#2ecc71' : '#e74c3c');
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: counts.map(c => (c >= 0 ? '+' + c : '' + c)),
+      datasets: [{
+        label: 'Player Edge (%)',
+        data: edges,
+        borderColor: '#58a6ff',
+        borderWidth: 3,
+        pointBackgroundColor: colors,
+        pointBorderColor: '#fff',
+        pointRadius: 4.5,
+        pointHoverRadius: 7,
+        tension: 0.25,
+        fill: {
+          target: { value: 0 },
+          above: 'rgba(46, 204, 113, 0.18)',
+          below: 'rgba(231, 76, 60, 0.18)'
+        }
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: function(items) {
+              return 'User Count: ' + items[0].label;
+            },
+            label: function(item) {
+              const val = item.parsed.y;
+              const sign = val >= 0 ? '+' : '';
+              const ev40 = (val / 100 * 40).toFixed(2);
+              const sign40 = val >= 0 ? '+$' : '-$';
+              return [
+                'Player Edge: ' + sign + val.toFixed(2) + '%',
+                'EV on $40 Bet: ' + sign40 + Math.abs(ev40)
+              ];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'User Count (Starting at 0 upon shuffle)',
+            color: '#8b949e',
+            font: { size: 12, weight: '600' }
+          },
+          grid: { color: 'rgba(36, 48, 66, 0.5)' },
+          ticks: { color: '#8b949e' }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Player Advantage (%)',
+            color: '#8b949e',
+            font: { size: 12, weight: '600' }
+          },
+          grid: {
+            color: function(context) {
+              return context.tick.value === 0 ? 'rgba(255, 255, 255, 0.4)' : 'rgba(36, 48, 66, 0.5)';
+            },
+            lineWidth: function(context) {
+              return context.tick.value === 0 ? 2 : 1;
+            }
+          },
+          ticks: {
+            color: '#8b949e',
+            callback: function(v) { return (v >= 0 ? '+' : '') + v + '%'; }
+          }
+        }
+      }
+    }
+  });
+</script>
+
+</body>
+</html>
