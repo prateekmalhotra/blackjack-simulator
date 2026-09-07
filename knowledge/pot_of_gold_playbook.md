@@ -66,3 +66,25 @@ Bypasses the "2x table minimum to play 2 hands" penalty:
 ### C. Back-Counting / Wonging
 * **Wong-In:** Spectate without betting until **$\text{RC} \le 12$**.
 * **Wong-Out:** Leave table when **$\text{RC} > 16$ or $20$** (or upon shoe shuffle).
+
+---
+
+## 5. The D10 Break-Even vs. D12 Staking Trigger
+
+In advantage play terminology, **"D"** stands for **"Down"** (cards counted down from shoe inception):
+* **D10 = Down 10** ($\text{RC} = 14$, or Count $-10$ from zero).
+* **D12 = Down 12** ($\text{RC} = 12$, or Count $-12$ from zero).
+
+### Why D10 is the Break-Even Line:
+* At a fresh shuffle (Count $0$ / $\text{RC} = 24$), the Pot of Gold carries a massive **$-13.53\%$ house edge**.
+* As 10s and Aces exit, that house advantage steadily erodes.
+* **At D10 (Count $-10$ / $\text{RC} = 14$): The house edge hits $\approx 0.00\%$!** 
+  * With Fives Farming active, the player edge is **$-0.57\%$ to $+0.47\%$** (virtually a dead-even coin flip, losing only ~$\approx \$0.14$ to $\$0.25$ per $\$25$ bet).
+  * At **D11 (Count $-11$ / $\text{RC} = 13$):** The edge crosses into positive territory (**$+0.43\%$ to $+1.63\%$**).
+
+### Why the Playbook Triggers at D12 instead of D10:
+If the house edge disappears at D10, why does Rule 2 demand waiting until **D12 ($\text{RC} \le 12$)**?
+1. **Mandatory Main Bet Drag:** On your own spot, table rules require a Main Bet. On 6:5 Free Bet BJ, the main bet carries a **$-1.5\%$ to $-1.8\%$ house edge** ($-\$0.15$ to $-\$0.18$ per $\$10$ bet). At D10, a $0.0\%$ side bet does not overcome this table tax—your round EV is still negative. At **D12**, the side bet generates **$+4.11\%$ EV** ($+\$1.03$ on $\$25$), easily overcoming the main bet loss to yield a net session profit of **+$0.88/hand**.
+2. **Variance Compensation:** Pot of Gold has an 82% loss rate and 18% hit rate. APs never take on heavy side bet variance for a $0\%$ edge; you demand at least **$+3\%$ to $+4\%$ buffer** before risking bankroll capital.
+3. **The "Friendly Spot" Exception:** If you use the stealth tactic of placing $25 on an adjacent friendly player's side bet spot (where **they pay the main bet** and you have **zero main bet drag**), D10 is an exact 50/50 break-even game, and D11/D12 delivers pure un-taxed $+EV$!
+
