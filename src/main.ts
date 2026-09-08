@@ -1,10 +1,10 @@
-import { Chart, LineController, LineElement, PointElement, LinearScale, Title, CategoryScale, Legend, Tooltip } from 'chart.js';
+import { Chart, LineController, LineElement, PointElement, LinearScale, Title, CategoryScale, Legend, Tooltip, Filler } from 'chart.js';
 import { createIcons, Play, Square } from 'lucide';
 import type { GameRules, SimulationConfig, SimulationProgress } from './simulation/types';
 import './style.css';
 
 // Register Chart.js components
-Chart.register(LineController, LineElement, PointElement, LinearScale, Title, CategoryScale, Legend, Tooltip);
+Chart.register(LineController, LineElement, PointElement, LinearScale, Title, CategoryScale, Legend, Tooltip, Filler);
 
 // Initialize Lucide Icons
 createIcons({
@@ -17,6 +17,12 @@ createIcons({
 // App State
 let simWorker: Worker | null = null;
 let chart: Chart | null = null;
+let sessionVarianceChart: Chart | null = null;
+let selectedSessionHours: number = 4;
+let lastSimulationProgress: SimulationProgress | null = null;
+let lastSimulationConfig: SimulationConfig | null = null;
+let currentSessionMu: number = 0;
+let currentSessionSigma: number = 1;
 
 // Default Bet Spread (True Count -> Bet Size multiplier or absolute amount)
 let betSpread: Record<number, string | number> = {
@@ -339,6 +345,12 @@ ruleGameTypeSelect.addEventListener('change', () => {
     playStrategySelect.value = 'i18';
     playWongoutInput.checked = true;
   }
+
+  if (lastSimulationProgress && lastSimulationConfig) {
+    updateSessionVarianceChart(lastSimulationProgress, lastSimulationConfig);
+  } else {
+    renderDefaultSessionVariance();
+  }
 });
 
 const simHandsSelect = document.getElementById('sim-hands') as HTMLSelectElement;
@@ -353,6 +365,19 @@ const statHourlyProfit = document.getElementById('stat-hourly-profit') as HTMLSp
 const statN0 = document.getElementById('stat-n0') as HTMLSpanElement;
 const statRor = document.getElementById('stat-ror') as HTMLSpanElement;
 const seatsTableBody = document.getElementById('seats-table-body') as HTMLTableSectionElement;
+
+// Session Variance & Risk Distribution DOM Elements
+const sessionStatEv = document.getElementById('session-stat-ev') as HTMLSpanElement;
+const sessionStatEvSub = document.getElementById('session-stat-ev-sub') as HTMLSpanElement;
+const sessionStatWinProb = document.getElementById('session-stat-win-prob') as HTMLSpanElement;
+const sessionStatLossProb = document.getElementById('session-stat-loss-prob') as HTMLSpanElement;
+const sessionStatSigma = document.getElementById('session-stat-sigma') as HTMLSpanElement;
+const sessionStat1sd = document.getElementById('session-stat-1sd') as HTMLSpanElement;
+const sessionStat2sd = document.getElementById('session-stat-2sd') as HTMLSpanElement;
+const sessionStatStoploss = document.getElementById('session-stat-stoploss') as HTMLSpanElement;
+const callout1sd = document.getElementById('callout-1sd') as HTMLElement;
+const calloutStoploss = document.getElementById('callout-stoploss') as HTMLElement;
+const sessionBadgeStatus = document.getElementById('session-badge-status') as HTMLSpanElement;
 
 // --------------------------------------------------------------------------
 // BET SPREAD EDITOR
@@ -549,6 +574,586 @@ function updateChart(progress: SimulationProgress, config: SimulationConfig) {
 }
 
 // --------------------------------------------------------------------------
+// NORMAL DISTRIBUTION & BELL CURVE MATH UTILITIES
+// --------------------------------------------------------------------------
+function erf(x: number): number {
+  // Abramowitz and Stegun formula 7.1.26
+  const a1 = 0.254829592;
+  const a2 = -0.284496736;
+  const a3 = 1.421413741;
+  const a4 = -1.453152027;
+  const a5 = 1.061405429;
+  const p = 0.3275911;
+
+  const sign = x < 0 ? -1 : 1;
+  const absX = Math.abs(x);
+  const t = 1.0 / (1.0 + p * absX);
+  const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-absX * absX);
+  return sign * y;
+}
+
+function normalCdf(x: number, mean: number, std: number): number {
+  if (std <= 0) return x >= mean ? 1 : 0;
+  return 0.5 * (1 + erf((x - mean) / (std * Math.SQRT2)));
+}
+
+function normalPdf(x: number, mean: number, std: number): number {
+  if (std <= 0) return 0;
+  const z = (x - mean) / std;
+  return (1 / (std * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * z * z);
+}
+
+function getTableHandsPerHour(seats: number): number {
+  if (seats === 1) return 246;
+  if (seats === 2) return 139;
+  if (seats === 3) return 104;
+  if (seats === 4) return 83;
+  if (seats === 5) return 70;
+  return 60;
+}
+
+// --------------------------------------------------------------------------
+// SESSION VARIANCE CHART (BELL CURVE & LOSS STOMACHABILITY)
+// --------------------------------------------------------------------------
+function initSessionVarianceChart() {
+  const canvas = document.getElementById('session-variance-chart') as HTMLCanvasElement;
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  if (sessionVarianceChart) {
+    sessionVarianceChart.destroy();
+  }
+
+  const gridColor = '#e5e0d8';
+  const labelColor = '#7d7973';
+
+  sessionVarianceChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      datasets: []
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      interaction: {
+        mode: 'nearest',
+        axis: 'x',
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          labels: {
+            color: labelColor,
+            font: { family: 'Inter', size: 11, weight: 'bold' },
+            boxWidth: 12,
+            boxHeight: 12,
+            filter: (item) => {
+              return !['Bell Curve Density', '-1σ Tough Cutoff', '-2σ Brutal Cutoff'].includes(item.text);
+            }
+          }
+        },
+        tooltip: {
+          callbacks: {
+            title: (items) => {
+              if (!items.length || items[0].parsed.x == null) return '';
+              const xVal = Math.round(items[0].parsed.x);
+              return `Session Net: ${xVal >= 0 ? '+$' : '-$'}${Math.abs(xVal).toLocaleString()}`;
+            },
+            label: (item) => {
+              const xVal = item.parsed.x;
+              if (xVal == null) return '';
+              if (item.dataset.label && (item.dataset.label.includes('Break Even') || item.dataset.label.includes('Session EV'))) {
+                return item.dataset.label;
+              }
+              const cdf = normalCdf(xVal, currentSessionMu, currentSessionSigma);
+              const pct = (cdf * 100).toFixed(1);
+              const betterPct = ((1 - cdf) * 100).toFixed(1);
+              let zone = '🔹 Normal Variance Zone (±1σ)';
+              if (xVal < currentSessionMu - 2 * currentSessionSigma) {
+                zone = '⚠️ Extreme Downswing Zone (< -2σ, 2.3% tail risk)';
+              } else if (xVal < currentSessionMu - currentSessionSigma) {
+                zone = '🔸 Tough Drawdown Zone (-1σ to -2σ, 16% risk)';
+              } else if (xVal > currentSessionMu + 2 * currentSessionSigma) {
+                zone = '🔥 Monster Session Zone (> +2σ, top 2.3%)';
+              } else if (xVal > currentSessionMu + currentSessionSigma) {
+                zone = '🟢 Strong Winning Session (+1σ to +2σ)';
+              }
+              return [
+                `Percentile: ${pct}% (${betterPct}% of sessions perform better)`,
+                zone
+              ];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'linear',
+          grid: { color: gridColor },
+          ticks: {
+            color: labelColor,
+            font: { family: 'JetBrains Mono', size: 11 },
+            callback: (val: any) => {
+              const n = Math.round(Number(val));
+              if (n === 0) return '$0';
+              return (n > 0 ? '+$' : '-$') + Math.abs(n).toLocaleString();
+            }
+          }
+        },
+        y: {
+          type: 'linear',
+          display: false,
+          grid: { display: false }
+        }
+      }
+    }
+  });
+}
+
+function updateSessionVarianceChart(progress: SimulationProgress, config: SimulationConfig) {
+  if (!sessionVarianceChart) {
+    initSessionVarianceChart();
+    if (!sessionVarianceChart) return;
+  }
+
+  const handsPerHour = getTableHandsPerHour(config.seatsPerTable);
+  const sessionHands = handsPerHour * selectedSessionHours;
+
+  if (progress.totalRoundsPlayedCount === 0 || progress.handsPlayed === 0) {
+    renderDefaultSessionVariance();
+    return;
+  }
+
+  const evRound = progress.sumPayouts / progress.totalRoundsPlayedCount;
+  const meanOfSquares = progress.sumSquaredPayouts / progress.totalRoundsPlayedCount;
+  const varRound = Math.max(0.01, meanOfSquares - (evRound * evRound));
+  const stdRound = Math.sqrt(varRound);
+
+  const mu = evRound * sessionHands;
+  const sigma = Math.max(1, stdRound * Math.sqrt(sessionHands));
+
+  currentSessionMu = mu;
+  currentSessionSigma = sigma;
+
+  const winProb = 1 - normalCdf(0, mu, sigma);
+  const lossProb = normalCdf(0, mu, sigma);
+  const tough1Sd = mu - sigma;
+  const brutal2Sd = mu - 2 * sigma;
+  const stopLoss = Math.max(0, 2 * sigma - mu);
+
+  if (sessionStatEv) {
+    sessionStatEv.textContent = (mu >= 0 ? '+' : '') + `$${Math.round(mu).toLocaleString()}`;
+    sessionStatEv.className = `session-stat-value ${mu >= 0 ? 'text-success' : 'text-danger'}`;
+  }
+  if (sessionStatEvSub) {
+    sessionStatEvSub.textContent = `Over ${selectedSessionHours} hrs (${Math.round(sessionHands).toLocaleString()} hands)`;
+  }
+  if (sessionStatWinProb) {
+    sessionStatWinProb.textContent = `${(winProb * 100).toFixed(1)}%`;
+    sessionStatWinProb.className = `session-stat-value ${winProb >= 0.5 ? 'text-success' : 'text-danger'}`;
+  }
+  if (sessionStatLossProb) {
+    sessionStatLossProb.textContent = `P(Loss): ${(lossProb * 100).toFixed(1)}%`;
+  }
+  if (sessionStatSigma) {
+    sessionStatSigma.textContent = `±$${Math.round(sigma).toLocaleString()}`;
+  }
+  if (sessionStat1sd) {
+    sessionStat1sd.textContent = (tough1Sd >= 0 ? '+' : '') + `$${Math.round(tough1Sd).toLocaleString()}`;
+  }
+  if (sessionStat2sd) {
+    sessionStat2sd.textContent = (brutal2Sd >= 0 ? '+' : '') + `$${Math.round(brutal2Sd).toLocaleString()}`;
+  }
+  if (sessionStatStoploss) {
+    sessionStatStoploss.textContent = `$${Math.round(stopLoss).toLocaleString()}`;
+  }
+  if (callout1sd) {
+    callout1sd.textContent = `${tough1Sd < 0 ? '-' : ''}$${Math.abs(Math.round(tough1Sd)).toLocaleString()}`;
+  }
+  if (calloutStoploss) {
+    calloutStoploss.textContent = `$${Math.round(stopLoss).toLocaleString()}`;
+  }
+  if (sessionBadgeStatus) {
+    sessionBadgeStatus.textContent = `${selectedSessionHours}-Hour Bell Curve (Simulated)`;
+  }
+
+  // Generate Bell Curve data points
+  const xMin = mu - 3.5 * sigma;
+  const xMax = mu + 3.5 * sigma;
+  const numPoints = 120;
+  const dx = (xMax - xMin) / numPoints;
+
+  const pMinus2 = mu - 2 * sigma;
+  const pMinus1 = mu - sigma;
+  const pPlus1 = mu + sigma;
+  const pPlus2 = mu + 2 * sigma;
+
+  const yMinus2 = normalPdf(pMinus2, mu, sigma);
+  const yMinus1 = normalPdf(pMinus1, mu, sigma);
+  const yPlus1 = normalPdf(pPlus1, mu, sigma);
+  const yPlus2 = normalPdf(pPlus2, mu, sigma);
+  const peakY = normalPdf(mu, mu, sigma);
+
+  const ptsExtreme: { x: number; y: number }[] = [];
+  const ptsTough: { x: number; y: number }[] = [];
+  const ptsNormal: { x: number; y: number }[] = [];
+  const ptsStrong: { x: number; y: number }[] = [];
+  const ptsMonster: { x: number; y: number }[] = [];
+  const ptsOutline: { x: number; y: number }[] = [];
+
+  ptsTough.push({ x: pMinus2, y: yMinus2 });
+  ptsNormal.push({ x: pMinus1, y: yMinus1 });
+  ptsStrong.push({ x: pPlus1, y: yPlus1 });
+  ptsMonster.push({ x: pPlus2, y: yPlus2 });
+
+  for (let i = 0; i <= numPoints; i++) {
+    const x = xMin + i * dx;
+    const y = normalPdf(x, mu, sigma);
+    ptsOutline.push({ x, y });
+
+    if (x <= pMinus2) ptsExtreme.push({ x, y });
+    else if (x <= pMinus1) ptsTough.push({ x, y });
+    else if (x <= pPlus1) ptsNormal.push({ x, y });
+    else if (x <= pPlus2) ptsStrong.push({ x, y });
+    else ptsMonster.push({ x, y });
+  }
+
+  ptsExtreme.push({ x: pMinus2, y: yMinus2 });
+  ptsTough.push({ x: pMinus1, y: yMinus1 });
+  ptsNormal.push({ x: pPlus1, y: yPlus1 });
+  ptsStrong.push({ x: pPlus2, y: yPlus2 });
+
+  sessionVarianceChart.data.datasets = [
+    {
+      label: 'Deep Drawdown (< -2σ, 2.3%)',
+      data: ptsExtreme,
+      borderColor: 'transparent',
+      backgroundColor: 'rgba(239, 68, 68, 0.22)',
+      fill: 'origin',
+      pointRadius: 0,
+      tension: 0.2
+    },
+    {
+      label: 'Tough Session (-2σ to -1σ, 13.6%)',
+      data: ptsTough,
+      borderColor: 'transparent',
+      backgroundColor: 'rgba(245, 158, 11, 0.20)',
+      fill: 'origin',
+      pointRadius: 0,
+      tension: 0.2
+    },
+    {
+      label: 'Core Variance (±1σ, 68.3%)',
+      data: ptsNormal,
+      borderColor: 'transparent',
+      backgroundColor: 'rgba(59, 130, 246, 0.14)',
+      fill: 'origin',
+      pointRadius: 0,
+      tension: 0.2
+    },
+    {
+      label: 'Good Session (+1σ to +2σ, 13.6%)',
+      data: ptsStrong,
+      borderColor: 'transparent',
+      backgroundColor: 'rgba(34, 197, 94, 0.20)',
+      fill: 'origin',
+      pointRadius: 0,
+      tension: 0.2
+    },
+    {
+      label: 'Monster Session (> +2σ, 2.3%)',
+      data: ptsMonster,
+      borderColor: 'transparent',
+      backgroundColor: 'rgba(16, 185, 129, 0.30)',
+      fill: 'origin',
+      pointRadius: 0,
+      tension: 0.2
+    },
+    {
+      label: 'Bell Curve Density',
+      data: ptsOutline,
+      borderColor: '#191816',
+      borderWidth: 2,
+      fill: false,
+      pointRadius: 0,
+      tension: 0.2
+    },
+    {
+      label: 'Break Even ($0)',
+      data: [{ x: 0, y: 0 }, { x: 0, y: peakY * 1.05 }],
+      borderColor: '#6b7280',
+      borderWidth: 1.5,
+      borderDash: [4, 4],
+      fill: false,
+      pointRadius: 0
+    },
+    {
+      label: 'Session EV',
+      data: [{ x: mu, y: 0 }, { x: mu, y: peakY * 1.05 }],
+      borderColor: '#191816',
+      borderWidth: 2,
+      fill: false,
+      pointRadius: 0
+    },
+    {
+      label: '-1σ Tough Cutoff',
+      data: [{ x: pMinus1, y: 0 }, { x: pMinus1, y: yMinus1 }],
+      borderColor: '#d97706',
+      borderWidth: 1.5,
+      borderDash: [3, 3],
+      fill: false,
+      pointRadius: 0
+    },
+    {
+      label: '-2σ Brutal Cutoff',
+      data: [{ x: pMinus2, y: 0 }, { x: pMinus2, y: yMinus2 }],
+      borderColor: '#dc2626',
+      borderWidth: 1.5,
+      borderDash: [3, 3],
+      fill: false,
+      pointRadius: 0
+    }
+  ];
+
+  sessionVarianceChart.update('none');
+}
+
+function renderDefaultSessionVariance() {
+  if (!sessionVarianceChart) {
+    initSessionVarianceChart();
+    if (!sessionVarianceChart) return;
+  }
+
+  const seats = parseInt(playTableSeatsSelect?.value || '2', 10);
+  const handsPerHour = getTableHandsPerHour(seats);
+  const sessionHands = handsPerHour * selectedSessionHours;
+  const isPotOfGold = ruleGameTypeSelect?.value === 'free_bet';
+
+  const evRound = isPotOfGold ? 0.75 : 0.35;
+  const varRound = isPotOfGold ? 1444 : 400;
+  const stdRound = Math.sqrt(varRound);
+
+  const mu = evRound * sessionHands;
+  const sigma = stdRound * Math.sqrt(sessionHands);
+
+  currentSessionMu = mu;
+  currentSessionSigma = sigma;
+
+  const winProb = 1 - normalCdf(0, mu, sigma);
+  const lossProb = normalCdf(0, mu, sigma);
+  const tough1Sd = mu - sigma;
+  const brutal2Sd = mu - 2 * sigma;
+  const stopLoss = Math.max(0, 2 * sigma - mu);
+
+  if (sessionStatEv) {
+    sessionStatEv.textContent = `+$${Math.round(mu).toLocaleString()}`;
+    sessionStatEv.className = 'session-stat-value text-success';
+  }
+  if (sessionStatEvSub) {
+    sessionStatEvSub.textContent = `Over ${selectedSessionHours} hrs (${Math.round(sessionHands).toLocaleString()} hands)`;
+  }
+  if (sessionStatWinProb) {
+    sessionStatWinProb.textContent = `${(winProb * 100).toFixed(1)}%`;
+    sessionStatWinProb.className = 'session-stat-value text-success';
+  }
+  if (sessionStatLossProb) {
+    sessionStatLossProb.textContent = `P(Loss): ${(lossProb * 100).toFixed(1)}%`;
+  }
+  if (sessionStatSigma) {
+    sessionStatSigma.textContent = `±$${Math.round(sigma).toLocaleString()}`;
+  }
+  if (sessionStat1sd) {
+    sessionStat1sd.textContent = (tough1Sd >= 0 ? '+' : '') + `$${Math.round(tough1Sd).toLocaleString()}`;
+  }
+  if (sessionStat2sd) {
+    sessionStat2sd.textContent = (brutal2Sd >= 0 ? '+' : '') + `$${Math.round(brutal2Sd).toLocaleString()}`;
+  }
+  if (sessionStatStoploss) {
+    sessionStatStoploss.textContent = `$${Math.round(stopLoss).toLocaleString()}`;
+  }
+  if (callout1sd) {
+    callout1sd.textContent = `${tough1Sd < 0 ? '-' : ''}$${Math.abs(Math.round(tough1Sd)).toLocaleString()}`;
+  }
+  if (calloutStoploss) {
+    calloutStoploss.textContent = `$${Math.round(stopLoss).toLocaleString()}`;
+  }
+  if (sessionBadgeStatus) {
+    sessionBadgeStatus.textContent = `${selectedSessionHours}-Hour Model (Baseline)`;
+  }
+
+  // Plot baseline bell curve
+  const xMin = mu - 3.5 * sigma;
+  const xMax = mu + 3.5 * sigma;
+  const numPoints = 120;
+  const dx = (xMax - xMin) / numPoints;
+
+  const pMinus2 = mu - 2 * sigma;
+  const pMinus1 = mu - sigma;
+  const pPlus1 = mu + sigma;
+  const pPlus2 = mu + 2 * sigma;
+
+  const yMinus2 = normalPdf(pMinus2, mu, sigma);
+  const yMinus1 = normalPdf(pMinus1, mu, sigma);
+  const yPlus1 = normalPdf(pPlus1, mu, sigma);
+  const yPlus2 = normalPdf(pPlus2, mu, sigma);
+  const peakY = normalPdf(mu, mu, sigma);
+
+  const ptsExtreme: { x: number; y: number }[] = [];
+  const ptsTough: { x: number; y: number }[] = [];
+  const ptsNormal: { x: number; y: number }[] = [];
+  const ptsStrong: { x: number; y: number }[] = [];
+  const ptsMonster: { x: number; y: number }[] = [];
+  const ptsOutline: { x: number; y: number }[] = [];
+
+  ptsTough.push({ x: pMinus2, y: yMinus2 });
+  ptsNormal.push({ x: pMinus1, y: yMinus1 });
+  ptsStrong.push({ x: pPlus1, y: yPlus1 });
+  ptsMonster.push({ x: pPlus2, y: yPlus2 });
+
+  for (let i = 0; i <= numPoints; i++) {
+    const x = xMin + i * dx;
+    const y = normalPdf(x, mu, sigma);
+    ptsOutline.push({ x, y });
+
+    if (x <= pMinus2) ptsExtreme.push({ x, y });
+    else if (x <= pMinus1) ptsTough.push({ x, y });
+    else if (x <= pPlus1) ptsNormal.push({ x, y });
+    else if (x <= pPlus2) ptsStrong.push({ x, y });
+    else ptsMonster.push({ x, y });
+  }
+
+  ptsExtreme.push({ x: pMinus2, y: yMinus2 });
+  ptsTough.push({ x: pMinus1, y: yMinus1 });
+  ptsNormal.push({ x: pPlus1, y: yPlus1 });
+  ptsStrong.push({ x: pPlus2, y: yPlus2 });
+
+  sessionVarianceChart.data.datasets = [
+    {
+      label: 'Deep Drawdown (< -2σ, 2.3%)',
+      data: ptsExtreme,
+      borderColor: 'transparent',
+      backgroundColor: 'rgba(239, 68, 68, 0.22)',
+      fill: 'origin',
+      pointRadius: 0,
+      tension: 0.2
+    },
+    {
+      label: 'Tough Session (-2σ to -1σ, 13.6%)',
+      data: ptsTough,
+      borderColor: 'transparent',
+      backgroundColor: 'rgba(245, 158, 11, 0.20)',
+      fill: 'origin',
+      pointRadius: 0,
+      tension: 0.2
+    },
+    {
+      label: 'Core Variance (±1σ, 68.3%)',
+      data: ptsNormal,
+      borderColor: 'transparent',
+      backgroundColor: 'rgba(59, 130, 246, 0.14)',
+      fill: 'origin',
+      pointRadius: 0,
+      tension: 0.2
+    },
+    {
+      label: 'Good Session (+1σ to +2σ, 13.6%)',
+      data: ptsStrong,
+      borderColor: 'transparent',
+      backgroundColor: 'rgba(34, 197, 94, 0.20)',
+      fill: 'origin',
+      pointRadius: 0,
+      tension: 0.2
+    },
+    {
+      label: 'Monster Session (> +2σ, 2.3%)',
+      data: ptsMonster,
+      borderColor: 'transparent',
+      backgroundColor: 'rgba(16, 185, 129, 0.30)',
+      fill: 'origin',
+      pointRadius: 0,
+      tension: 0.2
+    },
+    {
+      label: 'Bell Curve Density',
+      data: ptsOutline,
+      borderColor: '#191816',
+      borderWidth: 2,
+      fill: false,
+      pointRadius: 0,
+      tension: 0.2
+    },
+    {
+      label: 'Break Even ($0)',
+      data: [{ x: 0, y: 0 }, { x: 0, y: peakY * 1.05 }],
+      borderColor: '#6b7280',
+      borderWidth: 1.5,
+      borderDash: [4, 4],
+      fill: false,
+      pointRadius: 0
+    },
+    {
+      label: 'Session EV',
+      data: [{ x: mu, y: 0 }, { x: mu, y: peakY * 1.05 }],
+      borderColor: '#191816',
+      borderWidth: 2,
+      fill: false,
+      pointRadius: 0
+    },
+    {
+      label: '-1σ Tough Cutoff',
+      data: [{ x: pMinus1, y: 0 }, { x: pMinus1, y: yMinus1 }],
+      borderColor: '#d97706',
+      borderWidth: 1.5,
+      borderDash: [3, 3],
+      fill: false,
+      pointRadius: 0
+    },
+    {
+      label: '-2σ Brutal Cutoff',
+      data: [{ x: pMinus2, y: 0 }, { x: pMinus2, y: yMinus2 }],
+      borderColor: '#dc2626',
+      borderWidth: 1.5,
+      borderDash: [3, 3],
+      fill: false,
+      pointRadius: 0
+    }
+  ];
+
+  sessionVarianceChart.update('none');
+}
+
+// Session Duration Toggle Handlers
+const durationButtons = document.querySelectorAll<HTMLButtonElement>('.btn-duration');
+durationButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    durationButtons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedSessionHours = parseInt(btn.dataset.hours || '4', 10);
+    if (lastSimulationProgress && lastSimulationConfig) {
+      updateSessionVarianceChart(lastSimulationProgress, lastSimulationConfig);
+    } else {
+      renderDefaultSessionVariance();
+    }
+  });
+});
+
+// React to table seats changes
+playTableSeatsSelect?.addEventListener('change', () => {
+  if (lastSimulationProgress && lastSimulationConfig) {
+    updateSessionVarianceChart(lastSimulationProgress, {
+      ...lastSimulationConfig,
+      seatsPerTable: parseInt(playTableSeatsSelect.value, 10) || 1
+    });
+  } else {
+    renderDefaultSessionVariance();
+  }
+});
+
+// --------------------------------------------------------------------------
 // SIMULATION CONTROLLER
 // --------------------------------------------------------------------------
 simStartBtn.addEventListener('click', startFastSimulation);
@@ -556,6 +1161,7 @@ simStopBtn.addEventListener('click', stopFastSimulation);
 
 function startFastSimulation() {
   initChart();
+  initSessionVarianceChart();
   
   const isPotOfGold = ruleGameTypeSelect.value === 'free_bet';
   const minBet = parseInt(ruleMinBetInput.value, 10) || 10;
@@ -712,14 +1318,7 @@ function setInputsDisabled(disabled: boolean) {
 }
 
 function renderProgress(progress: SimulationProgress, config: SimulationConfig) {
-  const nSeats = config.seatsPerTable;
-  let handsPerHour = 60;
-  if (nSeats === 1) handsPerHour = 246;
-  else if (nSeats === 2) handsPerHour = 139;
-  else if (nSeats === 3) handsPerHour = 104;
-  else if (nSeats === 4) handsPerHour = 83;
-  else if (nSeats === 5) handsPerHour = 70;
-
+  const handsPerHour = getTableHandsPerHour(config.seatsPerTable);
   const hours = progress.handsPlayed / handsPerHour;
 
   statHands.innerHTML = `${progress.handsPlayed.toLocaleString()} <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted); display: block; margin-top: 0.15rem;">(${Math.round(hours).toLocaleString()} hrs)</span>`;
@@ -807,6 +1406,9 @@ function renderProgress(progress: SimulationProgress, config: SimulationConfig) 
     }
 
   updateChart(progress, config);
+  lastSimulationProgress = progress;
+  lastSimulationConfig = config;
+  updateSessionVarianceChart(progress, config);
 
   if (progress.completed) {
     stopFastSimulation();
@@ -818,4 +1420,6 @@ function renderProgress(progress: SimulationProgress, config: SimulationConfig) 
 // --------------------------------------------------------------------------
 renderBetSpreadEditor();
 initChart();
+initSessionVarianceChart();
+renderDefaultSessionVariance();
 updatePogPreview();

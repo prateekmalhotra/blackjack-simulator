@@ -359,6 +359,92 @@
               </div>
             </div>
 
+            <!-- Session Variance & Loss Distribution (Bell Curve) -->
+            <div class="chart-container" style="margin-top: 1.5rem;" id="session-variance-container">
+              <div class="chart-header" style="flex-wrap: wrap; gap: 0.75rem;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="chart-title">Session Variance & Risk Distribution</span>
+                    <span class="badge-variance" id="session-badge-status">4-Hour Bell Curve</span>
+                  </div>
+                  <div class="label-hint" style="margin-top: 0.25rem;">
+                    Normal distribution of session outcomes, 1σ / 2σ variance swings, and loss stomachability
+                  </div>
+                </div>
+                
+                <div class="duration-toggle-container">
+                  <span class="duration-toggle-label">Session Length:</span>
+                  <div class="duration-btn-group">
+                    <button type="button" class="btn-duration" data-hours="2">2 hrs</button>
+                    <button type="button" class="btn-duration active" data-hours="4">4 hrs</button>
+                    <button type="button" class="btn-duration" data-hours="8">8 hrs</button>
+                    <button type="button" class="btn-duration" data-hours="16">16 hrs</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Risk & Loss Stomachability Stats -->
+              <div class="session-risk-grid">
+                <div class="session-stat-card">
+                  <span class="session-stat-label">Expected Profit (EV)</span>
+                  <span class="session-stat-value text-success" id="session-stat-ev">$0</span>
+                  <span class="session-stat-sub" id="session-stat-ev-sub">Over 4 hrs</span>
+                </div>
+                <div class="session-stat-card">
+                  <span class="session-stat-label">Win Session Chance</span>
+                  <span class="session-stat-value" id="session-stat-win-prob">--%</span>
+                  <span class="session-stat-sub" id="session-stat-loss-prob">P(Loss): --%</span>
+                </div>
+                <div class="session-stat-card">
+                  <span class="session-stat-label">Session Volatility (±1σ)</span>
+                  <span class="session-stat-value" id="session-stat-sigma">±$0</span>
+                  <span class="session-stat-sub">68.3% of all sessions</span>
+                </div>
+                <div class="session-stat-card warning">
+                  <span class="session-stat-label">Tough Session (-1σ)</span>
+                  <span class="session-stat-value text-warning" id="session-stat-1sd">-$0</span>
+                  <span class="session-stat-sub">1 in 6 visits (16% risk)</span>
+                </div>
+                <div class="session-stat-card danger">
+                  <span class="session-stat-label">Brutal Session (-2σ)</span>
+                  <span class="session-stat-value text-danger" id="session-stat-2sd">-$0</span>
+                  <span class="session-stat-sub">1 in 44 visits (2.3% risk)</span>
+                </div>
+                <div class="session-stat-card primary">
+                  <span class="session-stat-label">Recommended Stop-Loss</span>
+                  <span class="session-stat-value text-primary" id="session-stat-stoploss">$0</span>
+                  <span class="session-stat-sub">2σ buy-in (97.7% safe)</span>
+                </div>
+              </div>
+
+              <!-- Bell Curve Chart -->
+              <div style="position: relative; height: 320px; margin-top: 1.25rem;">
+                <canvas id="session-variance-chart"></canvas>
+              </div>
+
+              <!-- Loss Stomachability & Psychology Callout -->
+              <div class="session-tolerance-callout">
+                <div class="callout-header">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart-pulse text-danger"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h4.27"/></svg>
+                  <span><strong>Can You Stomach These Losses?</strong> Psychological Guide to Session Swings:</span>
+                </div>
+                <div class="callout-content">
+                  <div class="callout-item">
+                    <span class="callout-pill pill-warning">1 in 6 Sessions (-1σ)</span>
+                    <span><strong>Normal Rough Day:</strong> About 16% of the time, you will leave down at least <strong id="callout-1sd">this amount</strong>. If experiencing this loss ruins your mood or makes you anxious, your bet sizes are too large for your comfort zone.</span>
+                  </div>
+                  <div class="callout-item">
+                    <span class="callout-pill pill-danger">1 in 44 Sessions (-2σ)</span>
+                    <span><strong>Brutal Downswing:</strong> Expect this severe drawdown once a month (if playing weekly). Never chase losses or deviate from basic strategy.</span>
+                  </div>
+                  <div class="callout-item">
+                    <span class="callout-pill pill-primary">Session Stop-Loss (2σ)</span>
+                    <span><strong>Recommended Cage Buy-in:</strong> Bring <strong id="callout-stoploss">2σ of bankroll</strong> to this session. Statistically, you have a 97.7% chance of surviving without tapping out.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Seats Table -->
             <div class="seats-panel">
               <h3 class="section-title">Seat Details</h3>
@@ -389,6 +475,10 @@
                   <div>
                     <h4 style="color: var(--text-color); margin: 0 0 0.25rem 0; font-size: 0.875rem; font-family: var(--font-display); font-weight: 600;">🃏 The Simulation Model</h4>
                     <p style="margin: 0;">This simulator deals cards from a physical shoe of cards (Fisher-Yates shuffled) without replacement. As hands are dealt, cards are popped one-by-one from the shoe and count values are tracked in real-time. When the shoe reaches the penetration threshold, it is reshuffled. This is a realistic replica of real brick-and-mortar casino conditions.</p>
+                  </div>
+                  <div>
+                    <h4 style="color: var(--text-color); margin: 0 0 0.25rem 0; font-size: 0.875rem; font-family: var(--font-display); font-weight: 600;">📊 Session Variance & Bell Curve (Central Limit Theorem)</h4>
+                    <p style="margin: 0;">Over a single 2 to 16 hour session, your total profit/loss is normally distributed. While your Expected Value (EV) grows linearly with hours ($EV \times H$), your standard deviation grows with the square root of hours ($\sigma_{\text{hr}} \times \sqrt{H}$). This is why short-term swings feel massive. The bell curve maps out your 68.3% ($\pm 1\sigma$) and 95.4% ($\pm 2\sigma$) confidence bands so you know precisely what losses to mentally prepare for.</p>
                   </div>
                   <div>
                     <h4 style="color: var(--text-color); margin: 0 0 0.25rem 0; font-size: 0.875rem; font-family: var(--font-display); font-weight: 600;">📈 Hours to N₀ (N-Zero)</h4>
