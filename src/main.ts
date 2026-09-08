@@ -684,19 +684,25 @@ function initSessionVarianceChart() {
                 zone = '🟢 Strong Session (+1σ to +2σ)';
               }
 
-              if (xVal >= 0) {
+              const absAmount = Math.abs(xVal).toLocaleString();
+
+              if (xVal > 0) {
                 return [
-                  `• Win this much or MORE: ${pctBetter}% (~1 in ${oneInNBetter} sessions)`,
-                  `• Win less or lose: ${pctWorse}%`,
-                  `• Cumulative Percentile: ${pctWorse}%`,
+                  `🎯 Expect to make +$${absAmount} or MORE in: ${pctBetter}% of sessions (~1 in ${oneInNBetter})`,
+                  `📉 Expect to make LESS than this in: ${pctWorse}% of sessions`,
+                  zone
+                ];
+              } else if (xVal < 0) {
+                return [
+                  `⚠️ Expect to lose -$${absAmount} or WORSE in: ${pctWorse}% of sessions (~1 in ${oneInNWorse})`,
+                  `📈 Expect to do BETTER than this in: ${pctBetter}% of sessions`,
                   zone
                 ];
               } else {
                 return [
-                  `• Lose this much or WORSE: ${pctWorse}% (~1 in ${oneInNWorse} sessions)`,
-                  `• Do better than this: ${pctBetter}%`,
-                  `• Cumulative Percentile: ${pctWorse}%`,
-                  zone
+                  `🎯 Expect to leave a WINNER (>$0) in: ${pctBetter}% of sessions (~1 in ${oneInNBetter})`,
+                  `📉 Expect to leave a LOSER (<$0) in: ${pctWorse}% of sessions`,
+                  `⚖️ Break-Even Threshold`
                 ];
               }
             }
