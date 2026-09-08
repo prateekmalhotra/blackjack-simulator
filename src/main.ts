@@ -657,6 +657,7 @@ function initSessionVarianceChart() {
           }
         },
         tooltip: {
+          filter: (item) => item.dataset.label === 'Bell Curve Density',
           callbacks: {
             title: (items) => {
               if (!items.length || items[0].parsed.x == null) return '';
@@ -666,26 +667,38 @@ function initSessionVarianceChart() {
             label: (item) => {
               const xVal = item.parsed.x;
               if (xVal == null) return '';
-              if (item.dataset.label && (item.dataset.label.includes('Break Even') || item.dataset.label.includes('Session EV'))) {
-                return item.dataset.label;
-              }
               const cdf = normalCdf(xVal, currentSessionMu, currentSessionSigma);
-              const pct = (cdf * 100).toFixed(1);
-              const betterPct = ((1 - cdf) * 100).toFixed(1);
-              let zone = '🔹 Normal Variance Zone (±1σ)';
+              const pctBetter = ((1 - cdf) * 100).toFixed(1);
+              const pctWorse = (cdf * 100).toFixed(1);
+              const oneInNBetter = Math.max(1, Math.round(1 / Math.max(0.0001, 1 - cdf)));
+              const oneInNWorse = Math.max(1, Math.round(1 / Math.max(0.0001, cdf)));
+
+              let zone = '🔹 Core Variance Band (±1σ)';
               if (xVal < currentSessionMu - 2 * currentSessionSigma) {
-                zone = '⚠️ Extreme Downswing Zone (< -2σ, 2.3% tail risk)';
+                zone = '⚠️ Deep Drawdown Zone (< -2σ, 2.3% tail risk)';
               } else if (xVal < currentSessionMu - currentSessionSigma) {
                 zone = '🔸 Tough Drawdown Zone (-1σ to -2σ, 16% risk)';
               } else if (xVal > currentSessionMu + 2 * currentSessionSigma) {
                 zone = '🔥 Monster Session Zone (> +2σ, top 2.3%)';
               } else if (xVal > currentSessionMu + currentSessionSigma) {
-                zone = '🟢 Strong Winning Session (+1σ to +2σ)';
+                zone = '🟢 Strong Session (+1σ to +2σ)';
               }
-              return [
-                `Percentile: ${pct}% (${betterPct}% of sessions perform better)`,
-                zone
-              ];
+
+              if (xVal >= 0) {
+                return [
+                  `• Win this much or MORE: ${pctBetter}% (~1 in ${oneInNBetter} sessions)`,
+                  `• Win less or lose: ${pctWorse}%`,
+                  `• Cumulative Percentile: ${pctWorse}%`,
+                  zone
+                ];
+              } else {
+                return [
+                  `• Lose this much or WORSE: ${pctWorse}% (~1 in ${oneInNWorse} sessions)`,
+                  `• Do better than this: ${pctBetter}%`,
+                  `• Cumulative Percentile: ${pctWorse}%`,
+                  zone
+                ];
+              }
             }
           }
         }
