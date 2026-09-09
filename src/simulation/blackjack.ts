@@ -103,7 +103,7 @@ export function getFreeBetStrategyAction(
   dealerUpcardValue: number,
   rules: GameRules,
   canSplit: boolean,
-  isSideStaked: boolean = false
+  _isSideStaked: boolean = false
 ): BlackjackAction {
   const { cards } = hand;
   const { value, isSoft } = calculateHandValue(cards);
@@ -116,12 +116,12 @@ export function getFreeBetStrategyAction(
     if (['10', 'J', 'Q', 'K'].includes(rank)) {
       return 'S'; // Never split 10s
     }
-    // Farm 5s only when Pot of Gold side bet is active
+    // Free split 5s: Dealers at casinos recommend this, and players take the free split (also farms lammers for POG)
     if (rank === '5') {
-      if (isSideStaked && rules.potOfGold?.farmFives !== false) {
-        return 'P'; // Farm 5s on trigger
+      if (rules.potOfGold?.farmFives !== false) {
+        return 'P'; // Free split 5s
       }
-      // If not side staked, do not split: fall through to Free Double on 10 below
+      // If farmFives is explicitly disabled, fall through to Free Double on 10 below
     } else {
       // Free split ALL other pairs (2-4, 6-9, A)
       return 'P';

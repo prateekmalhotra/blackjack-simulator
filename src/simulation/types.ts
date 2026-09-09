@@ -53,7 +53,7 @@ export interface PotOfGoldConfig {
   raiseMainOnTrigger?: boolean; // true = raise main bet during trigger window
   sideBetNotation?: string | number;
   triggerRC: number; // default 12 for 6 decks
-  farmFives: boolean; // true = split 5s when side bet is active
+  farmFives: boolean; // true = always free split 5s (dealer standard & POG farming)
   wonging?: {
     enabled: boolean;
     inRC: number; // e.g. 12
