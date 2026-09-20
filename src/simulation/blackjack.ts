@@ -148,9 +148,14 @@ export function getFreeBetStrategyAction(
   if (value >= 17) return 'S';
   if (value <= 8) return 'H';
 
-  // Hard 13-16: Stand vs 2-6, Hit vs 7-11
-  if (value >= 13 && value <= 16) {
+  // Hard 14-16: Stand vs 2-6, Hit vs 7-11
+  if (value >= 14 && value <= 16) {
     return dVal >= 2 && dVal <= 6 ? 'S' : 'H';
+  }
+
+  // Hard 13: Under Push 22, Hit vs 2 (+0.020 units/hand EV), Stand vs 3-6, Hit vs 7-11
+  if (value === 13) {
+    return dVal >= 3 && dVal <= 6 ? 'S' : 'H';
   }
 
   // Hard 12: Stand vs 4-6, Hit vs 2, 3, 7-11
@@ -196,12 +201,12 @@ export function getBasicStrategyAction(
     }
 
     // 3. TT vs 6: Split if TC >= 4, otherwise Stand
-    if (cards.length === 2 && cards[0].rank === '10' && cards[1].rank === '10' && dVal === 6 && canSplit) {
+    if (cards.length === 2 && cards[0].value === 10 && cards[1].value === 10 && dVal === 6 && canSplit) {
       return trueCount >= 4 ? 'P' : 'S';
     }
 
     // 4. TT vs 5: Split if TC >= 5, otherwise Stand
-    if (cards.length === 2 && cards[0].rank === '10' && cards[1].rank === '10' && dVal === 5 && canSplit) {
+    if (cards.length === 2 && cards[0].value === 10 && cards[1].value === 10 && dVal === 5 && canSplit) {
       return trueCount >= 5 ? 'P' : 'S';
     }
 

@@ -204,6 +204,11 @@ pogTriggerMainBetInput.addEventListener('input', () => {
 });
 pogCustomCapInput.addEventListener('input', updatePogPreview);
 pogTriggerRcInput.addEventListener('input', updatePogPreview);
+ruleDecksInput.addEventListener('change', () => {
+  const numDecks = parseInt(ruleDecksInput.value, 10) || 6;
+  if (pogTriggerRcInput) pogTriggerRcInput.value = String(2 * numDecks);
+  updatePogPreview();
+});
 
 function updatePogPreview() {
   if (!pogPreviewContent) return;
@@ -603,8 +608,8 @@ function normalPdf(x: number, mean: number, std: number): number {
   return (1 / (std * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * z * z);
 }
 
-function getTableHandsPerHour(seats: number): number {
-  if (seats === 1) return 246;
+function getTableHandsPerHour(seats: number, isFreeBetMultiSpot: boolean = false): number {
+  if (seats === 1) return isFreeBetMultiSpot ? 165 : 246;
   if (seats === 2) return 139;
   if (seats === 3) return 104;
   if (seats === 4) return 83;
@@ -1184,13 +1189,14 @@ function startFastSimulation() {
   
   const isPotOfGold = ruleGameTypeSelect.value === 'free_bet';
   const minBet = parseInt(ruleMinBetInput.value, 10) || 10;
-  const spots = isPotOfGold ? pogSpotsOnTrigger : 1;
+  let spots = isPotOfGold ? pogSpotsOnTrigger : 1;
   const rawSideBet = parseInt(pogSideBetInput?.value || '40', 10) || 40;
 
   const rawTriggerMainStr = pogTriggerMainBetInput ? pogTriggerMainBetInput.value.trim().toLowerCase() : '';
   let triggerMainPerSpot = 5;
   const matchTrigger = rawTriggerMainStr.match(/^(\d+)[xX\u00d7*](\d+)$/);
   if (matchTrigger) {
+    spots = Math.min(2, Math.max(1, parseInt(matchTrigger[1], 10))) as 1 | 2;
     triggerMainPerSpot = parseInt(matchTrigger[2], 10) || 5;
   } else {
     const cleanDigits = rawTriggerMainStr.replace(/[^0-9]/g, '');
@@ -1337,7 +1343,8 @@ function setInputsDisabled(disabled: boolean) {
 }
 
 function renderProgress(progress: SimulationProgress, config: SimulationConfig) {
-  const handsPerHour = getTableHandsPerHour(config.seatsPerTable);
+  const isFreeBetMultiSpot = config.rules.gameType === 'free_bet' && ((config.rules.potOfGold?.handsOnTrigger ?? 1) > 1 || (config.rules.potOfGold?.handsOutsideTrigger ?? 1) > 1);
+  const handsPerHour = getTableHandsPerHour(config.seatsPerTable, isFreeBetMultiSpot);
   const hours = progress.handsPlayed / handsPerHour;
 
   statHands.innerHTML = `${progress.handsPlayed.toLocaleString()} <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted); display: block; margin-top: 0.15rem;">(${Math.round(hours).toLocaleString()} hrs)</span>`;
@@ -1366,11 +1373,14 @@ function renderProgress(progress: SimulationProgress, config: SimulationConfig) 
   // Calculate N0 (N-Zero) and Risk of Ruin (RoR)
   let n0HoursText = 'N/A';
   let rorText = 'N/A';
-  if (progress.totalRoundsPlayedCount > 0 && progress.sumPayouts > 0) {
+  if (progress.totalRoundsPlayedCount > 0) {
     const ev = progress.sumPayouts / progress.totalRoundsPlayedCount;
     const meanOfSquares = progress.sumSquaredPayouts / progress.totalRoundsPlayedCount;
     const variance = meanOfSquares - (ev * ev);
-    if (variance > 0 && ev > 0) {
+    if (ev <= 0) {
+      n0HoursText = '∞ (−EV)';
+      rorText = '100.00%';
+    } else if (variance > 0) {
       const n0Hands = variance / (ev * ev);
       const n0Hours = n0Hands / handsPerHour;
       n0HoursText = `${Math.round(n0Hours).toLocaleString()} hrs`;

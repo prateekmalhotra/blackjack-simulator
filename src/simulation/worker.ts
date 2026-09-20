@@ -141,16 +141,22 @@ function runSimulation(config: SimulationConfig) {
   }
 
   // Draw card helper associated with a specific table
-  function drawCard(table: SimTable): Card {
+  function drawCardRaw(table: SimTable): Card {
     if (table.shoe.length === 0) {
+      // Emergency fallback deck if round consumes beyond 312 cards without resetting count mid-round
       table.shoe = shuffleShoe(createShoe(rules.numDecks));
-      table.runningCount = 0;
-      table.pogRunningCount = getInitialPogRunningCount(rules.numDecks);
-      for (const s of table.seats) pogSeatedMap[s.id] = false;
     }
-    const card = table.shoe.pop()!;
+    return table.shoe.pop()!;
+  }
+
+  function countCard(table: SimTable, card: Card): void {
     table.runningCount += getCardCountValue(card.rank);
     table.pogRunningCount += getPogCountValue(card);
+  }
+
+  function drawCard(table: SimTable): Card {
+    const card = drawCardRaw(table);
+    countCard(table, card);
     return card;
   }
 
@@ -167,7 +173,9 @@ function runSimulation(config: SimulationConfig) {
         remainingDecks = Math.max(1, Math.round(remainingDecksReal));
       } else if (config.roundTrueCount === 'half') {
         remainingDecks = Math.max(0.5, Math.round(remainingDecksReal * 2) / 2);
-      } else if (config.roundTrueCount === 'ceil' || config.roundTrueCount === 'floor') {
+      } else if (config.roundTrueCount === 'floor') {
+        remainingDecks = Math.max(1, Math.floor(remainingDecksReal));
+      } else if (config.roundTrueCount === 'ceil') {
         const floorVal = Math.floor(remainingDecksReal);
         const frac = remainingDecksReal - floorVal;
         remainingDecks = Math.max(1, frac >= 0.2 ? floorVal + 1 : floorVal);
@@ -187,8 +195,9 @@ function runSimulation(config: SimulationConfig) {
         if (seat.isAP) {
           if (isPotOfGoldActive) {
             const wongingEnabled = !!rules.potOfGold?.wonging?.enabled;
-            const inRC = rules.potOfGold?.wonging?.inRC ?? 12;
-            const outRC = rules.potOfGold?.wonging?.outRC ?? 20;
+            const defaultPivotRC = 2 * rules.numDecks;
+            const inRC = rules.potOfGold?.wonging?.inRC ?? defaultPivotRC;
+            const outRC = rules.potOfGold?.wonging?.outRC ?? Math.round(3.33 * rules.numDecks);
 
             if (wongingEnabled) {
               const currentlySeated = pogSeatedMap[seat.id] ?? false;
@@ -210,7 +219,7 @@ function runSimulation(config: SimulationConfig) {
 
             // Pot of Gold Side Bet Staking via POG2 Count
             const pog = rules.potOfGold;
-            const triggerRC = pog?.triggerRC ?? 12;
+            const triggerRC = pog?.triggerRC ?? defaultPivotRC;
             const isSideStaked = table.pogRunningCount <= triggerRC;
             isSideStakedMap[seat.id] = isSideStaked;
 
@@ -364,7 +373,8 @@ function runSimulation(config: SimulationConfig) {
                 isBlackjack: false,
                 value: 0,
                 isSoft: false,
-                surrendered: false
+                surrendered: false,
+                handGroupId: h
               });
             }
             seat.bankroll -= totalInitialBet;
@@ -387,7 +397,8 @@ function runSimulation(config: SimulationConfig) {
             isBlackjack: false,
             value: 0,
             isSoft: false,
-            surrendered: false
+            surrendered: false,
+            handGroupId: 0
           }];
           seat.bankroll -= rules.minBet;
         }
@@ -419,7 +430,7 @@ function runSimulation(config: SimulationConfig) {
       }
 
       const dealerUpcard = drawCard(table);
-      const dealerDowncard = drawCard(table);
+      const dealerDowncard = drawCardRaw(table); // Counted only when exposed
 
       // Illustrious 18 Insurance deviation (APs only)
       let tookInsuranceMap: Record<number, number> = {}; // seatId -> insuranceBetAmount
@@ -468,7 +479,10 @@ function runSimulation(config: SimulationConfig) {
       const dRes = calculateHandValue(dealerHand.cards);
       dealerHand.value = dRes.value;
       dealerHand.isSoft = dRes.isSoft;
-      if (dRes.value === 21) dealerHand.isBlackjack = true;
+      if (dRes.value === 21) {
+        dealerHand.isBlackjack = true;
+        countCard(table, dealerDowncard); // Dealer exposes Blackjack immediately
+      }
 
       const isFreeBetGame = rules.gameType === 'free_bet';
 
@@ -488,6 +502,12 @@ function runSimulation(config: SimulationConfig) {
               hand.cards[0].rank === hand.cards[1].rank &&
               seat.hands.filter(h => (h.handGroupId ?? 0) === gId).length < rules.maxSplits + 1 &&
               (isFreeBetGame || seat.bankroll >= hand.bet);
+
+            // Split Aces may only re-split (up to maxSplits + 1 hands); they can never Hit if maxSplits is reached
+            if (hand.isSplit && hand.cards[0].rank === 'A' && !canSplit) {
+              hand.isStood = true;
+              break;
+            }
 
             const isI18 = seat.isAP && config.strategy === 'i18';
             const isSideStaked = isSideStakedMap[seat.id] || false;
@@ -548,8 +568,10 @@ function runSimulation(config: SimulationConfig) {
               seat.hands.push(newHand);
 
               if (splitCard.rank === 'A') {
-                hand.isStood = true;
-                newHand.isStood = true;
+                const groupCount = seat.hands.filter(h => (h.handGroupId ?? 0) === gId).length;
+                const canStillResplitAces = groupCount < rules.maxSplits + 1;
+                hand.isStood = !(canStillResplitAces && hand.cards[1].rank === 'A');
+                newHand.isStood = !(canStillResplitAces && newHand.cards[1].rank === 'A');
               }
             } else if (action === 'D') {
               const { value: handVal, isSoft: handIsSoft } = calculateHandValue(hand.cards);
@@ -613,6 +635,7 @@ function runSimulation(config: SimulationConfig) {
       }
 
       if (!allPlayersBustOrSurrendered && !dealerHand.isBlackjack) {
+        countCard(table, dealerDowncard); // Dealer exposes hole card to play hand
         while (dealerHand.value < 17 || (dealerHand.value === 17 && dealerHand.isSoft && rules.hitSoft17)) {
           const nextCard = drawCard(table);
           dealerHand.cards.push(nextCard);
