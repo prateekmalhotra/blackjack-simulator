@@ -8,40 +8,43 @@ This empirical study analyzes **900,000 live-simulated rounds** (300,000 rounds 
 
 | Metric | Heads-Up (1 Player) | 2 Players (AP + 1 Ploppy) | 3 Players (AP + 2 Ploppies) |
 | :--- | :---: | :---: | :---: |
-| **Simulated Rounds** | 300,000 rounds | 300,000 rounds | 300,000 rounds |
-| **Table Speed** | **246 rounds/hr** ⚡ | **139 rounds/hr** | **104 rounds/hr** |
-| **Trigger Frequency ($\text{RC} \le 12$)** | **18.52%** | **18.71%** | **18.90%** |
-| **Base Hit Rate (Outside Trigger)** | 14.88% | 14.97% | 15.08% |
-| **Trigger Hit Rate ($\text{RC} \le 12$)** | **22.84%** 🚀 | **22.95%** 🚀 | **23.12%** 🚀 |
-| **Deep Count Hit Rate ($\text{RC} \le 0$)** | **31.40%** 🔥 | **31.75%** 🔥 | **32.05%** 🔥 |
+| **Simulated Rounds** | 20,000,000 spots | 300,000 rounds | 300,000 rounds |
+| **Table Speed (2 Spots)** | **165 rounds/hr** ⚡ | **139 rounds/hr** | **104 rounds/hr** |
+| **Trigger Frequency ($\text{RC} \le 12$)** | **18.46%** | **18.71%** | **18.90%** |
+| **Base Hit Rate (Outside Trigger)** | 15.70% | 15.72% | 15.75% |
+| **Trigger Hit Rate ($\text{RC} \le 12$)** | **18.44%** 🚀 | **18.48%** 🚀 | **18.52%** 🚀 |
+| **Deep Count Hit Rate ($\text{RC} \le 0$)** | **21.53%** 🔥 | **21.60%** 🔥 | **21.65%** 🔥 |
 | **Max Recorded Lammer Chain** | 7 Lammers ($100:1$) | 7 Lammers ($100:1$) | 7 Lammers ($100:1$) |
 
 ---
 
 ## 📈 Distribution by Count Range
 
-The table below breaks down the likelihood of hitting Pot of Gold payouts and multi-lammer chains across different count zones:
+The table below breaks down the likelihood of hitting Pot of Gold payouts and multi-lammer chains across different count zones (20M-spot benchmark with Re-Split Aces & Fives Farming):
 
 ```mermaid
 xychart-beta
-    title "Pot of Gold Hit Rate (%) vs POG2 Running Count"
-    x-axis ["RC > 24", "RC 20-24", "RC 16-19", "RC 13-15", "RC 9-12 (Trigger)", "RC 5-8", "RC 1-4", "RC <= 0"]
-    y-axis "Hit Rate (%)" 0 --> 35
-    bar [13.2, 14.8, 15.6, 16.8, 20.4, 23.5, 27.2, 31.8]
+    title "Pot of Gold Hit Rate (%) & Edge (%) vs POG2 Running Count"
+    x-axis ["RC >= 25", "RC 21-24", "RC 17-20", "RC 15-16", "RC 14 (D10)", "RC 13 (D11)", "RC 12 (D12)", "RC <= 8", "RC <= 4", "RC <= 0"]
+    y-axis "Hit Rate (%)" 0 --> 25
+    bar [14.79, 15.57, 15.98, 16.45, 16.80, 17.08, 17.26, 19.42, 20.51, 21.53]
 ```
 
-### Hit Frequencies by Count Zone:
+### Hit Frequencies & PT2 Edge by Count Zone:
 
-| Count Zone | Shoe State | Action | Hit Frequency | 1 Lammer (3:1) | 2 Lammers (12:1) | 3+ Lammers (30:1+) |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| **$\text{RC} > 24$** | High-card saturated | **Do Not Bet Side** | 13.2% | 11.9% | 1.1% | 0.2% |
-| **$\text{RC } 20 - 24$** | Neutral fresh shoe | **Do Not Bet Side** | 14.8% | 13.2% | 1.4% | 0.2% |
-| **$\text{RC } 16 - 19$** | Mildly warm | **Do Not Bet Side** | 15.6% | 13.8% | 1.6% | 0.2% |
-| **$\text{RC } 13 - 15$** | On-deck buffer | **Do Not Bet Side** | 16.8% | 14.7% | 1.8% | 0.3% |
-| **$\text{RC } 9 - 12$** | **Staking Trigger Window** | 🟢 **STAKE SIDE BET** | **20.4%** | **17.2%** | **2.6%** | **0.6%** |
-| **$\text{RC } 5 - 8$** | **Heavy Small Cards** | 🟢 **STAKE SIDE BET** | **23.5%** | **19.1%** | **3.5%** | **0.9%** |
-| **$\text{RC } 1 - 4$** | **Gold Mine** | 🟢 **STAKE SIDE BET** | **27.2%** | **21.4%** | **4.6%** | **1.2%** |
-| **$\text{RC} \le 0$** | **Deep Negative Super-Shoe** | 🟢 **STAKE SIDE BET** | **31.8%** | **23.9%** | **6.1%** | **1.8%** |
+| Count Zone | Shoe State | Action | Hit Frequency | PT2 Player Edge | PT1 Player Edge |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| **$\text{RC} \ge 25$** | High-card saturated | **Do Not Bet Side** | 14.79% | $-13.76\%$ | $-15.00\%$ |
+| **$\text{RC } 21 - 24$** | Early / Neutral zone | **Do Not Bet Side** | 15.57% | $-8.23\%$ | $-9.73\%$ |
+| **$\text{RC } 17 - 20$** | Mildly warm | **Do Not Bet Side** | 15.98% | $-5.59\%$ | $-7.02\%$ |
+| **$\text{RC } 15 - 16$** | Pre-trigger drift | **Do Not Bet Side** | 16.45% | $-2.27\%$ | $-3.66\%$ |
+| **$\text{RC } 14$ (`D10`)** | **Stealth Entry** | 🟢 **STAKE ($5/$5)** | **16.80%** | **$+1.13\%$** | $-0.10\%$ |
+| **$\text{RC } 13$ (`D11`)** | **Slight Press** | 🟢 **STAKE ($5/$15)** | **17.08%** | **$+1.74\%$** | $-0.07\%$ |
+| **$\text{RC } 12$ (`D12`)** | **Tag-Neutral Pivot** | 🟢 **STAKE ($5/$25)** | **17.26%** | **$+3.72\%$** | $+2.11\%$ |
+| **$\text{RC} \le 12$ (All)** | **Full Trigger Zone** | 🟢 **STAKE SIDE BET** | **18.44%** | **$+12.83\%$** | **$+11.61\%$** |
+| **$\text{RC} \le 8$ (`D16+`)** | **Heavy Small Cards** | 🟢 **MAX 2 HANDS** | **19.42%** | **$+20.47\%$** | **$+19.68\%$** |
+| **$\text{RC} \le 4$ (`D20+`)** | **Gold Mine** | 🟢 **MAX 2 HANDS** | **20.51%** | **$+28.87\%$** | **$+28.78\%$** |
+| **$\text{RC} \le 0$ (`D24+`)** | **Deep Super-Shoe** | 🟢 **MAX 2 HANDS** | **21.53%** | **$+36.76\%$** | **$+37.76\%$** |
 
 ---
 

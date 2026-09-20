@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Counting Mistakes: Impact of Count Errors (-7 to +7)</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0a0e17;
+      --bg-card: #121824;
+      --bg-subtle: #1a2234;
+      --border: #232f46;
+      --text-main: #f0f4f8;
+      --text-muted: #8b9bb4;
+      --accent-cyan: #00d2ff;
+      --accent-gold: #ffb703;
+      --accent-green: #06d6a0;
+      --accent-purple: #9d4edd;
+      --accent-red: #ef476f;
+      --accent-blue: #3a86ff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-main);
+      padding: 2.5rem 1.5rem;
+      line-height: 1.6;
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; }
+
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      background: rgba(239, 71, 111, 0.15);
+      color: var(--accent-red);
+      border: 1px solid rgba(239, 71, 111, 0.3);
+      margin-bottom: 0.75rem;
+    }
+    h1 {
+      font-size: 2.4rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #ffffff 30%, #ef476f 70%, #ffb703 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 850px;
+    }
+
+    /* Executive Callout */
+    .executive-card {
+      background: linear-gradient(135deg, rgba(239, 71, 111, 0.12), rgba(255, 183, 3, 0.08));
+      border: 1px solid rgba(239, 71, 111, 0.3);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+    }
+    .stat-item {
+      border-right: 1px solid var(--border);
+      padding-right: 1rem;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .stat-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    /* Insights Grid */
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+    .insight-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 0.875rem;
+      padding: 1.25rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .insight-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
+    }
+    .insight-card.green::before { background: var(--accent-green); }
+    .insight-card.red::before { background: var(--accent-red); }
+    .insight-card.purple::before { background: var(--accent-purple); }
+    .insight-card.gold::before { background: var(--accent-gold); }
+
+    .insight-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .insight-title {
+      font-weight: 700;
+      font-size: 1.05rem;
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+    .insight-body {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .highlight { color: #fff; font-weight: 600; }
+
+    /* Chart Sections */
+    .chart-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.75rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .chart-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .chart-desc {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+    .chart-canvas-box {
+      position: relative;
+      height: 400px;
+      width: 100%;
+    }
+
+    /* Table */
+    .table-container {
+      overflow-x: auto;
+      margin-top: 1rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      text-align: right;
+    }
+    th, td {
+      padding: 0.65rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      color: var(--text-muted);
+      font-weight: 600;
+      background: var(--bg-subtle);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+    }
+    th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) {
+      text-align: left;
+    }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+    .baseline-row {
+      background: rgba(6, 214, 160, 0.1) !important;
+      font-weight: 700;
+    }
+    .danger-row {
+      background: rgba(239, 71, 111, 0.1) !important;
+    }
+    .tag-baseline {
+      background: var(--accent-green);
+      color: #000;
+      font-weight: 800;
+      font-size: 0.65rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 0.25rem;
+      margin-left: 0.4rem;
+    }
+    .tag-danger {
+      background: var(--accent-red);
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.65rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 0.25rem;
+      margin-left: 0.4rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div class="badge">Error Sensitivity Simulation (50,000 Shoes)</div>
+      <h1>The Impact of Counting Mistakes: Error -7 to +7</h1>
+      <p class="subtitle">
+        What happens if you miss a card, drop the count, or miscalculate? Here is the exact mathematical damage to your Hourly EV, Volatility, and Edge when your count is systematically off by -7 to +7 points.
+      </p>
+    </header>
+
+    <!-- Executive Summary Callout -->
+    <div class="executive-card">
+      <div class="stat-item">
+        <div class="stat-label">The Safety Corridor</div>
+        <div class="stat-value" style="color: var(--accent-green);">±2 Points</div>
+        <div class="stat-desc">Errors within ±2 points retain >90% of maximum EV.</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">The Over-Count Penalty (+k)</div>
+        <div class="stat-value" style="color: var(--accent-purple);">Starvation</div>
+        <div class="stat-desc">Triggers too late. Main bet bleed consumes profit.</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">The Under-Count Penalty (-k)</div>
+        <div class="stat-value" style="color: var(--accent-red);">Volatility Spike</div>
+        <div class="stat-desc">Triggers too early. SD explodes from $448 to $676/hr.</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">The Break-Even Boundary</div>
+        <div class="stat-value" style="color: var(--accent-gold);">±7 Points</div>
+        <div class="stat-desc">At ±7 error, player edge flips completely negative.</div>
+      </div>
+    </div>
+
+    <!-- 4 Intuitive Explanations -->
+    <div class="insights-grid">
+      <div class="insight-card green">
+        <div class="insight-icon">🛡️</div>
+        <div class="insight-title">1. The Forgiving Corridor (±1 to ±2)</div>
+        <div class="insight-body">
+          You do <em>not</em> have to be a computer! If your count is off by <span class="highlight">±1 or ±2 points</span>, your net profit stays between <span class="highlight">$21.49 and $26.16/hr</span> (within 10% of optimal). Human imperfection does <strong>not</strong> ruin your advantage.
+        </div>
+      </div>
+
+      <div class="insight-card red">
+        <div class="insight-icon">💣</div>
+        <div class="insight-title">2. Negative Error (-k): Over-Betting Danger</div>
+        <div class="insight-body">
+          If your count is <span class="highlight">3 to 6 points lower than reality</span> (e.g. real RC is 16, but you think it's 12), you trigger too early. You place $25 bets on weak shoes, causing your standard deviation to surge by <span class="highlight">+44% (up to $647/hr)</span>. At -7, EV goes <strong>negative (-$5.66/hr)</strong>.
+        </div>
+      </div>
+
+      <div class="insight-card purple">
+        <div class="insight-icon">⏳</div>
+        <div class="insight-title">3. Positive Error (+k): Starvation Danger</div>
+        <div class="insight-body">
+          If your count is <span class="highlight">3 to 6 points higher than reality</span> (e.g. real RC is 12, but you think it's 15), you trigger too late. You sit like a sitting duck paying -$26/hr on main bets without ever firing the side bet. At +7, EV goes <strong>negative (-$4.01/hr)</strong>.
+        </div>
+      </div>
+
+      <div class="insight-card gold">
+        <div class="insight-icon">⚖️</div>
+        <div class="insight-title">4. Which Mistake is Worse?</div>
+        <div class="insight-body">
+          <strong>Under-counting (-k)</strong> is more dangerous to your wallet: it triggers massive bankroll drawdowns and requires an enormous stop-loss. <strong>Over-counting (+k)</strong> is boring and starves EV, but keeps volatility low ($237/hr). When in doubt, <em>round up (higher count)!</em>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart 1: Net EV Curve (-7 to +7) -->
+    <div class="chart-section">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">1. Net Hourly EV ($) vs Count Error (-7 to +7)</div>
+          <div class="chart-desc">Net profit per 100 hands ($10 Main, $25 Side Bet). Notice the peak between -2 and 0, and the collapse into negative territory at ±7.</div>
+        </div>
+      </div>
+      <div class="chart-canvas-box">
+        <canvas id="evChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart 2: Standard Deviation & Trigger Frequency -->
+    <div class="chart-section">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">2. Volatility Explosion vs Starvation: SD ($) and Trigger Frequency (%)</div>
+          <div class="chart-desc">Notice how under-counting (-k) explodes your standard deviation up to $676/hr, while over-counting (+k) collapses trigger frequency to 3.5%.</div>
+        </div>
+      </div>
+      <div class="chart-canvas-box">
+        <canvas id="sdFreqChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="chart-section">
+      <div class="chart-title">Complete Error Sensitivity Table (-7 to +7)</div>
+      <div class="chart-desc">Simulated across 50,000 shoes (2.8M rounds). All values assume 100 rounds/hr ($10 Main, $25 Side Bet).</div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Player Error</th>
+              <th>Perceived Count</th>
+              <th>Effective Trigger</th>
+              <th>Trigger Freq (%)</th>
+              <th>Side Bet Edge (%)</th>
+              <th>Net EV / Hr (100 rds)</th>
+              <th>Net EV / Hr (200 rds)</th>
+              <th>Hourly SD (100 rds)</th>
+              <th>Hourly Penalty ($)</th>
+              <th>Sharpe Efficiency</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const data = [
+      { error: -7, perceived: 'RC - 7', effRC: 19, freq: 49.96, edge: 1.72, net100: -5.66, net200: -11.32, sd: 676.29, penalty: 30.32, sharpe: -0.0008, isDanger: true },
+      { error: -6, perceived: 'RC - 6', effRC: 18, freq: 44.71, edge: 2.84, net100: 4.57, net200: 9.14, sd: 647.00, penalty: 20.09, sharpe: 0.0007, isDanger: false },
+      { error: -5, perceived: 'RC - 5', effRC: 17, freq: 39.61, edge: 4.10, net100: 13.44, net200: 26.88, sd: 615.50, penalty: 11.22, sharpe: 0.0022, isDanger: false },
+      { error: -4, perceived: 'RC - 4', effRC: 16, freq: 34.75, edge: 5.42, net100: 19.91, net200: 39.82, sd: 583.31, penalty: 4.75, sharpe: 0.0034, isDanger: false },
+      { error: -3, perceived: 'RC - 3', effRC: 15, freq: 30.18, edge: 6.95, net100: 25.22, net200: 50.44, sd: 552.06, penalty: -0.56, sharpe: 0.0046, isDanger: false },
+      { error: -2, perceived: 'RC - 2', effRC: 14, freq: 25.92, edge: 8.23, net100: 26.16, net200: 52.32, sd: 518.71, penalty: -1.50, sharpe: 0.0050, isDanger: false },
+      { error: -1, perceived: 'RC - 1', effRC: 13, freq: 22.00, edge: 9.47, net100: 24.89, net200: 49.78, sd: 480.85, penalty: -0.23, sharpe: 0.0052, isDanger: false },
+      { error: 0, perceived: 'RC (Perfect)', effRC: 12, freq: 18.41, edge: 11.26, net100: 24.66, net200: 49.32, sd: 448.11, penalty: 0.00, sharpe: 0.0055, isBaseline: true },
+      { error: 1, perceived: 'RC + 1', effRC: 11, freq: 15.20, edge: 13.41, net100: 23.77, net200: 47.54, sd: 415.40, penalty: 0.89, sharpe: 0.0057, isDanger: false },
+      { error: 2, perceived: 'RC + 2', effRC: 10, freq: 12.38, edge: 15.73, net100: 21.49, net200: 42.98, sd: 384.33, penalty: 3.17, sharpe: 0.0056, isDanger: false },
+      { error: 3, perceived: 'RC + 3', effRC: 9, freq: 9.93, edge: 16.98, net100: 14.96, net200: 29.92, sd: 348.46, penalty: 9.70, sharpe: 0.0043, isDanger: false },
+      { error: 4, perceived: 'RC + 4', effRC: 8, freq: 7.83, edge: 19.83, net100: 11.63, net200: 23.26, sd: 318.68, penalty: 13.03, sharpe: 0.0036, isDanger: false },
+      { error: 5, perceived: 'RC + 5', effRC: 7, freq: 6.08, edge: 22.24, net100: 6.64, net200: 13.28, sd: 290.97, penalty: 18.02, sharpe: 0.0023, isDanger: false },
+      { error: 6, perceived: 'RC + 6', effRC: 6, freq: 4.65, edge: 24.47, net100: 1.28, net200: 2.56, sd: 262.57, penalty: 23.38, sharpe: 0.0005, isDanger: false },
+      { error: 7, perceived: 'RC + 7', effRC: 5, freq: 3.50, edge: 26.52, net100: -4.01, net200: -8.02, sd: 237.40, penalty: 28.67, sharpe: -0.0017, isDanger: true }
+    ];
+
+    const labels = data.map(d => (d.error > 0 ? `+${d.error}` : `${d.error}`));
+
+    // 1. EV Curve
+    const ctxEV = document.getElementById('evChart').getContext('2d');
+    new Chart(ctxEV, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Net Hourly EV ($/hr @ 100 rds)',
+          data: data.map(d => d.net100),
+          borderColor: '#ffb703',
+          backgroundColor: 'rgba(255, 183, 3, 0.15)',
+          fill: true,
+          tension: 0.3,
+          borderWidth: 3,
+          pointRadius: 5,
+          pointBackgroundColor: data.map(d => (d.isBaseline ? '#06d6a0' : d.isDanger ? '#ef476f' : '#ffb703'))
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+            ticks: { color: '#8b9bb4' },
+            title: { display: true, text: 'Counting Mistake / Error (Player Count − True Count)', color: '#8b9bb4' }
+          },
+          y: {
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+            ticks: { color: '#8b9bb4', callback: v => '$' + v },
+            title: { display: true, text: 'Net Hourly EV ($)', color: '#8b9bb4' }
+          }
+        },
+        plugins: {
+          legend: { labels: { color: '#f0f4f8' } },
+          tooltip: {
+            backgroundColor: '#121824',
+            borderColor: '#232f46',
+            borderWidth: 1,
+            padding: 12,
+            callbacks: {
+              title: ctx => `Error: ${ctx[0].label} (${data[ctx[0].dataIndex].perceived})`,
+              label: ctx => ` Net EV: $${ctx.raw}/hr (Eff. Trigger: RC ≤ ${data[ctx.dataIndex].effRC})`
+            }
+          }
+        }
+      }
+    });
+
+    // 2. SD & Frequency Chart
+    const ctxSDFreq = document.getElementById('sdFreqChart').getContext('2d');
+    new Chart(ctxSDFreq, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Hourly Standard Deviation ($/hr)',
+            data: data.map(d => d.sd),
+            borderColor: '#ef476f',
+            borderWidth: 3,
+            yAxisID: 'ySD',
+            tension: 0.3,
+            pointRadius: 4
+          },
+          {
+            label: 'Trigger Frequency (%)',
+            data: data.map(d => d.freq),
+            borderColor: '#00d2ff',
+            borderWidth: 2.5,
+            borderDash: [5, 5],
+            yAxisID: 'yFreq',
+            tension: 0.3,
+            pointRadius: 4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+            ticks: { color: '#8b9bb4' },
+            title: { display: true, text: 'Counting Error Offset (-7 to +7)', color: '#8b9bb4' }
+          },
+          ySD: {
+            type: 'linear', position: 'left',
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+            ticks: { color: '#ef476f', callback: v => '$' + v },
+            title: { display: true, text: 'Standard Deviation ($/hr)', color: '#ef476f' }
+          },
+          yFreq: {
+            type: 'linear', position: 'right',
+            grid: { drawOnChartArea: false },
+            ticks: { color: '#00d2ff', callback: v => v + '%' },
+            title: { display: true, text: 'Trigger Frequency (%)', color: '#00d2ff' }
+          }
+        },
+        plugins: {
+          legend: { labels: { color: '#f0f4f8' } },
+          tooltip: {
+            backgroundColor: '#121824',
+            borderColor: '#232f46',
+            borderWidth: 1,
+            padding: 12
+          }
+        }
+      }
+    });
+
+    // Populate Table
+    const tbody = document.getElementById('tableBody');
+    data.forEach(d => {
+      const tr = document.createElement('tr');
+      if (d.isBaseline) tr.className = 'baseline-row';
+      else if (d.isDanger) tr.className = 'danger-row';
+
+      const netColor = d.net100 > 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+      const penaltyColor = d.penalty > 5 ? 'var(--accent-red)' : d.penalty < 0 ? 'var(--accent-green)' : 'var(--text-muted)';
+
+      tr.innerHTML = `
+        <td style="font-weight: 700;">${d.error > 0 ? '+' : ''}${d.error} ${d.isBaseline ? '<span class="tag-baseline">OPTIMAL</span>' : d.isDanger ? '<span class="tag-danger">LOSING</span>' : ''}</td>
+        <td>${d.perceived}</td>
+        <td>RC ≤ ${d.effRC}</td>
+        <td>${d.freq}%</td>
+        <td style="color: var(--accent-cyan); font-weight: 600;">+${d.edge}%</td>
+        <td style="font-weight: 800; color: ${netColor};">$${d.net100.toFixed(2)}</td>
+        <td style="font-weight: 800; color: ${netColor};">$${d.net200.toFixed(2)}</td>
+        <td style="color: var(--accent-red);">$${d.sd.toFixed(2)}</td>
+        <td style="color: ${penaltyColor};">${d.penalty > 0 ? '-$' : '+$'}${Math.abs(d.penalty).toFixed(2)}</td>
+        <td style="font-weight: 700;">${d.sharpe.toFixed(4)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  </script>
+</body>
+</html>

@@ -200,19 +200,20 @@ function runSimulation(config: SimulationConfig) {
             const outRC = rules.potOfGold?.wonging?.outRC ?? Math.round(3.33 * rules.numDecks);
 
             if (wongingEnabled) {
-              const currentlySeated = pogSeatedMap[seat.id] ?? false;
+              const isSoloTable = table.seats.length === 1;
+              const currentlySeated = pogSeatedMap[seat.id] ?? isSoloTable;
               if (!currentlySeated) {
                 if (table.pogRunningCount <= inRC) {
                   pogSeatedMap[seat.id] = true;
                 } else {
                   seat.hands = [];
-                  continue; // Back-counting / spectating
+                  continue; // Back-counting / spectating while other seats play
                 }
               } else {
                 if (table.pogRunningCount > outRC) {
                   pogSeatedMap[seat.id] = false;
                   seat.hands = [];
-                  continue; // Wonged out / left table
+                  continue; // Wonged out / abandoned dead shoe
                 }
               }
             }
@@ -404,17 +405,12 @@ function runSimulation(config: SimulationConfig) {
         }
       }
 
-      // If all seats sat out on this table, burn a round
+      // If all seats left the table (e.g. solo player abandoned dead shoe), immediately shuffle a fresh shoe
       if (activePlayingCount === 0) {
-        drawCard(table); drawCard(table);
-        drawCard(table); drawCard(table);
-        
-        if (table.shoe.length < rules.numDecks * 52 * (1 - rules.penetration)) {
-          table.shoe = shuffleShoe(createShoe(rules.numDecks));
-          table.runningCount = 0;
-          table.pogRunningCount = getInitialPogRunningCount(rules.numDecks);
-          for (const s of table.seats) pogSeatedMap[s.id] = false;
-        }
+        table.shoe = shuffleShoe(createShoe(rules.numDecks));
+        table.runningCount = 0;
+        table.pogRunningCount = getInitialPogRunningCount(rules.numDecks);
+        for (const s of table.seats) pogSeatedMap[s.id] = table.seats.length === 1;
         continue;
       }
 
