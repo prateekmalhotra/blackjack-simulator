@@ -117,6 +117,17 @@ function runSimulation(config: SimulationConfig) {
   let sumPayouts = 0;
   let sumSquaredPayouts = 0;
   let totalRoundsPlayedCount = 0;
+  let totalApHoursSimulated = 0;
+
+  function getRoundHandsPerHour(seats: number, apSpotsInRound: number): number {
+    if (seats === 1) return apSpotsInRound > 1 ? 165 : 246;
+    const totalSpots = apSpotsInRound + (seats - 1);
+    if (totalSpots <= 2) return 139;
+    if (totalSpots === 3) return 104;
+    if (totalSpots === 4) return 83;
+    if (totalSpots === 5) return 70;
+    return 60;
+  }
 
   // We sample bankroll history to keep message payload small
   const sampleIndices: number[] = [0];
@@ -362,6 +373,7 @@ function runSimulation(config: SimulationConfig) {
               totalInitialBet = betPerHand * numHands;
             }
 
+            seatNumHandsMap[seat.id] = numHands;
             seat.hands = [];
             for (let h = 0; h < numHands; h++) {
               seat.hands.push({
@@ -630,16 +642,18 @@ function runSimulation(config: SimulationConfig) {
         }
       }
 
-      if (!allPlayersBustOrSurrendered && !dealerHand.isBlackjack) {
-        countCard(table, dealerDowncard); // Dealer exposes hole card to play hand
-        while (dealerHand.value < 17 || (dealerHand.value === 17 && dealerHand.isSoft && rules.hitSoft17)) {
-          const nextCard = drawCard(table);
-          dealerHand.cards.push(nextCard);
-          const dealerRes = calculateHandValue(dealerHand.cards);
-          dealerHand.value = dealerRes.value;
-          dealerHand.isSoft = dealerRes.isSoft;
+      if (!dealerHand.isBlackjack) {
+        countCard(table, dealerDowncard); // Dealer always exposes hole card before discarding or playing hand
+        if (!allPlayersBustOrSurrendered) {
+          while (dealerHand.value < 17 || (dealerHand.value === 17 && dealerHand.isSoft && rules.hitSoft17)) {
+            const nextCard = drawCard(table);
+            dealerHand.cards.push(nextCard);
+            const dealerRes = calculateHandValue(dealerHand.cards);
+            dealerHand.value = dealerRes.value;
+            dealerHand.isSoft = dealerRes.isSoft;
+          }
+          if (dealerHand.value > 21) dealerHand.isBusted = true;
         }
-        if (dealerHand.value > 21) dealerHand.isBusted = true;
       }
 
       // Settle payouts
@@ -752,6 +766,18 @@ function runSimulation(config: SimulationConfig) {
           sumPayouts += seatRoundProfit;
           sumSquaredPayouts += seatRoundProfit * seatRoundProfit;
           totalRoundsPlayedCount++;
+          const apSpotsThisRound = seatNumHandsMap[seat.id] || 1;
+          const roundSpeed = getRoundHandsPerHour(seatsPerTable, apSpotsThisRound);
+          totalApHoursSimulated += 1 / roundSpeed;
+        }
+      }
+
+      // If AP seat was spectating/back-counting while ploppies played this round, still account for table time elapsed
+      for (const seat of table.seats) {
+        if (seat.isAP && seat.hands.length === 0) {
+          totalRoundsPlayedCount++;
+          const roundSpeed = getRoundHandsPerHour(seatsPerTable, 0);
+          totalApHoursSimulated += 1 / roundSpeed;
         }
       }
 
@@ -794,6 +820,10 @@ function runSimulation(config: SimulationConfig) {
         }
       }
 
+      const effectiveHandsPerHour = totalApHoursSimulated > 0
+        ? (totalRoundsPlayedCount / totalApHoursSimulated)
+        : getRoundHandsPerHour(seatsPerTable, 1);
+
       self.postMessage({
         handsPlayed,
         seatBankrolls,
@@ -806,7 +836,8 @@ function runSimulation(config: SimulationConfig) {
         sampleIndices,
         sumPayouts,
         sumSquaredPayouts,
-        totalRoundsPlayedCount
+        totalRoundsPlayedCount,
+        effectiveHandsPerHour
       } as SimulationProgress);
     }
   }

@@ -101,4 +101,5 @@ export interface SimulationProgress {
   sumPayouts: number;
   sumSquaredPayouts: number;
   totalRoundsPlayedCount: number;
+  effectiveHandsPerHour?: number;
 }

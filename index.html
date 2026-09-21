@@ -26,8 +26,8 @@
               <div class="form-field">
                 <label>Game Variant</label>
                 <select id="rule-game-type">
-                  <option value="standard" selected>Standard Blackjack</option>
-                  <option value="free_bet">Pot of Gold / Free Bet</option>
+                  <option value="standard">Standard Blackjack</option>
+                  <option value="free_bet" selected>Pot of Gold / Free Bet</option>
                 </select>
               </div>
               <div class="form-field">
@@ -48,8 +48,8 @@
               <div class="form-field">
                 <label>Blackjack Payout</label>
                 <select id="rule-blackjack-payout">
-                  <option value="1.5" selected>3 to 2 (1.5x)</option>
-                  <option value="1.2">6 to 5 (1.2x)</option>
+                  <option value="1.5">3 to 2 (1.5x)</option>
+                  <option value="1.2" selected>6 to 5 (1.2x)</option>
                 </select>
               </div>
               <div class="form-field">
@@ -60,7 +60,7 @@
                 <label>Table Maximum Bet ($)</label>
                 <input type="number" id="rule-maxbet" value="1000" min="10" />
               </div>
-              <div id="standard-rules-container">
+              <div id="standard-rules-container" style="display: none;">
                 <div class="form-field">
                   <label>Double After Split</label>
                   <select id="rule-das">
@@ -98,14 +98,14 @@
               </div>
               <div class="form-field">
                 <label>Starting Bankroll ($)</label>
-                <input type="number" id="play-bankroll" value="25000" min="100" max="1000000" step="100" />
+                <input type="number" id="play-bankroll" value="10000" min="100" max="1000000" step="100" />
               </div>
-              <div id="standard-player-settings">
+              <div id="standard-player-settings" style="display: none;">
                 <div class="form-field">
                   <label>Strategy Model</label>
                   <select id="play-strategy">
-                    <option value="basic">Basic Strategy</option>
-                    <option value="i18" selected>Illustrious 18 Deviations</option>
+                    <option value="basic" selected>Basic Strategy</option>
+                    <option value="i18">Illustrious 18 Deviations</option>
                   </select>
                 </div>
                 <div class="form-field" style="margin-top: 1.25rem;">
@@ -118,7 +118,7 @@
                   </select>
                 </div>
                 <div class="form-field" style="flex-direction: row; align-items: center; gap: 0.5rem; padding-top: 0.5rem;">
-                  <input type="checkbox" id="play-wongout" style="width: auto; cursor: pointer;" checked />
+                  <input type="checkbox" id="play-wongout" style="width: auto; cursor: pointer;" />
                   <label for="play-wongout" style="margin-bottom: 0; cursor: pointer; user-select: none;">"Wong Out" (Skip if TC ≤</label>
                   <input type="number" id="play-wongout-min" value="-3" min="-10" max="10" style="width: 3.5rem; padding: 0.25rem; font-size: 0.8rem; margin: 0; border: 1px solid var(--border-color); border-radius: 4px; text-align: center; background-color: var(--bg-panel); color: var(--text-color);" />
                   <label for="play-wongout" style="margin-bottom: 0; cursor: pointer; user-select: none;">)</label>
@@ -127,7 +127,7 @@
             </div>
           </div>
 
-          <div id="pog-config-section" style="display: none;">
+          <div id="pog-config-section" style="display: block;">
             <h2 class="section-title">Pot of Gold Strategy (POG2)</h2>
             <div class="control-group">
               <div class="form-field">
@@ -141,9 +141,9 @@
               <div class="form-field">
                 <label>Staking Mode / Casino Rule</label>
                 <select id="pog-staking-mode">
-                  <option value="custom" selected>Custom / Flexible Main &amp; Side Bets ⭐ (e.g. $5 Main + $40 Side)</option>
-                  <option value="tied">Tied Staking (Enforce Side ≤ Main, e.g. $40 Main + $40 Side)</option>
-                  <option value="unconstrained">Flat Table Min Main Bet (e.g. $10 Main + $40 Side)</option>
+                  <option value="custom" selected>Custom / Flexible Main &amp; Side Bets ⭐ (e.g. $10 Main + $25 Side)</option>
+                  <option value="tied">Tied Staking (Enforce Side ≤ Main, e.g. $25 Main + $25 Side)</option>
+                  <option value="unconstrained">Flat Table Min Main Bet (e.g. $10 Main + $25 Side)</option>
                 </select>
               </div>
 
@@ -176,15 +176,15 @@
 
               <div class="form-field" id="pog-custom-main-container">
                 <label>Main Bet per Spot on Trigger ($)</label>
-                <input type="number" id="pog-trigger-main-bet" value="5" min="1" max="1000" />
+                <input type="number" id="pog-trigger-main-bet" value="10" min="1" max="1000" />
                 <div style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.3; margin-top: 0.2rem;">
-                  e.g. Set to 5 for your $5 main bet play.
+                  Default $10 main bet (or set to 5 for $5 main bet play).
                 </div>
               </div>
 
               <div class="form-field">
                 <label>Side Bet Amount per Spot ($)</label>
-                <input type="number" id="pog-side-bet" value="40" min="1" max="1000" />
+                <input type="number" id="pog-side-bet" value="25" min="1" max="1000" />
               </div>
 
               <div class="form-field">
@@ -251,7 +251,7 @@
             </div>
           </div>
 
-          <div id="hilo-spread-section">
+          <div id="hilo-spread-section" style="display: none;">
             <h2 class="section-title">Bet Spread (Hi-Lo Count)</h2>
             <div class="bet-spread-grid" id="bet-spread-container">
               <!-- Dynamically populated in main.ts -->
