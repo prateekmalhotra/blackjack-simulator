@@ -237,15 +237,15 @@ function updatePogPreview() {
   // Inside Trigger settings
   let spots = pogSpotsOnTrigger;
   const rawTriggerMainStr = pogTriggerMainBetInput ? pogTriggerMainBetInput.value.trim().toLowerCase() : '';
-  let triggerMainPerSpot = 10;
+  let triggerMainPerSpot = 5;
   const matchTrigger = rawTriggerMainStr.match(/^(\d+)[xX\u00d7*](\d+)$/);
   if (matchTrigger) {
     spots = Math.min(2, Math.max(1, parseInt(matchTrigger[1], 10))) as 1 | 2;
-    triggerMainPerSpot = parseInt(matchTrigger[2], 10) || 10;
+    triggerMainPerSpot = parseInt(matchTrigger[2], 10) || 5;
   } else {
     const cleanDigits = rawTriggerMainStr.replace(/[^0-9]/g, '');
     const parsedNum = parseInt(cleanDigits, 10);
-    triggerMainPerSpot = (isNaN(parsedNum) || parsedNum <= 0) ? 10 : parsedNum;
+    triggerMainPerSpot = (isNaN(parsedNum) || parsedNum <= 0) ? 5 : parsedNum;
   }
 
   if (stakingMode === 'tied') {
@@ -275,23 +275,15 @@ function updatePogPreview() {
     pogHandsHint.innerHTML = `Playing <strong>${spots} ${spots === 1 ? 'spot' : 'spots'}</strong> on trigger with $${triggerMainPerSpot} Main + $${triggerSidePerSpot} Side.`;
   }
 
-  const seats = parseInt(playTableSeatsSelect?.value || '3', 10) || 3;
-  const estRph = Math.round(getEstimatedHandsPerHour(seats, outsideSpots, spots, displayRC));
-  const speedOutside = getSpotSpeedForTable(seats, outsideSpots);
-  const speedTrigger = getSpotSpeedForTable(seats, spots);
-
   pogPreviewContent.innerHTML = `
     <div style="margin-bottom: 0.35rem;">
       <span style="color: var(--text-muted); font-weight: 600;">🟡 Outside Trigger (RC &gt; ${displayRC}):</span><br>
-      &nbsp;&nbsp;${outsideSpots} ${outsideSpots === 1 ? 'spot' : 'spots'} × $${outsideMainPerSpot} Main + $0 Side = <strong>$${outsideTotal} / round</strong> <span style="color: var(--text-muted); font-size: 0.72rem;">(${speedOutside} rds/hr)</span>
+      &nbsp;&nbsp;${outsideSpots} ${outsideSpots === 1 ? 'spot' : 'spots'} × $${outsideMainPerSpot} Main + $0 Side = <strong>$${outsideTotal} / round</strong>
     </div>
-    <div style="margin-bottom: 0.35rem;">
+    <div>
       <span style="color: var(--color-success); font-weight: 700;">🟢 Inside Trigger (RC ≤ ${displayRC}):</span><br>
-      &nbsp;&nbsp;${spots} ${spots === 1 ? 'spot' : 'spots'} × ($${triggerMainPerSpot} Main + $${triggerSidePerSpot} Side) = <strong>$${triggerTotalRound} / round</strong> <span style="color: var(--text-muted); font-size: 0.72rem;">(${speedTrigger} rds/hr)</span>
+      &nbsp;&nbsp;${spots} ${spots === 1 ? 'spot' : 'spots'} × ($${triggerMainPerSpot} Main + $${triggerSidePerSpot} Side) = <strong>$${triggerTotalRound} / round</strong>
       ${triggerSidePerSpot < rawSideBet ? `<span style="display:block; font-size: 0.72rem; color: var(--color-danger); margin-top: 0.15rem;">*Side bet clamped to $${triggerSidePerSpot} by house cap</span>` : ''}
-    </div>
-    <div style="padding-top: 0.25rem; border-top: 1px dashed var(--border-color); font-size: 0.74rem; color: var(--text-secondary);">
-      ⚡ <strong>Blended Dealer Speed:</strong> ~<strong>${estRph} rounds/hr</strong> (time-weighted by trigger frequency)
     </div>
   `;
 }
@@ -319,8 +311,10 @@ ruleGameTypeSelect.addEventListener('change', () => {
     pogSpotsOutsideTrigger = 1;
     if (pogOutsideMainBetInput) pogOutsideMainBetInput.value = '10';
     pogSpotsOnTrigger = 2;
-    if (pogTriggerMainBetInput) pogTriggerMainBetInput.value = '10';
+    if (pogTriggerMainBetInput) pogTriggerMainBetInput.value = '5';
     pogSideBetInput.value = '25';
+    if (pogSideBetCapSelect) pogSideBetCapSelect.value = '25';
+    if (pogCustomCapContainer) pogCustomCapContainer.style.display = 'none';
     pogTriggerRcInput.value = '12';
     pogFarmFivesCheckbox.checked = true;
     pogWongEnabledCheckbox.checked = false;
@@ -629,39 +623,21 @@ function getSpotSpeedForTable(seats: number, apSpotsInRound: number = 1): number
   return 60;
 }
 
-function estimateTriggerFrequency(triggerRC: number = 12, numDecks: number = 6): number {
-  const initialRC = 4 * numDecks; // 24 for 6 decks
-  if (triggerRC >= initialRC) return 1.0;
-  // Empirical POG2 trigger frequency curve (at RC <= 12 on 6D 83% pen, ~15% of rounds are inside trigger)
-  const diff = initialRC - triggerRC; // 12 at RC=12
-  const freq = Math.max(0.01, Math.min(0.95, 0.15 * Math.exp(-0.14 * (diff - 12))));
-  return freq;
-}
-
-function getEstimatedHandsPerHour(
-  seats: number,
-  outsideSpots: number = 1,
-  triggerSpots: number = 1,
-  triggerRC: number = 12,
-  numDecks: number = 6
-): number {
-  const speedOutside = getSpotSpeedForTable(seats, outsideSpots);
-  const speedTrigger = getSpotSpeedForTable(seats, triggerSpots);
-  if (speedOutside === speedTrigger) return speedOutside;
-  const pTrig = estimateTriggerFrequency(triggerRC, numDecks);
-  const avgHoursPerRound = ((1 - pTrig) / speedOutside) + (pTrig / speedTrigger);
-  return 1 / avgHoursPerRound;
-}
-
 function getConfigHandsPerHour(config: SimulationConfig, progress?: SimulationProgress): number {
-  if (progress?.effectiveHandsPerHour && progress.effectiveHandsPerHour > 0 && config.seatsPerTable === lastSimulationConfig?.seatsPerTable) {
-    return progress.effectiveHandsPerHour;
-  }
-  if (config.rules.gameType === 'free_bet' && config.rules.potOfGold) {
-    const outSpots = config.rules.potOfGold.handsOutsideTrigger ?? 1;
-    const inSpots = config.rules.potOfGold.handsOnTrigger ?? 1;
-    const trigRC = config.rules.potOfGold.triggerRC ?? 12;
-    return getEstimatedHandsPerHour(config.seatsPerTable, outSpots, inSpots, trigRC, config.rules.numDecks);
+  if (progress && progress.totalRoundsPlayedCount > 0) {
+    const r0 = progress.roundsWith0Spots ?? 0;
+    const r1 = progress.roundsWith1Spot ?? 0;
+    const r2 = progress.roundsWith2Spots ?? 0;
+    const totalHours =
+      (r0 / getSpotSpeedForTable(config.seatsPerTable, 0)) +
+      (r1 / getSpotSpeedForTable(config.seatsPerTable, 1)) +
+      (r2 / getSpotSpeedForTable(config.seatsPerTable, 2));
+    if (totalHours > 0) {
+      return progress.totalRoundsPlayedCount / totalHours;
+    }
+    if (progress.effectiveHandsPerHour && progress.effectiveHandsPerHour > 0) {
+      return progress.effectiveHandsPerHour;
+    }
   }
   return getSpotSpeedForTable(config.seatsPerTable, 1);
 }
@@ -823,7 +799,7 @@ function updateSessionVarianceChart(progress: SimulationProgress, config: Simula
     sessionStatEv.className = `session-stat-value ${mu >= 0 ? 'text-success' : 'text-danger'}`;
   }
   if (sessionStatEvSub) {
-    sessionStatEvSub.textContent = `Over ${selectedSessionHours} hrs (${Math.round(sessionHands).toLocaleString()} rds @ ${Math.round(handsPerHour)}/hr)`;
+    sessionStatEvSub.textContent = `Over ${selectedSessionHours} hrs (${Math.round(sessionHands).toLocaleString()} hands)`;
   }
   if (sessionStatWinProb) {
     sessionStatWinProb.textContent = `${(winProb * 100).toFixed(1)}%`;
@@ -1001,13 +977,9 @@ function renderDefaultSessionVariance() {
     if (!sessionVarianceChart) return;
   }
 
-  const seats = parseInt(playTableSeatsSelect?.value || '2', 10);
+  const seats = parseInt(playTableSeatsSelect?.value || '3', 10);
   const isPotOfGold = ruleGameTypeSelect?.value === 'free_bet';
-  const trigRC = parseInt(pogTriggerRcInput?.value || '12', 10) || 12;
-  const numDecks = parseInt(ruleDecksInput?.value || '6', 10) || 6;
-  const handsPerHour = isPotOfGold
-    ? getEstimatedHandsPerHour(seats, pogSpotsOutsideTrigger, pogSpotsOnTrigger, trigRC, numDecks)
-    : getSpotSpeedForTable(seats, 1);
+  const handsPerHour = getSpotSpeedForTable(seats, isPotOfGold ? pogSpotsOutsideTrigger : 1);
   const sessionHands = handsPerHour * selectedSessionHours;
 
   const evRound = isPotOfGold ? 0.75 : 0.35;
@@ -1031,7 +1003,7 @@ function renderDefaultSessionVariance() {
     sessionStatEv.className = 'session-stat-value text-success';
   }
   if (sessionStatEvSub) {
-    sessionStatEvSub.textContent = `Over ${selectedSessionHours} hrs (${Math.round(sessionHands).toLocaleString()} rds @ ${Math.round(handsPerHour)}/hr)`;
+    sessionStatEvSub.textContent = `Over ${selectedSessionHours} hrs (${Math.round(sessionHands).toLocaleString()} hands)`;
   }
   if (sessionStatWinProb) {
     sessionStatWinProb.textContent = `${(winProb * 100).toFixed(1)}%`;
@@ -1247,15 +1219,15 @@ function startFastSimulation() {
   const rawSideBet = parseInt(pogSideBetInput?.value || '25', 10) || 25;
 
   const rawTriggerMainStr = pogTriggerMainBetInput ? pogTriggerMainBetInput.value.trim().toLowerCase() : '';
-  let triggerMainPerSpot = 10;
+  let triggerMainPerSpot = 5;
   const matchTrigger = rawTriggerMainStr.match(/^(\d+)[xX\u00d7*](\d+)$/);
   if (matchTrigger) {
     spots = Math.min(2, Math.max(1, parseInt(matchTrigger[1], 10))) as 1 | 2;
-    triggerMainPerSpot = parseInt(matchTrigger[2], 10) || 10;
+    triggerMainPerSpot = parseInt(matchTrigger[2], 10) || 5;
   } else {
     const cleanDigits = rawTriggerMainStr.replace(/[^0-9]/g, '');
     const parsedNum = parseInt(cleanDigits, 10);
-    triggerMainPerSpot = (isNaN(parsedNum) || parsedNum <= 0) ? 10 : parsedNum;
+    triggerMainPerSpot = (isNaN(parsedNum) || parsedNum <= 0) ? 5 : parsedNum;
   }
 
   const stakingMode = pogStakingModeSelect ? pogStakingModeSelect.value : 'custom';
@@ -1400,7 +1372,7 @@ function renderProgress(progress: SimulationProgress, config: SimulationConfig) 
   const handsPerHour = getConfigHandsPerHour(config, progress);
   const hours = progress.handsPlayed / handsPerHour;
 
-  statHands.innerHTML = `${progress.handsPlayed.toLocaleString()} <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted); display: block; margin-top: 0.15rem;">(${Math.round(hours).toLocaleString()} hrs @ ${Math.round(handsPerHour)} rds/hr)</span>`;
+  statHands.innerHTML = `${progress.handsPlayed.toLocaleString()} <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted); display: block; margin-top: 0.15rem;">(${Math.round(hours).toLocaleString()} hrs)</span>`;
   statRuins.textContent = progress.totalRuinCount.toString();
 
   let totalCurrentBankroll = progress.seatBankrolls.reduce((sum, b) => sum + b, 0);

@@ -118,6 +118,9 @@ function runSimulation(config: SimulationConfig) {
   let sumSquaredPayouts = 0;
   let totalRoundsPlayedCount = 0;
   let totalApHoursSimulated = 0;
+  let roundsWith0Spots = 0;
+  let roundsWith1Spot = 0;
+  let roundsWith2Spots = 0;
 
   function getRoundHandsPerHour(seats: number, apSpotsInRound: number): number {
     if (seats === 1) return apSpotsInRound > 1 ? 165 : 246;
@@ -767,6 +770,8 @@ function runSimulation(config: SimulationConfig) {
           sumSquaredPayouts += seatRoundProfit * seatRoundProfit;
           totalRoundsPlayedCount++;
           const apSpotsThisRound = seatNumHandsMap[seat.id] || 1;
+          if (apSpotsThisRound >= 2) roundsWith2Spots++;
+          else roundsWith1Spot++;
           const roundSpeed = getRoundHandsPerHour(seatsPerTable, apSpotsThisRound);
           totalApHoursSimulated += 1 / roundSpeed;
         }
@@ -776,6 +781,7 @@ function runSimulation(config: SimulationConfig) {
       for (const seat of table.seats) {
         if (seat.isAP && seat.hands.length === 0) {
           totalRoundsPlayedCount++;
+          roundsWith0Spots++;
           const roundSpeed = getRoundHandsPerHour(seatsPerTable, 0);
           totalApHoursSimulated += 1 / roundSpeed;
         }
@@ -837,7 +843,10 @@ function runSimulation(config: SimulationConfig) {
         sumPayouts,
         sumSquaredPayouts,
         totalRoundsPlayedCount,
-        effectiveHandsPerHour
+        effectiveHandsPerHour,
+        roundsWith0Spots,
+        roundsWith1Spot,
+        roundsWith2Spots
       } as SimulationProgress);
     }
   }

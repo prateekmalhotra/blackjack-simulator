@@ -102,4 +102,7 @@ export interface SimulationProgress {
   sumSquaredPayouts: number;
   totalRoundsPlayedCount: number;
   effectiveHandsPerHour?: number;
+  roundsWith0Spots?: number;
+  roundsWith1Spot?: number;
+  roundsWith2Spots?: number;
 }
