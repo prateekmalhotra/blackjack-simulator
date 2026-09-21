@@ -744,7 +744,8 @@ function updateSessionVarianceChart(progress: SimulationProgress, config: Simula
     if (!sessionVarianceChart) return;
   }
 
-  const handsPerHour = getTableHandsPerHour(config.seatsPerTable);
+  const isFreeBetMultiSpot = config.rules.gameType === 'free_bet' && ((config.rules.potOfGold?.handsOnTrigger ?? 1) > 1 || (config.rules.potOfGold?.handsOutsideTrigger ?? 1) > 1);
+  const handsPerHour = getTableHandsPerHour(config.seatsPerTable, isFreeBetMultiSpot);
   const sessionHands = handsPerHour * selectedSessionHours;
 
   if (progress.totalRoundsPlayedCount === 0 || progress.handsPlayed === 0) {
@@ -953,9 +954,10 @@ function renderDefaultSessionVariance() {
   }
 
   const seats = parseInt(playTableSeatsSelect?.value || '2', 10);
-  const handsPerHour = getTableHandsPerHour(seats);
-  const sessionHands = handsPerHour * selectedSessionHours;
   const isPotOfGold = ruleGameTypeSelect?.value === 'free_bet';
+  const isFreeBetMultiSpot = isPotOfGold && (pogSpotsOnTrigger > 1 || pogSpotsOutsideTrigger > 1);
+  const handsPerHour = getTableHandsPerHour(seats, isFreeBetMultiSpot);
+  const sessionHands = handsPerHour * selectedSessionHours;
 
   const evRound = isPotOfGold ? 0.75 : 0.35;
   const varRound = isPotOfGold ? 1444 : 400;
