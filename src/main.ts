@@ -613,25 +613,38 @@ function normalPdf(x: number, mean: number, std: number): number {
   return (1 / (std * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * z * z);
 }
 
-function getSpotSpeedForTable(seats: number, apSpotsInRound: number = 1): number {
-  if (seats === 1) return apSpotsInRound > 1 ? 165 : 246;
-  const totalSpots = apSpotsInRound + (seats - 1);
-  if (totalSpots <= 2) return 139;
-  if (totalSpots === 3) return 104;
-  if (totalSpots === 4) return 83;
-  if (totalSpots === 5) return 70;
-  return 60;
+function getSpotSpeedForTable(seats: number, apSpotsInRound: number = 1, isFreeBet: boolean = true): number {
+  if (isFreeBet) {
+    // Realistic Vegas Free Bet / Pot of Gold pace (slower due to gold coin lammers, ~3x more splits, Push 22, and POG side bet payouts)
+    if (seats === 1) return apSpotsInRound > 1 ? 92 : 130;
+    const totalSpots = apSpotsInRound + (seats - 1);
+    if (totalSpots <= 2) return 85;
+    if (totalSpots === 3) return 65;
+    if (totalSpots === 4) return 52;
+    if (totalSpots === 5) return 44;
+    return 38;
+  } else {
+    // Realistic Vegas Standard Blackjack shoe pace (CVCX / BJA live casino benchmarks)
+    if (seats === 1) return apSpotsInRound > 1 ? 115 : 160;
+    const totalSpots = apSpotsInRound + (seats - 1);
+    if (totalSpots <= 2) return 105;
+    if (totalSpots === 3) return 80;
+    if (totalSpots === 4) return 65;
+    if (totalSpots === 5) return 55;
+    return 48;
+  }
 }
 
 function getConfigHandsPerHour(config: SimulationConfig, progress?: SimulationProgress): number {
+  const isFreeBet = config.rules.gameType === 'free_bet' || !!config.rules.potOfGold?.enabled;
   if (progress && progress.totalRoundsPlayedCount > 0) {
     const r0 = progress.roundsWith0Spots ?? 0;
     const r1 = progress.roundsWith1Spot ?? 0;
     const r2 = progress.roundsWith2Spots ?? 0;
     const totalHours =
-      (r0 / getSpotSpeedForTable(config.seatsPerTable, 0)) +
-      (r1 / getSpotSpeedForTable(config.seatsPerTable, 1)) +
-      (r2 / getSpotSpeedForTable(config.seatsPerTable, 2));
+      (r0 / getSpotSpeedForTable(config.seatsPerTable, 0, isFreeBet)) +
+      (r1 / getSpotSpeedForTable(config.seatsPerTable, 1, isFreeBet)) +
+      (r2 / getSpotSpeedForTable(config.seatsPerTable, 2, isFreeBet));
     if (totalHours > 0) {
       return progress.totalRoundsPlayedCount / totalHours;
     }
@@ -639,7 +652,7 @@ function getConfigHandsPerHour(config: SimulationConfig, progress?: SimulationPr
       return progress.effectiveHandsPerHour;
     }
   }
-  return getSpotSpeedForTable(config.seatsPerTable, 1);
+  return getSpotSpeedForTable(config.seatsPerTable, 1, isFreeBet);
 }
 
 // --------------------------------------------------------------------------
@@ -979,7 +992,7 @@ function renderDefaultSessionVariance() {
 
   const seats = parseInt(playTableSeatsSelect?.value || '3', 10);
   const isPotOfGold = ruleGameTypeSelect?.value === 'free_bet';
-  const handsPerHour = getSpotSpeedForTable(seats, isPotOfGold ? pogSpotsOutsideTrigger : 1);
+  const handsPerHour = getSpotSpeedForTable(seats, isPotOfGold ? pogSpotsOutsideTrigger : 1, isPotOfGold);
   const sessionHands = handsPerHour * selectedSessionHours;
 
   const evRound = isPotOfGold ? 0.75 : 0.35;

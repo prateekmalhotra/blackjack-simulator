@@ -122,14 +122,26 @@ function runSimulation(config: SimulationConfig) {
   let roundsWith1Spot = 0;
   let roundsWith2Spots = 0;
 
-  function getRoundHandsPerHour(seats: number, apSpotsInRound: number): number {
-    if (seats === 1) return apSpotsInRound > 1 ? 165 : 246;
-    const totalSpots = apSpotsInRound + (seats - 1);
-    if (totalSpots <= 2) return 139;
-    if (totalSpots === 3) return 104;
-    if (totalSpots === 4) return 83;
-    if (totalSpots === 5) return 70;
-    return 60;
+  function getRoundHandsPerHour(seats: number, apSpotsInRound: number, isFreeBet: boolean): number {
+    if (isFreeBet) {
+      // Realistic Vegas Free Bet / Pot of Gold pace (slower due to gold coin lammers, ~3x more splits, Push 22, and POG side bet payouts)
+      if (seats === 1) return apSpotsInRound > 1 ? 92 : 130;
+      const totalSpots = apSpotsInRound + (seats - 1);
+      if (totalSpots <= 2) return 85;
+      if (totalSpots === 3) return 65;
+      if (totalSpots === 4) return 52;
+      if (totalSpots === 5) return 44;
+      return 38;
+    } else {
+      // Realistic Vegas Standard Blackjack shoe pace (CVCX / BJA live casino benchmarks)
+      if (seats === 1) return apSpotsInRound > 1 ? 115 : 160;
+      const totalSpots = apSpotsInRound + (seats - 1);
+      if (totalSpots <= 2) return 105;
+      if (totalSpots === 3) return 80;
+      if (totalSpots === 4) return 65;
+      if (totalSpots === 5) return 55;
+      return 48;
+    }
   }
 
   // We sample bankroll history to keep message payload small
@@ -772,7 +784,7 @@ function runSimulation(config: SimulationConfig) {
           const apSpotsThisRound = seatNumHandsMap[seat.id] || 1;
           if (apSpotsThisRound >= 2) roundsWith2Spots++;
           else roundsWith1Spot++;
-          const roundSpeed = getRoundHandsPerHour(seatsPerTable, apSpotsThisRound);
+          const roundSpeed = getRoundHandsPerHour(seatsPerTable, apSpotsThisRound, isPotOfGoldActive);
           totalApHoursSimulated += 1 / roundSpeed;
         }
       }
@@ -782,7 +794,7 @@ function runSimulation(config: SimulationConfig) {
         if (seat.isAP && seat.hands.length === 0) {
           totalRoundsPlayedCount++;
           roundsWith0Spots++;
-          const roundSpeed = getRoundHandsPerHour(seatsPerTable, 0);
+          const roundSpeed = getRoundHandsPerHour(seatsPerTable, 0, isPotOfGoldActive);
           totalApHoursSimulated += 1 / roundSpeed;
         }
       }
@@ -826,9 +838,10 @@ function runSimulation(config: SimulationConfig) {
         }
       }
 
+      const isPogConfig = rules.gameType === 'free_bet' || !!rules.potOfGold?.enabled;
       const effectiveHandsPerHour = totalApHoursSimulated > 0
         ? (totalRoundsPlayedCount / totalApHoursSimulated)
-        : getRoundHandsPerHour(seatsPerTable, 1);
+        : getRoundHandsPerHour(seatsPerTable, 1, isPogConfig);
 
       self.postMessage({
         handsPlayed,
