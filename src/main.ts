@@ -608,8 +608,21 @@ function normalPdf(x: number, mean: number, std: number): number {
   return (1 / (std * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * z * z);
 }
 
-function getTableHandsPerHour(seats: number, isFreeBetMultiSpot: boolean = false): number {
-  if (seats === 1) return isFreeBetMultiSpot ? 165 : 246;
+function getTableHandsPerHour(
+  seats: number,
+  handsOutsideTrigger: number = 1,
+  handsOnTrigger: number = 1,
+  trigRoundFraction: number = 0.138
+): number {
+  if (seats === 1) {
+    const outMulti = handsOutsideTrigger > 1;
+    const trigMulti = handsOnTrigger > 1;
+    if (!outMulti && !trigMulti) return 246;
+    if (outMulti && trigMulti) return 165;
+    const fTrig = Math.max(0, Math.min(1, trigRoundFraction));
+    const fMulti = trigMulti ? fTrig : (1 - fTrig);
+    return Math.round(1 / (((1 - fMulti) / 246) + (fMulti / 165)));
+  }
   if (seats === 2) return 139;
   if (seats === 3) return 104;
   if (seats === 4) return 83;
@@ -744,8 +757,10 @@ function updateSessionVarianceChart(progress: SimulationProgress, config: Simula
     if (!sessionVarianceChart) return;
   }
 
-  const isFreeBetMultiSpot = config.rules.gameType === 'free_bet' && ((config.rules.potOfGold?.handsOnTrigger ?? 1) > 1 || (config.rules.potOfGold?.handsOutsideTrigger ?? 1) > 1);
-  const handsPerHour = getTableHandsPerHour(config.seatsPerTable, isFreeBetMultiSpot);
+  const isFreeBet = config.rules.gameType === 'free_bet';
+  const handsOutside = isFreeBet ? (config.rules.potOfGold?.handsOutsideTrigger ?? 1) : 1;
+  const handsOnTrig = isFreeBet ? (config.rules.potOfGold?.handsOnTrigger ?? 1) : 1;
+  const handsPerHour = getTableHandsPerHour(config.seatsPerTable, handsOutside, handsOnTrig, 0.138);
   const sessionHands = handsPerHour * selectedSessionHours;
 
   if (progress.totalRoundsPlayedCount === 0 || progress.handsPlayed === 0) {
@@ -955,8 +970,12 @@ function renderDefaultSessionVariance() {
 
   const seats = parseInt(playTableSeatsSelect?.value || '2', 10);
   const isPotOfGold = ruleGameTypeSelect?.value === 'free_bet';
-  const isFreeBetMultiSpot = isPotOfGold && (pogSpotsOnTrigger > 1 || pogSpotsOutsideTrigger > 1);
-  const handsPerHour = getTableHandsPerHour(seats, isFreeBetMultiSpot);
+  const handsPerHour = getTableHandsPerHour(
+    seats,
+    isPotOfGold ? pogSpotsOutsideTrigger : 1,
+    isPotOfGold ? pogSpotsOnTrigger : 1,
+    0.138
+  );
   const sessionHands = handsPerHour * selectedSessionHours;
 
   const evRound = isPotOfGold ? 0.75 : 0.35;
@@ -1345,8 +1364,10 @@ function setInputsDisabled(disabled: boolean) {
 }
 
 function renderProgress(progress: SimulationProgress, config: SimulationConfig) {
-  const isFreeBetMultiSpot = config.rules.gameType === 'free_bet' && ((config.rules.potOfGold?.handsOnTrigger ?? 1) > 1 || (config.rules.potOfGold?.handsOutsideTrigger ?? 1) > 1);
-  const handsPerHour = getTableHandsPerHour(config.seatsPerTable, isFreeBetMultiSpot);
+  const isFreeBet = config.rules.gameType === 'free_bet';
+  const handsOutside = isFreeBet ? (config.rules.potOfGold?.handsOutsideTrigger ?? 1) : 1;
+  const handsOnTrig = isFreeBet ? (config.rules.potOfGold?.handsOnTrigger ?? 1) : 1;
+  const handsPerHour = getTableHandsPerHour(config.seatsPerTable, handsOutside, handsOnTrig, 0.138);
   const hours = progress.handsPlayed / handsPerHour;
 
   statHands.innerHTML = `${progress.handsPlayed.toLocaleString()} <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted); display: block; margin-top: 0.15rem;">(${Math.round(hours).toLocaleString()} hrs)</span>`;
