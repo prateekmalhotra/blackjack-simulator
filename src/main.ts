@@ -637,19 +637,21 @@ function getSpotSpeedForTable(seats: number, apSpotsInRound: number = 1, isFreeB
 
 function getConfigHandsPerHour(config: SimulationConfig, progress?: SimulationProgress): number {
   const isFreeBet = config.rules.gameType === 'free_bet' || !!config.rules.potOfGold?.enabled;
-  if (progress && progress.totalRoundsPlayedCount > 0) {
-    const r0 = progress.roundsWith0Spots ?? 0;
-    const r1 = progress.roundsWith1Spot ?? 0;
-    const r2 = progress.roundsWith2Spots ?? 0;
-    const totalHours =
-      (r0 / getSpotSpeedForTable(config.seatsPerTable, 0, isFreeBet)) +
-      (r1 / getSpotSpeedForTable(config.seatsPerTable, 1, isFreeBet)) +
-      (r2 / getSpotSpeedForTable(config.seatsPerTable, 2, isFreeBet));
-    if (totalHours > 0) {
-      return progress.totalRoundsPlayedCount / totalHours;
-    }
+  if (progress) {
     if (progress.effectiveHandsPerHour && progress.effectiveHandsPerHour > 0) {
       return progress.effectiveHandsPerHour;
+    }
+    if (progress.totalRoundsPlayedCount > 0) {
+      const r0 = progress.roundsWith0Spots ?? 0;
+      const r1 = progress.roundsWith1Spot ?? 0;
+      const r2 = progress.roundsWith2Spots ?? 0;
+      const totalHours =
+        (r0 / getSpotSpeedForTable(config.seatsPerTable, 0, isFreeBet)) +
+        (r1 / getSpotSpeedForTable(config.seatsPerTable, 1, isFreeBet)) +
+        (r2 / getSpotSpeedForTable(config.seatsPerTable, 2, isFreeBet));
+      if (totalHours > 0) {
+        return progress.totalRoundsPlayedCount / totalHours;
+      }
     }
   }
   return getSpotSpeedForTable(config.seatsPerTable, 1, isFreeBet);

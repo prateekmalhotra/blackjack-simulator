@@ -122,26 +122,15 @@ function runSimulation(config: SimulationConfig) {
   let roundsWith1Spot = 0;
   let roundsWith2Spots = 0;
 
-  function getRoundHandsPerHour(seats: number, apSpotsInRound: number, isFreeBet: boolean): number {
-    if (isFreeBet) {
-      // Realistic Vegas Free Bet / Pot of Gold pace (slower due to gold coin lammers, ~3x more splits, Push 22, and POG side bet payouts)
-      if (seats === 1) return apSpotsInRound > 1 ? 92 : 130;
-      const totalSpots = apSpotsInRound + (seats - 1);
-      if (totalSpots <= 2) return 85;
-      if (totalSpots === 3) return 65;
-      if (totalSpots === 4) return 52;
-      if (totalSpots === 5) return 44;
-      return 38;
-    } else {
-      // Realistic Vegas Standard Blackjack shoe pace (CVCX / BJA live casino benchmarks)
-      if (seats === 1) return apSpotsInRound > 1 ? 115 : 160;
-      const totalSpots = apSpotsInRound + (seats - 1);
-      if (totalSpots <= 2) return 105;
-      if (totalSpots === 3) return 80;
-      if (totalSpots === 4) return 65;
-      if (totalSpots === 5) return 55;
-      return 48;
-    }
+  function getCleanRoundSpeed(seats: number, apSpotsInRound: number): number {
+    // Clean round speed (Regular Blackjack pace when 0 lammers and 0 side-bet payouts occur)
+    if (seats === 1) return apSpotsInRound > 1 ? 105 : 150;
+    const totalSpots = apSpotsInRound + (seats - 1);
+    if (totalSpots <= 2) return 100;
+    if (totalSpots === 3) return 75;
+    if (totalSpots === 4) return 62;
+    if (totalSpots === 5) return 52;
+    return 45;
   }
 
   // We sample bankroll history to keep message payload small
@@ -508,8 +497,11 @@ function runSimulation(config: SimulationConfig) {
       }
 
       const isFreeBetGame = rules.gameType === 'free_bet';
+      let roundFreeSplits = 0;
+      let roundFreeDoubles = 0;
+      let roundPogPayoutSeconds = 0;
 
-      // Play seats
+      // Play player hands
       for (const seat of playingSeats) {
         for (let hIndex = 0; hIndex < seat.hands.length; hIndex++) {
           const hand = seat.hands[hIndex];
@@ -548,6 +540,7 @@ function runSimulation(config: SimulationConfig) {
               const gId = hand.handGroupId ?? 0;
 
               if (isFreeSplit) {
+                roundFreeSplits++;
                 if (!seatLammersMap[seat.id]) seatLammersMap[seat.id] = {};
                 seatLammersMap[seat.id][gId] = (seatLammersMap[seat.id][gId] || 0) + 1;
               }
@@ -602,6 +595,7 @@ function runSimulation(config: SimulationConfig) {
               const gId = hand.handGroupId ?? 0;
 
               if (isFreeDouble) {
+                roundFreeDoubles++;
                 if (!seatLammersMap[seat.id]) seatLammersMap[seat.id] = {};
                 seatLammersMap[seat.id][gId] = (seatLammersMap[seat.id][gId] || 0) + 1;
                 hand.isFreeDouble = true;
@@ -771,6 +765,12 @@ function runSimulation(config: SimulationConfig) {
                   seat.bankroll += payout;
                   seat.totalEarned += payout;
                   seatRoundProfit += sideWin;
+
+                  // Add physical side-bet verification & chip stack cutting time ONLY when side bet actually wins
+                  if (lammersClamped === 1) roundPogPayoutSeconds += 5.5;
+                  else if (lammersClamped === 2) roundPogPayoutSeconds += 9.0;
+                  else if (lammersClamped === 3) roundPogPayoutSeconds += 15.0;
+                  else roundPogPayoutSeconds += 25.0;
                 }
               }
             }
@@ -784,8 +784,19 @@ function runSimulation(config: SimulationConfig) {
           const apSpotsThisRound = seatNumHandsMap[seat.id] || 1;
           if (apSpotsThisRound >= 2) roundsWith2Spots++;
           else roundsWith1Spot++;
-          const roundSpeed = getRoundHandsPerHour(seatsPerTable, apSpotsThisRound, isPotOfGoldActive);
-          totalApHoursSimulated += 1 / roundSpeed;
+
+          // Base round duration is pure Regular Blackjack pace (0-lammer speed)
+          let roundSeconds = 3600 / getCleanRoundSpeed(seatsPerTable, apSpotsThisRound);
+          if (isPotOfGoldActive) {
+            // Only add time when lammers, free splits, Push 22, or winning PoG side-bet payouts actually occur in this round
+            roundSeconds += roundFreeSplits * 8.5;
+            roundSeconds += roundFreeDoubles * 4.0;
+            if (!dealerHand.isBlackjack && dealerHand.value === 22 && !allPlayersBustOrSurrendered) {
+              roundSeconds += 2.5;
+            }
+            roundSeconds += roundPogPayoutSeconds;
+          }
+          totalApHoursSimulated += roundSeconds / 3600;
         }
       }
 
@@ -794,8 +805,15 @@ function runSimulation(config: SimulationConfig) {
         if (seat.isAP && seat.hands.length === 0) {
           totalRoundsPlayedCount++;
           roundsWith0Spots++;
-          const roundSpeed = getRoundHandsPerHour(seatsPerTable, 0, isPotOfGoldActive);
-          totalApHoursSimulated += 1 / roundSpeed;
+          let roundSeconds = 3600 / getCleanRoundSpeed(seatsPerTable, 0);
+          if (isPotOfGoldActive) {
+            roundSeconds += roundFreeSplits * 8.5;
+            roundSeconds += roundFreeDoubles * 4.0;
+            if (!dealerHand.isBlackjack && dealerHand.value === 22 && !allPlayersBustOrSurrendered) {
+              roundSeconds += 2.5;
+            }
+          }
+          totalApHoursSimulated += roundSeconds / 3600;
         }
       }
 
@@ -838,10 +856,9 @@ function runSimulation(config: SimulationConfig) {
         }
       }
 
-      const isPogConfig = rules.gameType === 'free_bet' || !!rules.potOfGold?.enabled;
       const effectiveHandsPerHour = totalApHoursSimulated > 0
         ? (totalRoundsPlayedCount / totalApHoursSimulated)
-        : getRoundHandsPerHour(seatsPerTable, 1, isPogConfig);
+        : getCleanRoundSpeed(seatsPerTable, 1);
 
       self.postMessage({
         handsPlayed,
